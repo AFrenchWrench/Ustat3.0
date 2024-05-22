@@ -1,5 +1,6 @@
 from pathlib import Path
 from decouple import config  # type: ignore
+from datetime import timedelta
 import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,6 +20,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # Third party apps
+    "graphene_django",
     # My apps
     "main",
     "sales",
@@ -84,11 +86,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_TZ = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -101,22 +100,47 @@ AUTH_USER_MODEL = "users.User"
 STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
 
-JALALI_DATE_DEFAULTS = {
-    # if change it to true then all dates of the list_display will convert to the Jalali.
-    "LIST_DISPLAY_AUTO_CONVERT": True,
-    "Strftime": {
-        "date": "%y/%m/%d",
-        "datetime": "%H:%M:%S _ %y/%m/%d",
-    },
-    "Static": {
-        "js": [
-            # loading datepicker
-            "admin/js/django_jalali.min.js",
-        ],
-        "css": {
-            "all": [
-                "admin/jquery.ui.datepicker.jalali/themes/base/jquery-ui.min.css",
-            ]
-        },
-    },
+AUTHENTICATION_BACKENDS = [
+    "graphql_jwt.backends.JSONWebTokenBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+GRAPHENE = {
+    "MIDDLEWARE": [
+        "graphql_jwt.middleware.JSONWebTokenMiddleware",
+    ],
 }
+
+GRAPHQL_JWT = {
+    "JWT_AUTH_HEADER_PREFIX": "Bearer",
+    "JWT_VERIFY_EXPIRATION": True,
+    "JWT_LONG_RUNNING_REFRESH_TOKEN": False,
+    "JWT_ALLOW_ARGUMENT": True,
+    "JWT_EXPIRATION_DELTA": timedelta(hours=12),
+    "JWT_SECRET_KEY": SECRET_KEY,
+    "JWT_ALGORITHM": "HS256",
+}
+
+# # celery settings
+# CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
+# CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND")
+
+# # SMTP configuration
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_HOST = "smtp.gmail.com"
+# EMAIL_USE_TLS = True
+# EMAIL_PORT = 587
+# EMAIL_HOST_USER = "unieggplant@gmail.com"
+# EMAIL_HOST_PASSWORD = "kzvwhimpnnsxfmlx"
+# DEFAULT_FROM_EMAIL = "Celery Testing | EggplantUni"
+
+
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://redis:6379/2",
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         },
+#     }
+# }

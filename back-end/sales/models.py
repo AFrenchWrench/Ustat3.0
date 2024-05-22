@@ -1,6 +1,9 @@
+from datetime import timedelta
 from itertools import count
 from django.db import models
 from django.utils import timezone
+from image_optimizer.fields import OptimizedImageField
+
 
 ITEM_TYPE_CHOICES = [
     ("s", "مبل"),
@@ -14,7 +17,7 @@ ITEM_TYPE_CHOICES = [
 class Order(models.Model):
     user = models.ForeignKey("users.User", on_delete=models.CASCADE)
     price = models.PositiveBigIntegerField()
-    requested_date = models.DateField()
+    requested_date = models.DateField(default=timezone.now() + timedelta(days=25))
     creation_date = models.DateField(auto_now_add=True)
     order_number = models.CharField(max_length=15, unique=True, blank=True)
 
@@ -40,7 +43,7 @@ class OrderItem(models.Model):
     name = models.CharField(max_length=32)
     dimensions = models.JSONField()
     price = models.PositiveBigIntegerField()
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     quantity = models.PositiveIntegerField()
 
     def __str__(self):
@@ -55,7 +58,7 @@ class FabricReceipt(models.Model):
     size = models.FloatField()
     unit = models.FloatField()
     total_size = models.FloatField()
-    fabric_image = models.ImageField(upload_to="fabrics/")
+    fabric_image = OptimizedImageField(upload_to="fabrics/")
     price = models.PositiveBigIntegerField()
 
     def __str__(self):
