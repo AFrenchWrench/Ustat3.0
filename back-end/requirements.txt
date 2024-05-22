@@ -5,7 +5,6 @@ charset-normalizer==3.3.2
 Django==4.2.10
 django-graphql-jwt==0.4.0
 django-image-optimizer==1.0.3
-djangorestframework==3.15.1
 graphene==3.3
 graphene-django==3.2.1
 graphql-core==3.2.3
@@ -17,6 +16,7 @@ promise==2.3
 psycopg2-binary==2.9.9
 PyJWT==2.8.0
 pyparsing==2.0.3
+python-decouple==3.8
 python-dotenv==1.0.1
 python-resize-image==1.1.20
 requests==2.32.2

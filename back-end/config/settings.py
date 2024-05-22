@@ -1,12 +1,12 @@
 from pathlib import Path
+from decouple import config  # type: ignore
 import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-SECRET_KEY = os.environ.get("SECRET_KEY")
-
-DEBUG = os.environ.get("DEBUG")
+SECRET_KEY = config("SECRET_KEY")
+DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = ["*"]
 
@@ -18,6 +18,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Third party apps
+    # My apps
+    "main",
+    "sales",
+    "users",
 ]
 
 MIDDLEWARE = [
@@ -54,11 +59,11 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DB_NAME"),
-        "USER": os.environ.get("DB_USER"),
-        "PASSWORD": os.environ.get("DB_PASSWORD"),
-        "HOST": os.environ.get("DB_HOST"),
-        "PORT": os.environ.get("DB_PORT"),
+        "NAME": config("DB_NAME"),
+        "USER": config("DB_USER"),
+        "PASSWORD": config("DB_PASSWORD"),
+        "HOST": config("DB_HOST"),
+        "PORT": config("DB_PORT"),
     }
 }
 
@@ -91,8 +96,27 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 X_FRAME_OPTIONS = "SAMEORIGIN"
 SILENCED_SYSTEM_CHECKS = ["security.W019"]
 
-# AUTH_USER_MODEL = "users.User"
+AUTH_USER_MODEL = "users.User"
 
 STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
 
+JALALI_DATE_DEFAULTS = {
+    # if change it to true then all dates of the list_display will convert to the Jalali.
+    "LIST_DISPLAY_AUTO_CONVERT": True,
+    "Strftime": {
+        "date": "%y/%m/%d",
+        "datetime": "%H:%M:%S _ %y/%m/%d",
+    },
+    "Static": {
+        "js": [
+            # loading datepicker
+            "admin/js/django_jalali.min.js",
+        ],
+        "css": {
+            "all": [
+                "admin/jquery.ui.datepicker.jalali/themes/base/jquery-ui.min.css",
+            ]
+        },
+    },
+}
