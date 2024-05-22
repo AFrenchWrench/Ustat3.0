@@ -2,173 +2,166 @@ import re
 
 from django import forms
 from django.core.exceptions import ValidationError
-from django.core.validators import validate_email
-from django.forms import ModelForm
-
-from .models import User, Professor
-
-GENDER_CHOICES = [
-    ("M", "Male"),
-    ("F", "Female"),
-]
-
-RANK_CHOICES = [
-    ("I", "Instructor"),
-    ("A1", "Assistant Professor"),
-    ("A2", "Associate Professor"),
-    ("P", "Professor"),
-]
+from django.contrib.auth.forms import UserCreationForm
+from django.core.validators import (
+    RegexValidator,
+    EmailValidator,
+)
+from users.models import User
+from utils.validation_utils import is_persian_string
+import datetime
 
 
-class UserForm(ModelForm):
-    gender = forms.CharField(max_length=1, widget=forms.Select(choices=GENDER_CHOICES))
-
-    def __init__(self, *args, **kwargs):
-        super(UserForm, self).__init__(*args, **kwargs)
+class UserSignUpForm(UserCreationForm):
 
     class Meta:
         model = User
         fields = [
             "username",
-            "password",
             "email",
             "first_name",
             "last_name",
-            "phone_number",
-            "national_id",
-            "gender",
+            "password",
+            "city",
             "birth_date",
-            "user_code",
+            "phone_number",
+            "landline_number",
+            "position",
         ]
 
     def clean_username(self):
-        username = self.cleaned_data["username"]
-        if username:
-            if len(username) < 5:
-                raise forms.ValidationError(
-                    "Username must be at least 5 characters long."
-                )
-            if username.isdigit():
-                raise forms.ValidationError("Username cannot consist of only numbers.")
-            if not username.isascii():
-                raise forms.ValidationError(
-                    "Username must contain English characters only."
-                )
+        username = self.cleaned_data.get("username")
+        pattern = "^[a-zA-Z][a-zA-Z0-9_]{4,20}$"
+        if not re.match(pattern, username):
+            raise ValidationError("نام کاربری معتبر نمیباشد")
+
+        if User.objects.filter(username=username).exists():
+            raise ValidationError("نام کاربری وارد شده در سیستم وجود دارد")
+
         return username
 
+    def clean_password(self):
+        password = self.cleaned_data.get("password")
+
+        if len(password) < 8:
+            raise ValidationError("گذرواژه باید حداقل 8 کاراکتر باشد.")
+
+        if not re.search(r"[A-Z]", password):
+            raise ValidationError("گذرواژه باید حداقل شامل یک حرف بزرگ انگلیسی باشد.")
+
+        if not re.search(r"[0-9]", password):
+            raise ValidationError("گذرواژه باید حداقل شامل یک عدد باشد.")
+
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+            raise ValidationError("گذرواژه باید حداقل شامل یک کاراکتر ویژه باشد.")
+
+        return password
+
     def clean_first_name(self):
-        first_name = self.cleaned_data["first_name"]
-        if first_name:
-            if not first_name.isalpha():
-                raise forms.ValidationError(
-                    "Your first name must contain only letters."
-                )
-            if not first_name.isascii():
-                raise forms.ValidationError("Your first name must be in English.")
+        first_name = self.cleaned_data.get("first_name")
+        if not is_persian_string(first_name):
+            raise ValidationError("نام شما باید فارسی باشد")
         return first_name
 
     def clean_last_name(self):
-        last_name = self.cleaned_data["last_name"]
-        if last_name:
-            if not last_name.isalpha():
-                raise forms.ValidationError("Your last name must contain only letters.")
-            if not last_name.isascii():
-                raise forms.ValidationError("Your last name must be in English.")
+        last_name = self.cleaned_data.get("last_name")
+        if not is_persian_string(last_name):
+            raise ValidationError("نام خانوادگی شما باید فارسی باشد")
         return last_name
 
+    # def clean_address(self):
+    #     address = self.cleaned_data.get("address")
+    #     pattern = r"^[\u0600-\u06FF0-9\s,]+$"
+    #     if not re.fullmatch(pattern, address):
+    #         raise ValidationError(
+    #             "در آدرس تنها از حروف فارسی، اغداد انگلیسی، و ویرگول و یا قاصله استفاده کنید"
+    #         )
+    #     return address
+
+    def clean_birthdate(self):
+        birthdate = self.cleaned_data.get("birthdate")
+        if birthdate >= datetime.date.today():
+            raise ValidationError("تاریخ تولد باید گذشته باشد")
+        elif birthdate > (
+            datetime.date.today() - datetime.timedelta(days=(365.25 * 18))
+        ):
+            raise ValidationError("شما حداقل باید 18 سال سن داشته باشید")
+        return birthdate
+
+    def clean_city(self):
+        city = self.cleaned_data.get("city")
+        if not is_persian_string(city):
+            raise ValidationError("لطفا نام شهر خود را فارسی وارد کنید")
+        return city
+
+    # def clean_description(self):
+    #     description = self.cleaned_data.get("description")
+    #     pattern = r"^[\u0600-\u06FF0-9\s,]+$"
+    #     if not re.fullmatch(pattern, description):
+    #         raise ValidationError(
+    #             "در توضیحات تنها از حروف فارسی، اغداد انگلیسی، و ویرگول و یا قاصله استفاده کنید"
+    #         )
+    #     return description
+
+    def clean_position(self):
+        position = self.cleaned_data.get("position")
+        if not is_persian_string(position):
+            raise ValidationError("سمت شغلی خود را فارسی وارد کنید")
+        return position
+
     def clean_email(self):
-        email = self.cleaned_data["email"]
+        email = self.cleaned_data.get("email")
         if email:
             try:
-                validate_email(email)
+                EmailValidator(email)
             except ValidationError:
-                raise forms.ValidationError("Please enter a valid email address.")
+                raise ValidationError("ایمیل وارد شده معتبر نمی‌باشد")
+
+            if User.objects.filter(email=email).exists():
+                raise ValidationError("ایمیل وارد شده در سیستم وجود دارد")
+
         return email
 
     def clean_phone_number(self):
-        phone_number = self.cleaned_data["phone_number"]
+        phone_number = self.cleaned_data.get("phone_number")
         if phone_number:
-            if not re.match(r"^(09)([0-9]{9})$", phone_number):
-                raise forms.ValidationError("Enter a valid phone number.")
+            regex_validator = RegexValidator(regex=r"^\+\d{9,15}$")
+            try:
+                regex_validator(phone_number)
+            except ValidationError:
+                raise ValidationError(
+                    "شماره تلفن وارد شده معتبر نمی‌باشد فرمت درست : ...98+"
+                )
+
+            if User.objects.filter(phone_number=phone_number).exists():
+                raise ValidationError("شماره تلفن وارد شده در سیستم وجود دارد")
+
         return phone_number
 
-    def clean_national_id(self):
-        national_id = self.cleaned_data["national_id"]
-        if national_id:
-            if not national_id.isdigit() or len(national_id) != 10:
-                raise forms.ValidationError(
-                    "National ID must be a valid 10-digit number."
+    def clean_landline_number(self):
+        landline_number = self.cleaned_data.get("landline_number")
+        if landline_number:
+            regex_validator = RegexValidator(regex=r"^\+\d{9,15}$")
+            try:
+                regex_validator(landline_number)
+            except ValidationError:
+                raise ValidationError(
+                    "شماره ثابت وارد شده معتبر نمی‌باشد فرمت درست : ...98+"
                 )
-        return national_id
 
-    def clean_gender(self):
-        gender = self.cleaned_data["gender"]
-        if gender:
-            if gender not in [item[0] for item in GENDER_CHOICES]:
-                raise forms.ValidationError("Gender Must be M or F.")
-        return gender
+            if User.objects.filter(landline_number=landline_number).exists():
+                raise ValidationError("شماره ثابت وارد شده در سیستم وجود دارد")
+        return landline_number
 
-    def clean_password(self):
-        password = self.cleaned_data["password"]
-        if not re.match(r"^.{8,255}$", password):
-            raise forms.ValidationError(
-                "Password should be at least 8 characters long."
-            )
-        if not re.search(r"(.*[!@#$%^&*()_+\-=\[\]{};':\"\\,.<>?].*)+", password):
-            raise forms.ValidationError(
-                "Password should have at least one special character."
-            )
-        if not re.search(r"(.*[A-Z].*)+", password):
-            raise forms.ValidationError(
-                "Password should have at least one uppercase letter"
-            )
-        if not re.search(r"(.*\d.*){2,}", password):
-            raise forms.ValidationError("Password should have at least two digits")
-        return password
+    # def clean_national_code(self):
+    #     national_code = self.cleaned_data.get("national_code")
+    #     if national_code:
+    #         regex_validator = RegexValidator(regex=r"^\d{10}$")
+    #         try:
+    #             regex_validator(national_code)
+    #         except ValidationError:
+    #             raise ValidationError("کد ملی وارد شده معتبر نمی‌باشد")
 
-
-class UpdateUserForm(UserForm):
-    def __init__(self, *args, **kwargs):
-        super(UpdateUserForm, self).__init__(*args, **kwargs)
-        for field_name in self.fields:
-            self.fields[field_name].required = False
-
-
-class ProfessorForm(ModelForm):
-    rank = forms.CharField(max_length=2, widget=forms.Select(choices=RANK_CHOICES))
-
-    def __init__(self, *args, **kwargs):
-        super(ProfessorForm, self).__init__(*args, **kwargs)
-
-    class Meta:
-        model = Professor
-        fields = ["specialization", "rank"]
-
-    def clean_specialization(self):
-        specialization = self.cleaned_data["specialization"]
-        if specialization:
-            if specialization.isdigit():
-                raise forms.ValidationError(
-                    "Specialization cannot consist of only numbers."
-                )
-            if not specialization.isalpha():
-                raise forms.ValidationError(
-                    "Specialization must contain English characters only."
-                )
-        return specialization
-
-    def clean_rank(self):
-        rank = self.cleaned_data["rank"]
-        if rank:
-            if rank not in [item[0] for item in RANK_CHOICES]:
-                raise forms.ValidationError(
-                    f"Rank Must be {' or '.join([item[0] for item in RANK_CHOICES])}"
-                )
-        return rank
-
-
-class UpdateProfessorForm(ProfessorForm):
-    def __init__(self, *args, **kwargs):
-        super(UpdateProfessorForm, self).__init__(*args, **kwargs)
-        for field_name in self.fields:
-            self.fields[field_name].required = False
+    #         if User.objects.filter(national_code=national_code).exists():
+    #             raise ValidationError("کد ملی وارد شده در سیستم وجود دارد")
+    #     return national_code

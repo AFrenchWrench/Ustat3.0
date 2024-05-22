@@ -46,16 +46,15 @@ class User(AbstractUser):
     username = models.CharField(max_length=32, unique=True)
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
-    phone_number = models.CharField(max_length=11, unique=True)
-    landline_number = models.CharField(max_length=11, unique=True)
+    phone_number = models.CharField(max_length=13, unique=True)
+    landline_number = models.CharField(max_length=13, unique=True)
     email = models.EmailField(unique=True)
-    profile_image = OptimizedImageField(
-        upload_to="profiles/", null=True, blank=True
-    )
+    profile_image = OptimizedImageField(upload_to="profiles/", null=True, blank=True)
     city = models.CharField(max_length=32, choices=CITY_CHOICE_FIELD)
     is_staff = models.BooleanField(default=False)
     position = models.CharField(max_length=32, null=True, blank=True)
     date_joined = models.DateField(auto_now_add=True)
+    birth_date = models.DateField()
 
     def __str__(self):
         return self.username
@@ -66,7 +65,7 @@ class Business(models.Model):
     name = models.CharField(max_length=32, unique=True)
     owner_first_name = models.CharField(max_length=32)
     owner_last_name = models.CharField(max_length=32)
-    owner_phone_number = models.CharField(max_length=11, unique=True)
+    owner_phone_number = models.CharField(max_length=13, unique=True)
     address = models.TextField()
     is_confirmed = models.BooleanField(default=False)
 
@@ -77,7 +76,7 @@ class Business(models.Model):
 class Driver(models.Model):
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
-    phone_number = models.CharField(max_length=11, unique=True)
+    phone_number = models.CharField(max_length=13, unique=True)
     national_code = models.CharField(max_length=10, unique=True)
     plate_number = models.CharField(max_length=8, unique=True)
     car_model = models.CharField(max_length=16)

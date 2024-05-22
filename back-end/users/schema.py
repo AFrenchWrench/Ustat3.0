@@ -1,3 +1,4 @@
+from dataclasses import field
 import graphene
 from django.contrib.auth import (
     get_user_model,
@@ -12,35 +13,21 @@ from graphql import (
     GraphQLError,
 )
 from graphql_jwt.shortcuts import get_token
-from redis import Redis
 
-from admin_dash.models import BurnedTokens
-from university.models import (
-    Semester,
-    Faculty,
-    Major,
-)
-from university.schema import (
-    StudentCourseType,
-)
+# from redis import Redis
+
+from main.models import BurnedTokens
 from utils.schema_utils import (
     resolve_model_with_filters,
-    staff_or_assistant,
-    staff_or_same_faculty_assistant,
     login_required,
     staff_member_required,
 )
-from utils.tasks import send_email
-from .forms import (
-    UserForm,
-    UpdateUserForm,
-    ProfessorForm,
-    UpdateProfessorForm,
-)
-from .models import (
-    Student,
-    Professor,
-    Assistant,
+
+# from utils.tasks import send_email
+from users.forms import UserSignUpForm
+from users.models import (
+    Business,
+    Driver,
 )
 
 User = get_user_model()
@@ -51,295 +38,85 @@ class UserType(DjangoObjectType):
         model = User
 
 
-class StudentType(DjangoObjectType):
+class BusinessType(DjangoObjectType):
     class Meta:
-        model = Student
+        model = Business
 
 
-class ProfessorType(DjangoObjectType):
+class DriverType(DjangoObjectType):
     class Meta:
-        model = Professor
+        model = Driver
 
 
-class AssistantType(DjangoObjectType):
-    class Meta:
-        model = Assistant
-
-
-class CreateUserInput(graphene.InputObjectType):
+class UserInput(graphene.InputObjectType):
     username = graphene.String(required=True)
+    first_name = graphene.String(required=True)
+    last_name = graphene.String(required=True)
     password = graphene.String(required=True)
+    phone_number = graphene.String(required=True)
+    landline_number = graphene.String(required=True)
     email = graphene.String(required=True)
+    city = graphene.String(required=True)
+    position = graphene.String()
+    birth_date = graphene.Date(required=True)
+
+
+class BusinessInput(graphene.InputObjectType):
+    user_id = graphene.ID(required=True)
+    name = graphene.String(required=True)
+    owner_first_name = graphene.String(required=True)
+    owner_last_name = graphene.String(required=True)
+    owner_phone_number = graphene.String(required=True)
+    address = graphene.String(required=True)
+
+
+class DriverInput(graphene.InputObjectType):
     first_name = graphene.String(required=True)
     last_name = graphene.String(required=True)
     phone_number = graphene.String(required=True)
-    national_id = graphene.String(required=True)
-    gender = graphene.String(required=True)
-    birth_date = graphene.Date(required=True)
-    user_code = graphene.String(required=True)
-
-
-class CreateStudentInput(graphene.InputObjectType):
-    admission_year = graphene.Int(required=True)
-    admission_semester = graphene.ID(required=True)
-    major = graphene.ID(required=True)
-    advisor = graphene.ID(required=False)
-    military_status = graphene.Boolean(required=True)
-
-
-class CreateProfessorInput(graphene.InputObjectType):
-    major = graphene.ID(required=True)
-    specialization = graphene.String(required=True)
-    rank = graphene.String(required=True)
-
-
-class CreateAssistantInput(graphene.InputObjectType):
-    faculty = graphene.ID(required=True)
-    major = graphene.ID(required=True)
+    national_code = graphene.String(required=True)
+    plate_number = graphene.String(required=True)
+    car_model = graphene.String(required=True)
 
 
 class CreateUser(graphene.Mutation):
     class Arguments:
-        base_user_input = CreateUserInput(required=True)
-        student_input = CreateStudentInput()
-        professor_input = CreateProfessorInput()
-        assistant_input = CreateAssistantInput()
+        user_data = UserInput(required=True)
+        business_data = BusinessInput()
 
-    user = graphene.Field(UserType)
-    student = graphene.Field(StudentType)
-    professor = graphene.Field(ProfessorType)
-    assistant = graphene.Field(AssistantType)
+    success = graphene.Boolean()
+    errors = graphene.JSONString()
 
-    @staticmethod
-    @staff_member_required
-    def mutate(
-        root,
-        info,
-        base_user_input,
-        student_input=None,
-        professor_input=None,
-        assistant_input=None,
-    ):
-        form = UserForm(base_user_input)
+    def mutate(root, info, user_data, business_data=None):
+        print(user_data)
+        form = UserSignUpForm(**user_data)
         if form.is_valid():
-            if student_input:
-                student = CreateUser._create_student(base_user_input, student_input)
-                return CreateUser(student=student)
-            elif professor_input:
-                form = ProfessorForm(professor_input)
-                if form.is_valid():
-                    professor = CreateUser._create_professor(
-                        base_user_input, professor_input
-                    )
-                    return CreateUser(professor=professor)
-                else:
-                    errors = form.errors.as_data()
-                    error_messages = [error[0].messages[0] for error in errors.values()]
-                    raise GraphQLError(", ".join(error_messages))
-            elif assistant_input:
-                assistant = CreateUser._create_assistant(
-                    base_user_input, assistant_input
+            user_instance = User(**user_data)
+            user_instance.save()
+
+            if business_data:
+                business_instance = Business(
+                    user=user_instance,
+                    **business_data,
                 )
-                return CreateUser(assistant=assistant)
+                business_instance.save()
+                return CreateUser(success=True,errors={})
 
-            user = User.objects.create_user(**base_user_input, is_staff=True)
-
-            return CreateUser(user=user)
+            return CreateUser(success=True,errors={})
         else:
-            errors = form.errors.as_data()
-            error_messages = [error[0].messages[0] for error in errors.values()]
-            raise GraphQLError(", ".join(error_messages))
-
-    @staticmethod
-    def _create_student(base_user_input, student_input):
-        student_input["admission_semester"] = get_object_or_404(
-            Semester, pk=student_input["admission_semester"]
-        )
-        student_input["major"] = get_object_or_404(Major, pk=student_input["major"])
-        try:
-            if student_input["advisor"]:
-                student_input["advisor"] = get_object_or_404(
-                    Professor, pk=student_input.get("advisor")
-                )
-        except KeyError:
-            student_input["advisor"] = None
-        user = User.objects.create_user(**base_user_input)
-
-        return Student.objects.create(user=user, **student_input)
-
-    @staticmethod
-    def _create_professor(base_user_input, professor_input):
-        professor_input["major"] = get_object_or_404(Major, pk=professor_input["major"])
-        user = User.objects.create_user(**base_user_input)
-
-        return Professor.objects.create(user=user, **professor_input)
-
-    @staticmethod
-    def _create_assistant(base_user_input, assistant_input):
-        assistant_input["faculty"] = get_object_or_404(
-            Faculty, pk=assistant_input["faculty"]
-        )
-        assistant_input["major"] = get_object_or_404(Major, pk=assistant_input["major"])
-        user = User.objects.create_user(**base_user_input)
-
-        return Assistant.objects.create(user=user, **assistant_input)
+            return CreateUser(success=False,errors={field.errors for field in form})
 
 
-class UpdateUserInput(graphene.InputObjectType):
-    username = graphene.String()
-    email = graphene.String()
-    first_name = graphene.String()
-    last_name = graphene.String()
-    phone_number = graphene.String()
-    national_id = graphene.String()
-    gender = graphene.String()
-    birth_date = graphene.Date()
-
-
-class UpdateStudentInput(graphene.InputObjectType):
-    admission_year = graphene.Int()
-    admission_semester = graphene.ID()
-    major = graphene.ID()
-    advisor = graphene.ID()
-    military_status = graphene.Boolean()
-
-
-class UpdateProfessorInput(graphene.InputObjectType):
-    major = graphene.ID()
-    specialization = graphene.String()
-    rank = graphene.String()
-
-
-class UpdateAssistantInput(graphene.InputObjectType):
-    faculty = graphene.ID()
-    major = graphene.ID()
-
-
-class UpdateUser(graphene.Mutation):
+class CreateDriver(graphene.Mutation):
     class Arguments:
-        pk = graphene.ID(required=True)
-        base_user_input = UpdateUserInput()
-        student_input = UpdateStudentInput()
-        professor_input = UpdateProfessorInput()
-        assistant_input = UpdateAssistantInput()
+        input = DriverInput(required=True)
 
-    user = graphene.Field(UserType)
-    student = graphene.Field(StudentType)
-    professor = graphene.Field(ProfessorType)
-    assistant = graphene.Field(AssistantType)
+    success = graphene.Boolean()
 
-    @staticmethod
-    @login_required
-    def mutate(
-        root,
-        info,
-        pk,
-        base_user_input=None,
-        student_input=None,
-        professor_input=None,
-        assistant_input=None,
-    ):
-        form = UpdateUserForm(base_user_input)
-        if form.is_valid() or base_user_input is None:
-
-            user = get_object_or_404(User, pk=pk)
-            sender = info.context.user
-
-            if base_user_input is not None:
-                for field, value in base_user_input.items():
-                    setattr(user, field, value)
-
-            if student_input:
-                student = get_object_or_404(Student, user=user)
-                if (
-                    staff_or_same_faculty_assistant(sender, student.major.faculty)
-                    or pk == sender.id
-                ):
-                    student = UpdateUser._update_student(user, student, student_input)
-                    return UpdateUser(student=student)
-            elif professor_input:
-                professor = get_object_or_404(Professor, user=user)
-                form = UpdateProfessorForm(professor_input)
-                if form.is_valid() and (
-                    staff_or_same_faculty_assistant(sender, professor.major.faculty)
-                    or pk == sender.id
-                ):
-                    professor = UpdateUser._update_professor(
-                        user, professor, professor_input
-                    )
-                    return UpdateUser(professor=professor)
-                else:
-                    errors = form.errors.as_data()
-                    error_messages = [error[0].messages[0] for error in errors.values()]
-                    raise GraphQLError(", ".join(error_messages))
-
-            elif assistant_input:
-                assistant = get_object_or_404(Assistant, user=user)
-                if sender.is_staff:
-                    assistant = UpdateUser._update_assistant(
-                        user, assistant, assistant_input
-                    )
-                    return UpdateUser(assistant=assistant)
-
-            user.save()
-            return UpdateUser(user=user)
-        elif [base_user_input, student_input, professor_input, assistant_input] == [
-            None,
-            None,
-            None,
-            None,
-        ]:
-            raise GraphQLError("At least one input type should be filled")
-        else:
-            errors = form.errors.as_data()
-            error_messages = [error[0].messages[0] for error in errors.values()]
-            raise GraphQLError(", ".join(error_messages))
-
-    @staticmethod
-    def _update_student(user, student, student_input):
-        for field, value in student_input.items():
-            if field == "major" and value is not None:
-                value = get_object_or_404(Major, pk=value)
-            elif field == "advisor" and value is not None:
-                value = get_object_or_404(Professor, pk=value)
-            setattr(student, field, value)
-        student.save()
-        return student
-
-    @staticmethod
-    def _update_professor(user, professor, professor_input):
-        for field, value in professor_input.items():
-            if field == "major" and value is not None:
-                value = get_object_or_404(Major, pk=value)
-            setattr(professor, field, value)
-        professor.save()
-        return professor
-
-    @staticmethod
-    def _update_assistant(user, assistant, assistant_input):
-        for field, value in assistant_input.items():
-            if field == "faculty" and value is not None:
-                value = get_object_or_404(Faculty, pk=value)
-            if field == "major" and value is not None:
-                value = get_object_or_404(Major, pk=value)
-            setattr(assistant, field, value)
-        assistant.save()
-        return assistant
-
-
-class DeleteUser(graphene.Mutation):
-    class Arguments:
-        pk = graphene.ID(required=True)
-
-    stat = graphene.Boolean()
-
-    @staticmethod
-    @staff_member_required
-    def mutate(root, info, pk):
-        user = get_object_or_404(User, pk=pk)
-        user.delete()
-        stat = True
-        return DeleteUser(stat=stat)
+    def mutate(root, info, input):
+        driver_instance = Driver(**input)
+        driver_instance.save()
+        return CreateDriver(success=True)
 
 
 class Login(graphene.Mutation):
@@ -348,9 +125,7 @@ class Login(graphene.Mutation):
         password = graphene.String(required=True)
 
     token = graphene.String()
-    user = graphene.Field(UserType)
 
-    @staticmethod
     def mutate(root, info, username, password):
         sender = info.context.user
         try:
@@ -368,7 +143,7 @@ class Login(graphene.Mutation):
             raise GraphQLError("Invalid username or password")
 
         token = get_token(user)
-        return Login(token=token, user=user)
+        return Login(token=token)
 
 
 class Logout(graphene.Mutation):
@@ -382,377 +157,76 @@ class Logout(graphene.Mutation):
         return Logout(success=True)
 
 
-class ResetPasswordRequest(graphene.Mutation):
-    success = graphene.Boolean()
+# class ResetPasswordRequest(graphene.Mutation):
+#     success = graphene.Boolean()
 
-    class Arguments:
-        email = graphene.String(required=True)
+#     class Arguments:
+#         email = graphene.String(required=True)
 
-    @staticmethod
-    def mutate(root, info, email):
-        user = get_object_or_404(User, email=email)
-        subject = "Reset your password"
-        token = get_random_string(length=32)
+#     @staticmethod
+#     def mutate(root, info, email):
+#         user = get_object_or_404(User, email=email)
+#         subject = "Reset your password"
+#         token = get_random_string(length=32)
 
-        text = f"""
-        Hi {user.get_full_name()} ... \n Your token is {token}
-               """
-        send = send_email(email, subject, text)
-        r = Redis(host="localhost", port=6379, db=0)
-        r.set(token, email)
-        r.expire(token, 60 * 2 * 1)  # 2 minutes
-        return ResetPasswordRequest(success=send)
+#         text = f"""
+#         Hi {user.get_full_name()} ... \n Your token is {token}
+#                """
+#         send = send_email(email, subject, text)
+#         r = Redis(host="localhost", port=6379, db=0)
+#         r.set(token, email)
+#         r.expire(token, 60 * 2 * 1)  # 2 minutes
+#         return ResetPasswordRequest(success=send)
 
 
-class ResetPassword(graphene.Mutation):
-    success = graphene.Boolean()
+# class ResetPassword(graphene.Mutation):
+#     success = graphene.Boolean()
 
-    class Arguments:
-        tk = graphene.String(required=True)
-        email = graphene.String(required=True)
-        new_password = graphene.String(required=True)
+#     class Arguments:
+#         tk = graphene.String(required=True)
+#         email = graphene.String(required=True)
+#         new_password = graphene.String(required=True)
 
-    @staticmethod
-    def mutate(root, info, tk, email, new_password):
-        r = Redis(host="localhost", port=6379, db=0)
-        stored_email = r.get(tk)
+#     @staticmethod
+#     def mutate(root, info, tk, email, new_password):
+#         r = Redis(host="localhost", port=6379, db=0)
+#         stored_email = r.get(tk)
 
-        print(stored_email)
-        if not stored_email or stored_email.decode("utf-8") != email:
-            raise GraphQLError("Invalid token or email")
-        user = get_object_or_404(User, email=email)
+#         print(stored_email)
+#         if not stored_email or stored_email.decode("utf-8") != email:
+#             raise GraphQLError("Invalid token or email")
+#         user = get_object_or_404(User, email=email)
 
-        form = UpdateUserForm({"password": new_password})
-        if form.is_valid():
-            user.set_password(new_password)
-            user.save()
+#         form = UpdateUserForm({"password": new_password})
+#         if form.is_valid():
+#             user.set_password(new_password)
+#             user.save()
 
-            r.delete(tk)
+#             r.delete(tk)
 
-            return ResetPassword(success=True)
-        else:
-            errors = form.errors.as_data()
-            error_messages = [error[0].messages[0] for error in errors.values()]
-            raise GraphQLError(", ".join(error_messages))
+#             return ResetPassword(success=True)
+#         else:
+#             errors = form.errors.as_data()
+#             error_messages = [error[0].messages[0] for error in errors.values()]
+#             raise GraphQLError(", ".join(error_messages))
 
 
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
-    update_user = UpdateUser.Field()
-    delete_user = DeleteUser.Field()
+    create_driver = CreateDriver.Field()
     login = Login.Field()
     logout = Logout.Field()
-    reset_password_request = ResetPasswordRequest.Field()
-    reset_password = ResetPassword.Field()
-
-
-class StudentFilterInput(graphene.InputObjectType):
-    user__first_name__icontains = graphene.String()
-    user__last_name__icontains = graphene.String()
-    user__user_code__icontains = graphene.String()
-    user__national_id__icontains = graphene.String()
-    major__faculty = graphene.ID()
-    major = graphene.ID()
-    admission_year = graphene.Int()
-    military_status = graphene.Boolean()
-
-
-class ProfessorFilterInput(graphene.InputObjectType):
-    user__first_name__icontains = graphene.String()
-    user__last_name__icontains = graphene.String()
-    user__user_code__icontains = graphene.String()
-    user__national_id__icontains = graphene.String()
-    major__faculty = graphene.ID()
-    major = graphene.ID()
-    rank = graphene.String()
-
-
-class AssistantFilterInput(graphene.InputObjectType):
-    user__first_name__icontains = graphene.String()
-    user__last_name__icontains = graphene.String()
-    user__user_code__icontains = graphene.String()
-    user__national_id__icontains = graphene.String()
-    faculty = graphene.ID()
-    major = graphene.ID()
 
 
 class Query(graphene.ObjectType):
-    student = graphene.Field(StudentType, pk=graphene.ID())
-    professor = graphene.Field(ProfessorType, pk=graphene.ID())
-    assistant = graphene.Field(AssistantType, pk=graphene.ID())
-
-    students = graphene.List(StudentType, filters=StudentFilterInput())
-    professors = graphene.List(ProfessorType, filters=ProfessorFilterInput())
-    assistants = graphene.List(AssistantType, filters=AssistantFilterInput())
 
     current_user = graphene.Field(UserType)
-
-    student_passed_courses = graphene.List(StudentCourseType, pk=graphene.ID())
-
-    student_current_semester_courses = graphene.List(
-        StudentCourseType, pk=graphene.ID()
-    )
-
-    student_remaining_semesters = graphene.Field(StudentCourseType)
-
-    @staticmethod
-    @login_required
-    def resolve_student(root, info, pk=None):
-        cache_key = f"graphql:{info.operation.name}:{pk}"
-        cached_result = cache.get(cache_key)
-        if cached_result:
-            return cached_result
-
-        sender = info.context.user
-        if staff_or_assistant(sender):
-            student = get_object_or_404(Student, pk=pk)
-            try:
-                faculty = sender.assistant.faculty
-                if student.major.faculty == faculty:
-                    return student
-                else:
-                    raise GraphQLError("This student is not in your faculty")
-            except ObjectDoesNotExist:
-                pass
-        else:
-            try:
-                student = sender.student
-            except ObjectDoesNotExist:
-                raise GraphQLError("You are not a student")
-        cache.set(cache_key, student, timeout=60 * 15)  # Cache for 15 minutes
-        return student
-
-    @staticmethod
-    @login_required
-    def resolve_professor(root, info, pk=None):
-        cache_key = f"graphql:{info.operation.name}:{pk}"
-        cached_result = cache.get(cache_key)
-        if cached_result:
-            return cached_result
-
-        sender = info.context.user
-        if staff_or_assistant(sender):
-            professor = get_object_or_404(Professor, pk=pk)
-            try:
-                faculty = sender.assistant.faculty
-                if professor.major.faculty == faculty:
-                    return professor
-                else:
-                    raise GraphQLError("This professor is not in your faculty")
-            except ObjectDoesNotExist:
-                pass
-        else:
-            try:
-                professor = sender.professor
-            except ObjectDoesNotExist:
-                raise GraphQLError("You are not a professor")
-
-        cache.set(cache_key, professor, timeout=60 * 15)  # Cache for 15 minutes
-        return professor
-
-    @staticmethod
-    @staff_member_required
-    def resolve_assistant(root, info, pk):
-        return get_object_or_404(Assistant, pk=pk)
-
-    @staticmethod
-    @login_required
-    def resolve_students(root, info, filters=None):
-        cache_key = f"graphql:{info.operation.name}:{filters}"
-        cached_result = cache.get(cache_key)
-        if cached_result:
-            return cached_result
-
-        sender = info.context.user
-        if staff_or_assistant(sender):
-            try:
-                if filters is None:
-                    filters = {}
-                filters["major__faculty"] = sender.assistant.faculty.id
-            except ObjectDoesNotExist:
-                pass
-        result = resolve_model_with_filters(Student, filters)
-        cache.set(cache_key, result, timeout=60 * 15)  # Cache for 15 minutes
-        return result
-
-    @staticmethod
-    @login_required
-    def resolve_professors(root, info, filters=None):
-        cache_key = f"graphql:{info.operation.name}:{filters}"
-        cached_result = cache.get(cache_key)
-        if cached_result:
-            return cached_result
-
-        sender = info.context.user
-        if staff_or_assistant(sender):
-            try:
-                if filters is None:
-                    filters = {}
-                filters["major__faculty"] = sender.assistant.faculty.id
-            except ObjectDoesNotExist:
-                pass
-
-        result = resolve_model_with_filters(Professor, filters)
-        cache.set(cache_key, result, timeout=60 * 15)  # Cache for 15 minutes
-        return result
-
-    @staticmethod
-    @staff_member_required
-    def resolve_assistants(root, info, filters=None):
-        cache_key = f"graphql:{info.operation.name}:{filters}"
-        cached_result = cache.get(cache_key)
-        if cached_result:
-            return cached_result
-
-        result = resolve_model_with_filters(Assistant, filters)
-        cache.set(cache_key, result, timeout=60 * 15)  # Cache for 15 minutes
-        return result
 
     @staticmethod
     @login_required
     def resolve_current_user(self, info):
         sender = info.context.user
         return sender
-
-    @staticmethod
-    @login_required
-    def resolve_student_passed_courses(self, info, pk=None):
-        cache_key = f"graphql:{info.operation.name}:{pk}"
-        cached_result = cache.get(cache_key)
-        if cached_result:
-            return cached_result
-
-        sender = info.context.user
-        if staff_or_assistant(sender):
-            user = get_object_or_404(User, pk=pk)
-            student = get_object_or_404(Student, user=user)
-            try:
-                faculty = sender.assistant.faculty
-                if student.major.faculty == faculty:
-                    result = student.get_passed_courses()
-                    cache.set(
-                        cache_key, result, timeout=60 * 15
-                    )  # Cache for 15 minutes
-                    return result
-                else:
-                    raise GraphQLError("This student is not in your faculty")
-            except ObjectDoesNotExist:
-                pass
-            result = student.get_passed_courses()
-            cache.set(cache_key, result, timeout=60 * 15)  # Cache for 15 minutes
-            return result
-        elif pk is not None:
-            student = get_object_or_404(Student, pk=pk)
-
-            try:
-                if sender.professor == student.advisor:
-                    result = student.get_passed_courses()
-                    cache.set(
-                        cache_key, result, timeout=60 * 15
-                    )  # Cache for 15 minutes
-                    return result
-                else:
-                    raise GraphQLError("You are not the advisor of this student")
-            except ObjectDoesNotExist:
-                raise GraphQLError("You are not a Professor")
-        else:
-            try:
-                student = sender.student
-                result = student.get_passed_courses()
-                cache.set(cache_key, result, timeout=60 * 15)  # Cache for 15 minutes
-                return result
-
-            except ObjectDoesNotExist:
-                raise GraphQLError("You are not a student")
-
-    @staticmethod
-    @login_required
-    def resolve_student_current_semester_courses(self, info, pk=None):
-        cache_key = f"graphql:{info.operation.name}:{pk}"
-        cached_result = cache.get(cache_key)
-        if cached_result:
-            return cached_result
-
-        sender = info.context.user
-        if staff_or_assistant(sender):
-            user = get_object_or_404(User, pk=pk)
-            student = get_object_or_404(Student, user=user)
-            try:
-                faculty = sender.assistant.faculty
-                if student.major.faculty == faculty:
-                    result = student.get_current_semester_courses()
-                    cache.set(
-                        cache_key, result, timeout=60 * 15
-                    )  # Cache for 15 minutes
-                    return result
-                else:
-                    raise GraphQLError("This student is not in your faculty")
-            except ObjectDoesNotExist:
-                pass
-            result = student.get_current_semester_courses()
-            cache.set(cache_key, result, timeout=60 * 15)  # Cache for 15 minutes
-            return result
-
-        elif pk is not None:
-            student = get_object_or_404(Student, pk=pk)
-
-            try:
-                if sender.professor == student.advisor:
-                    result = student.get_current_semester_courses()
-                    cache.set(
-                        cache_key, result, timeout=60 * 15
-                    )  # Cache for 15 minutes
-                    return result
-
-                else:
-                    raise GraphQLError("You are not the advisor of this student")
-            except ObjectDoesNotExist:
-                raise GraphQLError("You are not a Professor")
-        else:
-            try:
-                student = sender.student
-                result = student.get_current_semester_courses()
-                cache.set(cache_key, result, timeout=60 * 15)  # Cache for 15 minutes
-                return result
-
-            except ObjectDoesNotExist:
-                raise GraphQLError("You are not a student")
-
-    @staticmethod
-    @login_required
-    def resolve_student_remaining_semesters(self, info, pk=None):
-        cache_key = f"graphql:{info.operation.name}:{pk}"
-        cached_result = cache.get(cache_key)
-        if cached_result:
-            return cached_result
-
-        sender = info.context.user
-        if staff_or_assistant(sender):
-            student = get_object_or_404(Student, pk=pk)
-            try:
-                faculty = sender.assistant.faculty
-                if student.major.faculty == faculty:
-                    result = student.get_academic_semester_count()
-                    cache.set(
-                        cache_key, result, timeout=60 * 15
-                    )  # Cache for 15 minutes
-                    return result
-                else:
-                    raise GraphQLError("This student is not in your faculty")
-            except ObjectDoesNotExist:
-                pass
-            result = student.get_academic_semester_count()
-            cache.set(cache_key, result, timeout=60 * 15)  # Cache for 15 minutes
-            return result
-        else:
-            try:
-                student = sender.student
-            except ObjectDoesNotExist:
-                raise GraphQLError("You are not a student")
-
-            result = student.get_academic_semester_count()
-            cache.set(cache_key, result, timeout=60 * 15)  # Cache for 15 minutes
-            return result
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
