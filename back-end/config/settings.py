@@ -1,5 +1,8 @@
 from pathlib import Path
-from decouple import config  # type: ignore
+from decouple import (
+    config,
+    Csv,
+)
 from datetime import timedelta
 import os
 
@@ -20,6 +23,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # Third party apps
+    "corsheaders",
     "graphene_django",
     # My apps
     "main",
@@ -35,6 +39,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Third party middlewares
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -120,6 +126,35 @@ GRAPHQL_JWT = {
     "JWT_SECRET_KEY": SECRET_KEY,
     "JWT_ALGORITHM": "HS256",
 }
+
+CORS_ALLOWED_ORIGINS = config("ALLOWED_ORIGINS", cast=Csv())
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_METHODS = [
+    "POST",
+]
+
+# Allow specific HTTP headers
+CORS_ALLOW_HEADERS = [
+    "Authorization",
+    "Content-Type",
+    "Accept",
+    "Origin",
+    "User-Agent",
+    "DNT",
+    "Cache-Control",
+    "X-Mx-ReqToken",
+    "X-Requested-With",
+    "X-CSRFToken",
+]
+
+# Expose specific headers to the browser
+CORS_EXPOSE_HEADERS = [
+    "Content-Type",
+    "X-CSRFToken",
+]
+
 
 # # celery settings
 # CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
