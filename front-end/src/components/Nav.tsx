@@ -3,7 +3,7 @@ import React from 'react'
 
 const Nav = () => {
   return (
-    <Link href={"/login"}>login</Link>
+    <Link className='m-14 mt-14' href={"/auth"}>ثبت نام</Link>
   )
 }
 
