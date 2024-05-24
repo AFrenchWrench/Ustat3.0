@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from image_optimizer.fields import OptimizedImageField
+from django.core.validators import (
+    EmailValidator,
+)
 
 CITY_CHOICE_FIELD = IRANIAN_CITIES = [
     ("Tehran", "تهران"),
@@ -48,7 +51,10 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=32)
     phone_number = models.CharField(max_length=13, unique=True)
     landline_number = models.CharField(max_length=13, unique=True)
-    email = models.EmailField(unique=True)
+    email = models.EmailField(
+        unique=True,
+        validators=[EmailValidator(message="ایمیل وارد شده معتبر نمی‌باشد")],
+    )
     profile_image = OptimizedImageField(upload_to="profiles/", null=True, blank=True)
     city = models.CharField(max_length=32, choices=CITY_CHOICE_FIELD)
     is_staff = models.BooleanField(default=False)

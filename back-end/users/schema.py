@@ -1,4 +1,5 @@
 from dataclasses import field
+import json
 import graphene
 from django.contrib.auth import (
     get_user_model,
@@ -88,9 +89,8 @@ class CreateUser(graphene.Mutation):
     errors = graphene.JSONString()
 
     def mutate(root, info, user_data, business_data=None):
-        # print(f"{root=},\n\n\n{info=},\n\n\n{user_data}")
-        # form = UserSignUpForm(**user_data)
-        if True:
+        form = UserSignUpForm(user_data)
+        if form.is_valid():
             user_instance = User(**user_data)
             user_instance.save()
 
@@ -100,11 +100,14 @@ class CreateUser(graphene.Mutation):
                     **business_data,
                 )
                 business_instance.save()
-                return CreateUser(success=True,errors={})
+                return CreateUser(success=True, errors={})
 
-            return CreateUser(success=True,errors={})
+            return CreateUser(success=True, errors={})
         else:
-            return CreateUser(success=False,errors={field.errors for field in form})
+            errors = form.errors.as_data()
+            error_messages = {field:error[0].messages[0] for field,error in errors.items()}
+            print(error_messages)
+            return CreateUser(success=False, errors=json.dumps(error_messages))
 
 
 class CreateDriver(graphene.Mutation):

@@ -2,7 +2,6 @@ import re
 
 from django import forms
 from django.core.exceptions import ValidationError
-from django.contrib.auth.forms import UserCreationForm
 from django.core.validators import (
     RegexValidator,
     EmailValidator,
@@ -12,7 +11,14 @@ from utils.validation_utils import is_persian_string
 import datetime
 
 
-class UserSignUpForm(UserCreationForm):
+class UserSignUpForm(forms.ModelForm):
+
+    position = forms.CharField(required=False)
+
+    email = forms.CharField(required=True)
+
+    def __init__(self, *args, **kwargs):
+        super(UserSignUpForm, self).__init__(*args, **kwargs)
 
     class Meta:
         model = User
@@ -111,11 +117,12 @@ class UserSignUpForm(UserCreationForm):
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
+        email_validator = EmailValidator(message="ایمیل وارد شده معتبر نمی‌باشد")
         if email:
             try:
-                EmailValidator(email)
+                email_validator(email)
             except ValidationError:
-                raise ValidationError("ایمیل وارد شده معتبر نمی‌باشد")
+                raise ValidationError(message="ایمیل وارد شده معتبر نمی‌باشد")
 
             if User.objects.filter(email=email).exists():
                 raise ValidationError("ایمیل وارد شده در سیستم وجود دارد")
