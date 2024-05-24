@@ -93,7 +93,7 @@ class CreateUser(graphene.Mutation):
     def mutate(root, info, user_data, business_data=None):
         form = UserSignUpForm(user_data)
         if form.is_valid():
-            user_data["city"] = get_object_or_404(Cities, user_data["city"])
+            user_data["city"] = get_object_or_404(Cities, name=user_data["city"])
             user_instance = User(**user_data)
             user_instance.save()
 

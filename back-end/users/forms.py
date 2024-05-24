@@ -24,7 +24,6 @@ class UserSignUpForm(forms.ModelForm):
             "first_name",
             "last_name",
             "password",
-            "city",
             "birth_date",
             "phone_number",
             "landline_number",
@@ -88,12 +87,6 @@ class UserSignUpForm(forms.ModelForm):
         ):
             raise ValidationError("شما حداقل باید 18 سال سن داشته باشید")
         return birthdate
-
-    def clean_city(self):
-        city = self.cleaned_data.get("city")
-        if not is_persian_string(city):
-            raise ValidationError("لطفا نام شهر خود را فارسی وارد کنید")
-        return city
 
     # def clean_description(self):
     #     description = self.cleaned_data.get("description")
