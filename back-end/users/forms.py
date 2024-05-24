@@ -32,7 +32,6 @@ class UserSignUpForm(forms.ModelForm):
             "birth_date",
             "phone_number",
             "landline_number",
-            "position",
         ]
 
     def clean_username(self):
@@ -94,11 +93,11 @@ class UserSignUpForm(forms.ModelForm):
             raise ValidationError("شما حداقل باید 18 سال سن داشته باشید")
         return birthdate
 
-    def clean_city(self):
-        city = self.cleaned_data.get("city")
-        if not is_persian_string(city):
-            raise ValidationError("لطفا نام شهر خود را فارسی وارد کنید")
-        return city
+    # def clean_city(self):
+    #     city = self.cleaned_data.get("city")
+    #     if not is_persian_string(city):
+    #         raise ValidationError("لطفا نام شهر خود را فارسی وارد کنید")
+    #     return city
 
     # def clean_description(self):
     #     description = self.cleaned_data.get("description")
@@ -109,11 +108,6 @@ class UserSignUpForm(forms.ModelForm):
     #         )
     #     return description
 
-    def clean_position(self):
-        position = self.cleaned_data.get("position")
-        if not is_persian_string(position):
-            raise ValidationError("سمت شغلی خود را فارسی وارد کنید")
-        return position
 
     def clean_email(self):
         email = self.cleaned_data.get("email")

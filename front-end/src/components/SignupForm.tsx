@@ -10,7 +10,55 @@ import gregorian from "react-date-object/calendars/gregorian";
 
 import cities from '../../public/cityName';
 
+
+
+
 const SignupForm = () => {
+
+  const validateUsername = (username:string) => {
+    const pattern = /^[a-zA-Z][a-zA-Z0-9_]{4,20}$/;
+    if (username.length>1 &&  !pattern.test(username)) {
+      return "نام کاربری معتبر نمیباشد"
+    }
+
+    return "";
+  };
+  
+  const validatePassword = (password:string) => {
+    if (password.length > 1 && password.length < 8) {
+      return "گذرواژه باید حداقل 8 کاراکتر باشد.";
+    }
+    if (password.length > 1 && !/[A-Z]/.test(password) ) {
+      return "گذرواژه باید حداقل شامل یک حرف بزرگ انگلیسی باشد.";
+    }
+    if (password.length > 1 && !/[0-9]/.test(password)) {
+      return "گذرواژه باید حداقل شامل یک عدد باشد.";
+    }
+    if (password.length > 1 && !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      return "گذرواژه باید حداقل شامل یک کاراکتر ویژه باشد.";
+    }
+    return "";
+  };
+  
+  const isPersianString = (str:string) => {
+    const persianPattern = /^[\u0600-\u06FF\s]+$/;
+    return persianPattern.test(str);
+  };
+  
+  const validateFirstName = (firstName:string) => {
+    if (firstName.length > 1 && !isPersianString(firstName)) {
+      return "نام شما باید فارسی باشد";
+    }
+    return "";
+  };
+  
+  const validateLastName = (lastName:string) => {
+    if (lastName.length > 1 && !isPersianString(lastName)) {
+      return "نام خانوادگی شما باید فارسی باشد";
+    }
+    return "";
+  };
+  
 
 
   const [formData, setFormData] = useState({
@@ -22,7 +70,6 @@ const SignupForm = () => {
     landline_number: '',
     email: '',
     city: '',
-    // profileImage: undefined as File | undefined,
     birthDate: null as String | null,
   });
 
@@ -30,14 +77,18 @@ const SignupForm = () => {
   const [bdate, setBdate] = useState<DateObject | null>(null);
   const [cPass, setcPass] = useState("")
 
+  const [userNameError, setUserNameError] = useState("")
+  const [passError, setPassError] = useState("")
+  const [firstNameError, setFirstNameError] = useState("")
+  const [lastNameError, setlastNameError] = useState("")
+
   const handleDateChange = (date: DateObject | null) => {
     setBdate(date);
     const gregorianDate = date ? date.convert(gregorian) : null;
     setFormData({
       ...formData,
-      birthDate: gregorianDate ? gregorianDate.toDate().toLocaleDateString(): null
+      birthDate: gregorianDate ? gregorianDate.toDate().toISOString().split("T")[0]: null
     });
-    
   };
 
 
@@ -47,6 +98,11 @@ const SignupForm = () => {
       ...formData,
       [name]: value,
     });
+
+    setUserNameError(validateUsername(formData.username))
+    setPassError(validatePassword(formData.password))
+    setFirstNameError(validateFirstName(formData.first_name))
+    setlastNameError(validateLastName(formData.last_name))
   };
 
   const handleSubmit = async (e : React.FormEvent<HTMLFormElement>) => {
@@ -82,21 +138,12 @@ const SignupForm = () => {
 });
     const data = await response.json();
     console.log(data);
-    // handle success or error
+    console.log(formData)
   };
 
-//   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     if (e.target.files && e.target.files[0]) {
-//       const imageFile: File = e.target.files[0]; 
-//       setFormData({
-//         ...formData,
-//         profileImage: imageFile,
-//       });
-//     }
-//   };
 
   return (
-    <form onSubmit={handleSubmit} className='flex flex-col items-center w-4/5 m-auto p-10 '>
+    <form onSubmit={handleSubmit} className='signup_form flex flex-col items-center w-4/5 m-auto p-10 '>
       <SignupInput
         title="نام کاربری "
         type="text"
@@ -105,8 +152,10 @@ const SignupForm = () => {
         value={formData.username}
         onChange={handleChange}
         required={true}
+        verror={userNameError}
       />
       <SignupInput
+        dir="ltr"
         title="رمز عبور "
         type="password"
         id="password"
@@ -114,13 +163,15 @@ const SignupForm = () => {
         value={formData.password}
         onChange={handleChange}
         required={true}
+        verror={passError}
       />
 
      <SignupInput
-        title="رمز عبور "
+        dir="ltr"
+        title="تکرار رمز عبور "
         type="password"
-        id="password"
-        name="password"
+        id="repeat-password"
+        name="repeat-password"
         value={cPass}
         onChange={(e)=>setcPass(e.target.value)}
         required={true}
@@ -135,6 +186,7 @@ const SignupForm = () => {
         value={formData.first_name}
         onChange={handleChange}
         required={true}
+        verror={firstNameError}
       />
 
       <SignupInput
@@ -145,11 +197,13 @@ const SignupForm = () => {
         value={formData.last_name}
         onChange={handleChange}
         required={true}
+        verror={lastNameError}
       />
 
       <SignupInput
+        dir="ltr"
         title="شماره تلفن همراه "
-        type="number"
+        type="tel"
         id="phone-number"
         name="phone_number"
         value={formData.phone_number}
@@ -158,8 +212,9 @@ const SignupForm = () => {
       />
 
       <SignupInput
+        dir="ltr"
         title="تلفن ثابت "
-        type="number"
+        type="tel"
         id="landline-number"
         name="landline_number"
         value={formData.landline_number}
@@ -168,6 +223,7 @@ const SignupForm = () => {
       />
 
       <SignupInput
+        dir="ltr"
         title="ایمیل"
         type="email"
         id="email"
@@ -192,21 +248,6 @@ const SignupForm = () => {
             }
         </select>
       </div>
-
-
-      {/* <div className='m-4 w-1/3 flex flex-col'>
-        <label htmlFor="profile-image">
-          تصویر پروفایل
-        </label>
-        <input
-          type="file"
-          id="profile-image"
-          name="profileImage"
-          accept="image/*"
-          onChange={handleImageChange}
-          className="bg-slate-200 text-black"
-        />
-      </div> */}
 
       <div className='m-4 w-1/3 flex flex-col'>
         <label htmlFor="birthDate">تاریخ تولد :</label>
