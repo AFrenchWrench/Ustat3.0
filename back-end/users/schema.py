@@ -5,10 +5,10 @@ from django.contrib.auth import (
     get_user_model,
     authenticate,
 )
-from django.core.cache import cache
-from django.core.exceptions import ObjectDoesNotExist
+# from django.core.cache import cache
+# from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
-from django.utils.crypto import get_random_string
+# from django.utils.crypto import get_random_string
 from graphene_django import DjangoObjectType
 from graphql import (
     GraphQLError,
@@ -17,7 +17,10 @@ from graphql_jwt.shortcuts import get_token
 
 # from redis import Redis
 
-from main.models import BurnedTokens
+from main.models import (
+    BurnedTokens,
+    Cities,
+)
 from utils.schema_utils import (
     resolve_model_with_filters,
     login_required,
@@ -58,7 +61,6 @@ class UserInput(graphene.InputObjectType):
     landline_number = graphene.String(required=True)
     email = graphene.String(required=True)
     city = graphene.String(required=True)
-    position = graphene.String()
     birth_date = graphene.Date(required=True)
 
 
@@ -91,6 +93,7 @@ class CreateUser(graphene.Mutation):
     def mutate(root, info, user_data, business_data=None):
         form = UserSignUpForm(user_data)
         if form.is_valid():
+            user_data["city"] = get_object_or_404(Cities, user_data["city"])
             user_instance = User(**user_data)
             user_instance.save()
 
@@ -105,8 +108,9 @@ class CreateUser(graphene.Mutation):
             return CreateUser(success=True, errors={})
         else:
             errors = form.errors.as_data()
-            error_messages = {field:error[0].messages[0] for field,error in errors.items()}
-            print(error_messages)
+            error_messages = {
+                field: error[0].messages[0] for field, error in errors.items()
+            }
             return CreateUser(success=False, errors=json.dumps(error_messages))
 
 

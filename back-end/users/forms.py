@@ -13,10 +13,6 @@ import datetime
 
 class UserSignUpForm(forms.ModelForm):
 
-    position = forms.CharField(required=False)
-
-    email = forms.CharField(required=True)
-
     def __init__(self, *args, **kwargs):
         super(UserSignUpForm, self).__init__(*args, **kwargs)
 
@@ -32,7 +28,6 @@ class UserSignUpForm(forms.ModelForm):
             "birth_date",
             "phone_number",
             "landline_number",
-            "position",
         ]
 
     def clean_username(self):
@@ -58,7 +53,7 @@ class UserSignUpForm(forms.ModelForm):
         if not re.search(r"[0-9]", password):
             raise ValidationError("گذرواژه باید حداقل شامل یک عدد باشد.")
 
-        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>_]', password):
             raise ValidationError("گذرواژه باید حداقل شامل یک کاراکتر ویژه باشد.")
 
         return password
@@ -108,12 +103,6 @@ class UserSignUpForm(forms.ModelForm):
     #             "در توضیحات تنها از حروف فارسی، اغداد انگلیسی، و ویرگول و یا قاصله استفاده کنید"
     #         )
     #     return description
-
-    def clean_position(self):
-        position = self.cleaned_data.get("position")
-        if not is_persian_string(position):
-            raise ValidationError("سمت شغلی خود را فارسی وارد کنید")
-        return position
 
     def clean_email(self):
         email = self.cleaned_data.get("email")

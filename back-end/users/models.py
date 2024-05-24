@@ -5,45 +5,6 @@ from django.core.validators import (
     EmailValidator,
 )
 
-CITY_CHOICE_FIELD = IRANIAN_CITIES = [
-    ("Tehran", "تهران"),
-    ("Mashhad", "مشهد"),
-    ("Isfahan", "اصفهان"),
-    ("Karaj", "کرج"),
-    ("Shiraz", "شیراز"),
-    ("Tabriz", "تبریز"),
-    ("Qom", "قم"),
-    ("Ahvaz", "اهواز"),
-    ("Kermanshah", "کرمانشاه"),
-    ("Urmia", "ارومیه"),
-    ("Rasht", "رشت"),
-    ("Zahedan", "زاهدان"),
-    ("Hamadan", "همدان"),
-    ("Kerman", "کرمان"),
-    ("Yazd", "یزد"),
-    ("Arak", "اراک"),
-    ("Ardabil", "اردبیل"),
-    ("Bandar Abbas", "بندرعباس"),
-    ("Sanandaj", "سنندج"),
-    ("Qazvin", "قزوین"),
-    ("Zanjan", "زنجان"),
-    ("Khorramabad", "خرم‌آباد"),
-    ("Eslamshahr", "اسلامشهر"),
-    ("Dezful", "دزفول"),
-    ("Najafabad", "نجف‌آباد"),
-    ("Sabzevar", "سبزوار"),
-    ("Neyshabur", "نیشابور"),
-    ("Saveh", "ساوه"),
-    ("Bushehr", "بوشهر"),
-    ("Quchan", "قوچان"),
-    ("Bojnurd", "بجنورد"),
-    ("Birjand", "بیرجند"),
-    ("Torbat-e Heydarieh", "تربت حیدریه"),
-    ("Sari", "ساری"),
-    ("Gorgan", "گرگان"),
-    ("Bandar-e Anzali", "بندر انزلی"),
-]
-
 
 class User(AbstractUser):
     username = models.CharField(max_length=32, unique=True)
@@ -56,7 +17,7 @@ class User(AbstractUser):
         validators=[EmailValidator(message="ایمیل وارد شده معتبر نمی‌باشد")],
     )
     profile_image = OptimizedImageField(upload_to="profiles/", null=True, blank=True)
-    city = models.CharField(max_length=32, choices=CITY_CHOICE_FIELD)
+    city = models.ForeignKey("main.cities", on_delete=models.SET_NULL, null=True)
     is_staff = models.BooleanField(default=False)
     position = models.CharField(max_length=32, null=True, blank=True)
     date_joined = models.DateField(auto_now_add=True)
