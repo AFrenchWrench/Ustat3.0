@@ -88,9 +88,9 @@ class CreateUser(graphene.Mutation):
     errors = graphene.JSONString()
 
     def mutate(root, info, user_data, business_data=None):
-        print(user_data)
-        form = UserSignUpForm(**user_data)
-        if form.is_valid():
+        # print(f"{root=},\n\n\n{info=},\n\n\n{user_data}")
+        # form = UserSignUpForm(**user_data)
+        if True:
             user_instance = User(**user_data)
             user_instance.save()
 
