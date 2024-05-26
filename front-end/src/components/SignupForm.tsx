@@ -4,6 +4,9 @@ import { useState } from 'react';
 
 import {Controller,type FieldValue, useForm} from "react-hook-form"
 
+import citys from "../../public/c.json"
+import States from "../../public/p.json"
+
 import { z } from "zod"
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -65,13 +68,33 @@ const userSchema = z.object({
 
 type signUpSchema = z.infer<typeof userSchema>;
 
-
+interface IfilterCitys {
+  name: string;
+    province_id: number;
+}
 
 
 
 
 const SignupForm = () => {
 
+  const [selectedState, setSelectedState] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
+  const [filteredCities, setFilteredCities] = useState<IfilterCitys[]>([]);
+
+  const handleStateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const stateId = e.target.value;
+    setSelectedState(stateId);
+
+    const filterCity = citys.filter(city => city.province_id.toString() === stateId)
+    setFilteredCities(filterCity)
+    console.log(filteredCities);
+    
+  };
+
+  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedCity(e.target.value);
+  };
 
 
   const [bdate, setBdate] = useState< DateObject | null>(null);
@@ -92,72 +115,73 @@ const SignupForm = () => {
         },
         body: JSON.stringify({
           query: `
-            mutation {
-              createUser(
-                userData: {
-                  username: "${userInfo.username}",
-                  firstName: "${userInfo.firstName}",
-                  lastName: "${userInfo.lastName}",
-                  password: "${userInfo.password}",
-                  phoneNumber: "${userInfo.phoneNumber}",
-                  landlineNumber: "${userInfo.landlineNumber}",
-                  email: "${userInfo.email}",
-                  city: "${userInfo.city}",
-                  birthDate: "${birthDate}"
-                }
-              ) {
-                success
-                errors
+          mutation {
+            createUser(
+              userData: {
+                username: "${userInfo.username}",
+                firstName: "${userInfo.firstName}",
+                lastName: "${userInfo.lastName}",
+                password: "${userInfo.password}",
+                phoneNumber: "${userInfo.phoneNumber}",
+                landlineNumber: "${userInfo.landlineNumber}",
+                email: "${userInfo.email}",
+                city: "${userInfo.city}",
+                birthDate: "${birthDate}"
               }
+            ) {
+              success
+              errors
             }
-          `,
+          }
+        `,
         }),
       });
+
       const data = await response.json();
       if (!response.ok) {
         alert("failed")
       }
-      console.log(data.errors);
       
-      if (data.errors) {
-        const errors = data.errors;
-         if (errors.username) {
+      if (data.data.createUser.errors) {
+      const errors = JSON.parse(JSON.parse(data.data.createUser.errors))
+      console.log(errors);
+      
+        if (errors.username) {
           setError("username", {
             type: "server",
-            message: errors.username
-          })
-         }
-         if (errors.password) {
+            message: errors.username,
+          });
+        }
+        if (errors.password) {
           setError("password", {
             type: "server",
-            message: errors.password
-          })
-         }
-         if (errors.email) {
+            message: errors.password,
+          });
+        }
+        if (errors.email) {
           setError("email", {
             type: "server",
-            message: errors.email
-          })
-         }
-         if (errors.phone_number) {
+            message: errors.email,
+          });
+        }
+        if (errors.phone_number) {
           setError("phoneNumber", {
             type: "server",
-            message: errors.phone_number
-          })
-         }
-         if (errors.landlineNumber) {
+            message: errors.phone_number,
+          });
+        }
+        if (errors.landlineNumber) {
           setError("landlineNumber", {
             type: "server",
-            message: errors.landlineNumber
-          })
-         }
+            message: errors.landlineNumber,
+          })}
       }
       console.log(data);
     } catch (error) {
       console.error("Error submitting the form:", error);
     }
-    // reset()
-     
+
+    //  reset()
   }
 
     const {
@@ -324,21 +348,60 @@ const SignupForm = () => {
 
 
 
-     <div className='signup_form_container'>
-        <label htmlFor="city">
-           شهر :
-        </label>
-        <select className='text-black' id="city" {...register("city")} required>
-        <option value={""} disabled>انتخاب کنید</option>
-            {
-                cities.map((value, index)=>{
-                    return(
-                        <option className='text-black' key={index} value={value.value}>{value.title}</option>
-                    )
-                })
-            }
+    <div className='signup_form_container !flex-row !justify-between'>
+      <div>
+        <label htmlFor="States">استان:</label>
+        <select
+          className='text-black'
+          id="States"
+          required
+          value={selectedState}
+          onChange={handleStateChange}
+        >
+          <option value="" disabled>انتخاب کنید</option>
+          {States.map((state, index) => (
+            <option
+              className='text-black'
+              key={index}
+              value={state.id}
+            >
+              {state.name}
+            </option>
+          ))}
         </select>
       </div>
+      <div>
+        <label htmlFor="city">شهر:</label>
+        <select
+          className='text-black'
+          id="city"
+          required
+          value={selectedCity}
+          onChange={handleCityChange}
+        >
+          <option value="" disabled>انتخاب کنید</option>
+          {
+
+            
+          filteredCities.map((city, index) => (
+            <option
+              className='text-black'
+              key={index}
+              value={city.province_id}
+            >
+              {city.name}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+
+
+
+
+
+
+
 
       <div className='flex justify-start mt-4 gap-2'>
   <label htmlFor="birthDate" className='flex items-center gap-2'>   تاریخ تولد :<FaCalendarAlt /></label>

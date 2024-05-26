@@ -64,6 +64,66 @@ const SignupInput: React.FC<SignupInputProps> = ({
 export default SignupInput;
 
 
+// `
+//             mutation {
+//               createUser(
+//                 userData: {
+//                   username: "${userInfo.username}",
+//                   firstName: "${userInfo.firstName}",
+//                   lastName: "${userInfo.lastName}",
+//                   password: "${userInfo.password}",
+//                   phoneNumber: "${userInfo.phoneNumber}",
+//                   landlineNumber: "${userInfo.landlineNumber}",
+//                   email: "${userInfo.email}",
+//                   city: "${userInfo.city}",
+//                   birthDate: "${birthDate}"
+//                 }
+//               ) {
+//                 success
+//                 errors
+//               }
+//             }
+//           `
+
+
+           // if (!response.ok) {
+      //   alert("failed")
+      // }
+      
+      // if (data.data.createUser.errors) {
+      // const errors = JSON.parse(JSON.parse(data.data.createUser.errors))
+      //   if (errors.username) {
+      //     setError("username", {
+      //       type: "server",
+      //       message: errors.username,
+      //     });
+      //   }
+      //   if (errors.password) {
+      //     setError("password", {
+      //       type: "server",
+      //       message: errors.password,
+      //     });
+      //   }
+      //   if (errors.email) {
+      //     setError("email", {
+      //       type: "server",
+      //       message: errors.email,
+      //     });
+      //   }
+      //   if (errors.phone_number) {
+      //     setError("phoneNumber", {
+      //       type: "server",
+      //       message: errors.phone_number,
+      //     });
+      //   }
+      //   if (errors.landlineNumber) {
+      //     setError("landlineNumber", {
+      //       type: "server",
+      //       message: errors.landlineNumber,
+      //     })}
+      // }
+
+
 
 
 
