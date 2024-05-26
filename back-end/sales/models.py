@@ -1,5 +1,6 @@
 from datetime import timedelta
 from itertools import count
+from typing import Required
 from django.db import models
 from django.utils import timezone
 from image_optimizer.fields import OptimizedImageField
@@ -17,13 +18,17 @@ ITEM_TYPE_CHOICES = [
 class Order(models.Model):
     user = models.ForeignKey("users.User", on_delete=models.CASCADE)
     price = models.PositiveBigIntegerField()
-    requested_date = models.DateField(default=timezone.now() + timedelta(days=25))
+    requested_date = models.DateField(blank=True)
     creation_date = models.DateField(auto_now_add=True)
     order_number = models.CharField(max_length=15, unique=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.order_number:
             self.order_number = self.generate_order_number()
+
+        if not self.pk and not self.requested_date:
+            self.requested_date = timezone.now() + timezone.timedelta(days=25)
+
         super().save(*args, **kwargs)
 
     def generate_order_number(self):

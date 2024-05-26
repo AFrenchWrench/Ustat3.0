@@ -6,16 +6,15 @@ from django.core.validators import (
     RegexValidator,
     EmailValidator,
 )
-from users.models import User
+from users.models import (
+    Business,
+    User,
+)
 from utils.validation_utils import is_persian_string
 import datetime
 
 
 class UserSignUpForm(forms.ModelForm):
-
-    position = forms.CharField(required=False)
-
-    email = forms.CharField(required=True)
 
     def __init__(self, *args, **kwargs):
         super(UserSignUpForm, self).__init__(*args, **kwargs)
@@ -28,7 +27,6 @@ class UserSignUpForm(forms.ModelForm):
             "first_name",
             "last_name",
             "password",
-            "city",
             "birth_date",
             "phone_number",
             "landline_number",
@@ -57,7 +55,7 @@ class UserSignUpForm(forms.ModelForm):
         if not re.search(r"[0-9]", password):
             raise ValidationError("گذرواژه باید حداقل شامل یک عدد باشد.")
 
-        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>_]', password):
             raise ValidationError("گذرواژه باید حداقل شامل یک کاراکتر ویژه باشد.")
 
         return password
@@ -74,15 +72,6 @@ class UserSignUpForm(forms.ModelForm):
             raise ValidationError("نام خانوادگی شما باید فارسی باشد")
         return last_name
 
-    # def clean_address(self):
-    #     address = self.cleaned_data.get("address")
-    #     pattern = r"^[\u0600-\u06FF0-9\s,]+$"
-    #     if not re.fullmatch(pattern, address):
-    #         raise ValidationError(
-    #             "در آدرس تنها از حروف فارسی، اغداد انگلیسی، و ویرگول و یا قاصله استفاده کنید"
-    #         )
-    #     return address
-
     def clean_birthdate(self):
         birthdate = self.cleaned_data.get("birthdate")
         if birthdate >= datetime.date.today():
@@ -92,22 +81,6 @@ class UserSignUpForm(forms.ModelForm):
         ):
             raise ValidationError("شما حداقل باید 18 سال سن داشته باشید")
         return birthdate
-
-    # def clean_city(self):
-    #     city = self.cleaned_data.get("city")
-    #     if not is_persian_string(city):
-    #         raise ValidationError("لطفا نام شهر خود را فارسی وارد کنید")
-    #     return city
-
-    # def clean_description(self):
-    #     description = self.cleaned_data.get("description")
-    #     pattern = r"^[\u0600-\u06FF0-9\s,]+$"
-    #     if not re.fullmatch(pattern, description):
-    #         raise ValidationError(
-    #             "در توضیحات تنها از حروف فارسی، اغداد انگلیسی، و ویرگول و یا قاصله استفاده کنید"
-    #         )
-    #     return description
-
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
@@ -154,15 +127,61 @@ class UserSignUpForm(forms.ModelForm):
                 raise ValidationError("شماره ثابت وارد شده در سیستم وجود دارد")
         return landline_number
 
-    # def clean_national_code(self):
-    #     national_code = self.cleaned_data.get("national_code")
-    #     if national_code:
-    #         regex_validator = RegexValidator(regex=r"^\d{10}$")
-    #         try:
-    #             regex_validator(national_code)
-    #         except ValidationError:
-    #             raise ValidationError("کد ملی وارد شده معتبر نمی‌باشد")
 
-    #         if User.objects.filter(national_code=national_code).exists():
-    #             raise ValidationError("کد ملی وارد شده در سیستم وجود دارد")
-    #     return national_code
+class BusinessSignUpForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super(BusinessSignUpForm, self).__init__(*args, **kwargs)
+
+    class Meta:
+        model = Business
+        fields = [
+            "name",
+            "owner_first_name",
+            "owner_last_name",
+            "owner_phone_number",
+            "address",
+        ]
+
+    def clean_name(self):
+        name = self.cleaned_data.get("name")
+        if not is_persian_string(name):
+            raise ValidationError("نام شرکت باید فارسی باشد")
+        return name
+
+    def clean_owner_first_name(self):
+        owner_first_name = self.cleaned_data.get("owner_first_name")
+        if not is_persian_string(owner_first_name):
+            raise ValidationError("نام صاحب شرکت باید فارسی باشد")
+        return owner_first_name
+
+    def clean_owner_last_name(self):
+        owner_last_name = self.cleaned_data.get("owner_last_name")
+        if not is_persian_string(owner_last_name):
+            raise ValidationError("نام خانوادگی صاحب شرکت باید فارسی باشد")
+        return owner_last_name
+
+    def clean_owner_phone_number(self):
+        owner_phone_number = self.cleaned_data.get("owner_phone_number")
+        if owner_phone_number:
+            regex_validator = RegexValidator(regex=r"^\+\d{9,15}$")
+            try:
+                regex_validator(owner_phone_number)
+            except ValidationError:
+                raise ValidationError(
+                    "شماره تلفن وارد شده معتبر نمی‌باشد فرمت درست : ...98+"
+                )
+
+            if Business.objects.filter(owner_phone_number=owner_phone_number).exists():
+                raise ValidationError("شماره تلفن وارد شده در سیستم وجود دارد")
+
+        return owner_phone_number
+
+    def clean_address(self):
+        address = self.cleaned_data.get("address")
+        pattern = r"^[\u0600-\u06FF0-9\s,]+$"
+        if not re.fullmatch(pattern, address):
+            raise ValidationError(
+                "در آدرس تنها از حروف فارسی، اغداد انگلیسی، و ویرگول و یا قاصله استفاده کنید"
+            )
+        return address

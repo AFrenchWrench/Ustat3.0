@@ -5,10 +5,12 @@ from django.contrib.auth import (
     get_user_model,
     authenticate,
 )
-from django.core.cache import cache
-from django.core.exceptions import ObjectDoesNotExist
+
+# from django.core.cache import cache
+# from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
-from django.utils.crypto import get_random_string
+
+# from django.utils.crypto import get_random_string
 from graphene_django import DjangoObjectType
 from graphql import (
     GraphQLError,
@@ -17,7 +19,10 @@ from graphql_jwt.shortcuts import get_token
 
 # from redis import Redis
 
-from main.models import BurnedTokens
+from main.models import (
+    BurnedTokens,
+    Cities,
+)
 from utils.schema_utils import (
     resolve_model_with_filters,
     login_required,
@@ -25,7 +30,7 @@ from utils.schema_utils import (
 )
 
 # from utils.tasks import send_email
-from users.forms import UserSignUpForm
+from users.forms import BusinessSignUpForm, UserSignUpForm
 from users.models import (
     Business,
     Driver,
@@ -58,12 +63,10 @@ class UserInput(graphene.InputObjectType):
     landline_number = graphene.String(required=True)
     email = graphene.String(required=True)
     city = graphene.String(required=True)
-    position = graphene.String()
     birth_date = graphene.Date(required=True)
 
 
 class BusinessInput(graphene.InputObjectType):
-    user_id = graphene.ID(required=True)
     name = graphene.String(required=True)
     owner_first_name = graphene.String(required=True)
     owner_last_name = graphene.String(required=True)
@@ -91,23 +94,29 @@ class CreateUser(graphene.Mutation):
     def mutate(root, info, user_data, business_data=None):
         form = UserSignUpForm(user_data)
         if form.is_valid():
-            user_instance = User(**user_data)
-            user_instance.save()
-
+            user_data["city"] = get_object_or_404(Cities, name=user_data["city"])
             if business_data:
-                business_instance = Business(
-                    user=user_instance,
-                    **business_data,
-                )
-                business_instance.save()
-                return CreateUser(success=True, errors={})
-
+                business_form = BusinessSignUpForm(business_data)
+                if business_form.is_valid():
+                    user_instance = User.objects.create_user(**user_data)
+                    business_instance = Business.objects.create(
+                        user=user_instance,
+                        **business_data,
+                    )
+                    return CreateUser(success=True, errors={})
+                errors = business_form.errors.as_data()
+                error_messages = {
+                    field: error[0].messages[0] for field, error in errors.items()
+                }
+                return CreateUser(success=False, errors=json.dumps(error_messages))
+            user_instance = User.objects.create_user(**user_data)
             return CreateUser(success=True, errors={})
-        else:
-            errors = form.errors.as_data()
-            error_messages = {field:error[0].messages[0] for field,error in errors.items()}
-            print(error_messages)
-            return CreateUser(success=False, errors=json.dumps(error_messages))
+
+        errors = form.errors.as_data()
+        error_messages = {
+            field: error[0].messages[0] for field, error in errors.items()
+        }
+        return CreateUser(success=False, errors=json.dumps(error_messages))
 
 
 class CreateDriver(graphene.Mutation):
