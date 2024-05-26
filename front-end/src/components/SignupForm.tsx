@@ -88,7 +88,6 @@ const SignupForm = () => {
 
     const filterCity = citys.filter(city => city.province_id.toString() === stateId)
     setFilteredCities(filterCity)
-    console.log(filteredCities);
     
   };
 
@@ -136,7 +135,9 @@ const SignupForm = () => {
         `,
         }),
       });
-
+      console.log(userInfo);
+      console.log(birthDate);
+      
       const data = await response.json();
       if (!response.ok) {
         alert("failed")
@@ -376,23 +377,23 @@ const SignupForm = () => {
           className='text-black'
           id="city"
           required
-          value={selectedCity}
-          onChange={handleCityChange}
+          {...register("city")}
         >
           <option value="" disabled>انتخاب کنید</option>
           {
-
-            
           filteredCities.map((city, index) => (
             <option
               className='text-black'
               key={index}
-              value={city.province_id}
+              value={city.name}
             >
               {city.name}
             </option>
           ))}
         </select>
+        {errors.city &&( 
+        <p className='text-sm text-red-700 absolute bottom-0 translate-y-5'>{`${errors.city.message}`}</p>
+      )}
       </div>
     </div>
 
