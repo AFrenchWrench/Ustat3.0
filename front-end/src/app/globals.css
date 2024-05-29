@@ -2,32 +2,75 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+
+:root {
+  --primary-red: #D32F2F;
+  --secondary-black: #212121;
+  --accent-white: #FFFFFF;
+  --grey: #BDBDBD;
+  --dark-grey: #757575;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background-color: var(--secondary-black);
+  color: var(--accent-white);
+  font-family: "Vazir-bold";
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+header {
+  background-color: var(--secondary-black);
+  padding: 20px;
 }
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--primary-red);
+}
+
+button {
+  background-color: var(--primary-red);
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+input {
+  color: black;
+}
+
+button:hover {
+  background-color: var(--dark-grey);
+}
+
+a {
+  color: var(--primary-red);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--dark-grey);
+}
+
+footer {
+  background-color: var(--grey);
+  color: var(--secondary-black);
+  padding: 20px;
+  text-align: center;
+}
+
+.secondary-text {
+  color: var(--grey);
+}
+
+.border {
+  border: 1px solid var(--grey);
+}
+
+@font-face {
+  font-family: 'Vazir-bold';
+  src: url('../../public/fonts/vazir-font/Vazir-Bold.eot') format('eot'),
+       url('../../public/fonts/vazir-font/Vazir-Bold.ttf') format('ttf'),
+       url('../../public/fonts/vazir-font/Vazir-Bold.woff') format('woff'),
+       url('../../public/fonts/vazir-font/Vazir-Bold.woff2') format('woff2');
+}
+
+
