@@ -39,7 +39,7 @@ const userSchema = z.object({
     .min(8, "گذرواژه باید حداقل 8 کاراکتر باشد.")
     .regex(/[A-Z]/, "گذرواژه باید حداقل شامل یک حرف بزرگ انگلیسی باشد.")
     .regex(/[0-9]/, "گذرواژه باید حداقل شامل یک عدد باشد.")
-    .regex(/[!@#$%^&*(),.?":{}|<>]/, "گذرواژه باید حداقل شامل یک کاراکتر ویژه باشد."),
+    .regex(/[!@#$%^&*(),.?":{}|<>_]/, "گذرواژه باید حداقل شامل یک کاراکتر ویژه باشد."),
 
   confirmPassword: z.string()
     .min(1,"تکرار گذرواژه نمی‌تواند خالی باشد"),
@@ -160,9 +160,7 @@ const SignupForm = () => {
       }
   
       if (data.data.createUser.errors) {
-        const errors = JSON.parse(data.data.createUser.errors)
-        console.log(JSON.parse(errors));
-        
+        const errors = JSON.parse(data.data.createUser.errors)        
   
         if (errors.username) {
           setError("username", {

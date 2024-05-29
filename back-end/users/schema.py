@@ -123,12 +123,12 @@ class CreateUser(graphene.Mutation):
                 return CreateUser(
                     success=False, errors=error_messages, redirect_url=None
                 )
-            user_instance = User.objects.create_user(**user_data, is_active=False)
+            user_instance = User.objects.create_user(**user_data)
 
-            verification_code = generate_verification_code(user_instance.id)
-            send_verification_email.delay(
-                user_instance.id, user_instance.email, verification_code
-            )
+            # verification_code = generate_verification_code(user_instance.id)
+            # send_verification_email.delay(
+            #     user_instance.id, user_instance.email, verification_code
+            # )
 
             token = get_token(user_instance)
             return CreateUser(
@@ -189,6 +189,7 @@ class Login(graphene.Mutation):
     redirect_url = graphene.String()
 
     def mutate(root, info, username, password):
+        print('\n\n\n\n\n\n',info.context.headers,'\n\n\n\n\n\n')
         sender = info.context.user
         try:
             token = BurnedTokens.objects.get(
@@ -203,10 +204,10 @@ class Login(graphene.Mutation):
         user = authenticate(username=username, password=password)
         if user is None:
             raise GraphQLError("Invalid username or password")
-        elif user is not None and not user.is_fully_authenticated:
-            return Login(
-                token=None, success=False, redirect_url="127.0.0.1/users/email-auth/"
-            )
+        # elif user is not None and not user.is_fully_authenticated:
+        #     return Login(
+        #         token=None, success=False, redirect_url="127.0.0.1/users/email-auth/"
+        #     )
 
         token = get_token(user)
         return Login(
