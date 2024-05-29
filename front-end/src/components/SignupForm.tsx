@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import {Controller,type FieldValue, useForm} from "react-hook-form"
+import {Controller, useForm} from "react-hook-form"
 
 import citys from "../../public/c.json"
 import States from "../../public/p.json"
@@ -15,10 +15,11 @@ import DatePicker, { DateObject } from "react-multi-date-picker";
 import persian from "react-date-object/calendars/persian";
 import persian_fa from "react-date-object/locales/persian_fa";
 import gregorian from "react-date-object/calendars/gregorian";
+import Select, { ActionMeta, SingleValue } from "react-select"
 
-import cities from '../../public/cityName';
 
 import { FaCalendarAlt } from "react-icons/fa";
+
 
 
 const is_persian_string=(str: string): boolean => {
@@ -30,8 +31,8 @@ const is_persian_string=(str: string): boolean => {
 
 const userSchema = z.object({
   username: z.string()
-    .regex(/^[a-zA-Z][a-zA-Z0-9_]{4,20}$/, "نام کاربری معتبر نمیباشد")
-    .min(1,"نام کاربری نمی‌تواند خالی باشد"),
+    .min(1,"نام کاربری نمی‌تواند خالی باشد")
+    .regex(/^[a-zA-Z][a-zA-Z0-9_]{3,20}$/, "نام کاربری معتبر نمیباشد"),
 
   password: z.string()
     .min(1,"گذرواژه نمی‌تواند خالی باشد")
@@ -52,13 +53,20 @@ const userSchema = z.object({
     .email("ایمیل وارد شده معتبر نمی‌باشد"),
 
   phoneNumber: z.string()
-    .regex(/^\+\d{9,15}$/, "شماره تلفن وارد شده معتبر نمی‌باشد فرمت درست : ...98+")
-    .min(1,"شماره تلفن نمی‌تواند خالی باشد"),
+    .regex(/^\d{9,15}$/, "شماره تلفن وارد شده معتبر نمی‌باشد فرمت درست : ...98+")
+    .min(1,"شماره تلفن نمی‌تواند خالی باشد")
+    .min(12,"شماره تلفن باید 12 رقم باشد")
+    ,
 
   landlineNumber: z.string()
-    .regex(/^\+\d{9,15}$/, "شماره ثابت وارد شده معتبر نمی‌باشد فرمت درست : ...98+")
-    .min(1,"شماره ثابت نمی‌تواند خالی باشد"),
+    .regex(/^\d{9,15}$/, "شماره ثابت وارد شده معتبر نمی‌باشد فرمت درست : ...98+")
+    .min(1,"شماره ثابت نمی‌تواند خالی باشد")
+    .min(12,"شماره تلفن ثابت باید 12 رقم باشد")
+    ,
+
+
   city: z.string({required_error: "شهر نمی‌تواند خالی باشد"}),
+  birthDate: z.string({required_error:"تاریخ تولد الزامی است"})
 
 })
 .refine((data) => data.password === data.confirmPassword, {
@@ -72,40 +80,45 @@ interface IfilterCitys {
   name: string;
     province_id: number;
 }
+interface StateOption {
+  value: string;
+  label: string;
+}
 
 
 
 
 const SignupForm = () => {
 
-  const [selectedState, setSelectedState] = useState('');
-  const [selectedCity, setSelectedCity] = useState('');
+
   const [filteredCities, setFilteredCities] = useState<IfilterCitys[]>([]);
 
-  const handleStateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const stateId = e.target.value;
-    setSelectedState(stateId);
+  const handleStateChange = (selectedOption: SingleValue<StateOption>,
+    actionMeta: ActionMeta<StateOption>) => {
+    if (selectedOption) {
+      const stateId = selectedOption.value;
 
-    const filterCity = citys.filter(city => city.province_id.toString() === stateId)
-    setFilteredCities(filterCity)
+  
+      const filterCity = citys.filter(city => city.province_id.toString() === stateId);
+      setFilteredCities(filterCity);
+    }
     
   };
 
-  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedCity(e.target.value);
-  };
+  const cityOptions = filteredCities.map(city => ({
+    value: city.name,
+    label: city.name
+  }));
 
 
-  const [bdate, setBdate] = useState< DateObject | null>(null);
-  const [birthDate, setBirthDate] = useState<String | null>(null);
   const handleDateChange = (date: DateObject | null) => {
-    setBdate(date);
     const gregorianDate = date ? date.convert(gregorian) : null;
-    setBirthDate(gregorianDate ? gregorianDate.toDate().toISOString().split("T")[0]: null)
+    const formattedDate = gregorianDate ? gregorianDate.toDate().toISOString().split("T")[0] : '';
+    setValue("birthDate", formattedDate);
   };
 
 
-  const onSubmit =async (userInfo:signUpSchema)=>{
+  const onSubmit = async (userInfo: signUpSchema) => {
     try {
       const response = await fetch('http://127.0.0.1:8000/users/graphql/', {
         method: 'POST',
@@ -121,11 +134,11 @@ const SignupForm = () => {
                 firstName: "${userInfo.firstName}",
                 lastName: "${userInfo.lastName}",
                 password: "${userInfo.password}",
-                phoneNumber: "${userInfo.phoneNumber}",
-                landlineNumber: "${userInfo.landlineNumber}",
+                phoneNumber: "+${userInfo.phoneNumber}",
+                landlineNumber: "+${userInfo.landlineNumber}",
                 email: "${userInfo.email}",
                 city: "${userInfo.city}",
-                birthDate: "${birthDate}"
+                birthDate: "${userInfo.birthDate}"
               }
             ) {
               success
@@ -135,18 +148,22 @@ const SignupForm = () => {
         `,
         }),
       });
-      console.log(userInfo);
-      console.log(birthDate);
       
       const data = await response.json();
       if (!response.ok) {
-        alert("failed")
+        return;
       }
-      
+  
+      if (data.errors) {
+        console.error("GraphQL Error:", data.errors);
+        return;
+      }
+  
       if (data.data.createUser.errors) {
-      const errors = JSON.parse(JSON.parse(data.data.createUser.errors))
-      console.log(errors);
-      
+        const errors = JSON.parse(data.data.createUser.errors)
+        console.log(JSON.parse(errors));
+        
+  
         if (errors.username) {
           setError("username", {
             type: "server",
@@ -171,19 +188,39 @@ const SignupForm = () => {
             message: errors.phone_number,
           });
         }
-        if (errors.landlineNumber) {
+        if (errors.landline_number) {
           setError("landlineNumber", {
             type: "server",
-            message: errors.landlineNumber,
-          })}
+            message: errors.landline_number,
+          });
+        }
+        if (errors.city) {
+          setError("landlineNumber", {
+            type: "server",
+            message: errors.city,
+          });
+        }
+        if (errors.birth_date) {
+          setError("birthDate",{
+            type:"server",
+            message: errors.birth_date
+          })
+        }
+        return;
       }
-      console.log(data);
+  
+      if (data.data.createUser.success) {
+        alert("User created successfully!");
+        reset();
+      } else {
+        alert("Failed to create user");
+      }
     } catch (error) {
       console.error("Error submitting the form:", error);
+      alert("An unexpected error occurred");
     }
-
-    //  reset()
-  }
+  };
+  
 
     const {
       register,
@@ -191,14 +228,18 @@ const SignupForm = () => {
       formState:{errors,isSubmitting},
       setError,
       reset,
+      setValue,
+      control
     } = useForm<signUpSchema>({
-      resolver:zodResolver(userSchema)
+      resolver:zodResolver(userSchema),
+      mode:"all"
     })
 
   return (
-    <form noValidate  onSubmit={handleSubmit(onSubmit)} className='signup_form flex flex-col items-start w-[80%]   m-auto p-10 '>
 
-<div className='signup_form_container'>
+    <form noValidate  onSubmit={handleSubmit(onSubmit)} className='signup_form flex flex-col items-center p-10 '>
+
+<div className='signup_form_container !mt-0'>
   <input
     {...register("username", {
       required: "نام کاربری الزامی است",
@@ -314,6 +355,12 @@ const SignupForm = () => {
         dir='ltr'
         type='tel'
         required
+        maxLength={12}
+        pattern="\d{1,13}"
+        onInput={(e) => {
+          const input = e.target as HTMLInputElement;
+          input.value = input.value.replace(/\D/g, '').slice(0, 13);
+        }}
       />
       {errors.phoneNumber &&( 
         <p className='text-sm text-red-700 absolute bottom-0 translate-y-5'>{`${errors.phoneNumber.message}`}</p>
@@ -330,6 +377,12 @@ const SignupForm = () => {
         dir='ltr'
         type='tel'
         required
+        maxLength={12}
+        pattern="\d{1,13}"
+        onInput={(e) => {
+          const input = e.target as HTMLInputElement;
+          input.value = input.value.replace(/\D/g, '').slice(0, 13);
+        }}
       />
       {errors.landlineNumber &&( 
         <p className='text-sm text-red-700 absolute bottom-0 translate-y-5'>{`${errors.landlineNumber.message}`}</p>
@@ -341,82 +394,94 @@ const SignupForm = () => {
 
 
 
-
-
-
-
-
-
-
-
     <div className='signup_form_container !flex-row !justify-between'>
-      <div>
-        <label htmlFor="States">استان:</label>
-        <select
-          className='text-black'
-          id="States"
-          required
-          value={selectedState}
-          onChange={handleStateChange}
-        >
-          <option value="" disabled>انتخاب کنید</option>
-          {States.map((state, index) => (
-            <option
-              className='text-black'
-              key={index}
-              value={state.id}
-            >
-              {state.name}
-            </option>
-          ))}
-        </select>
+      <div className='flex items-center gap-2 relative'>
+        <label htmlFor="States">استان :</label>
+
+        <Select
+        onChange={handleStateChange}
+        className='select_signup bg-[#1f1f1f]'
+        placeholder="انتخاب کنید"
+        styles={{
+          input:(styles)=>({...styles,color:"white",fontSize:"12px", whiteSpace:"nowrap",direction:"rtl"}),
+          placeholder:(styles)=>({...styles,color:"#757575",fontSize:"12px", whiteSpace:"nowrap"}),
+          control:(styles) => ({...styles , background:"#212121" , border:"none"}),
+          option:(styles) => ({...styles , background:"#212121" , border:"none", direction:"rtl",fontSize:"13px"}),
+          singleValue: (base) => ({ ...base, color: 'white',fontSize:"13px",direction:"rtl" }),
+          valueContainer: (base) => ({
+            ...base,
+            background:"#212121",
+            color: 'white',
+            width: '100%',
+            minWidth: '90px'
+
+          }),
+        }}
+        options= {
+          States.map((state) => (
+        {
+          value:state.id.toString(),
+          label:state.name
+        }
+        ))}
+        />
       </div>
-      <div>
+      <div className='flex gap-2 items-center'>
         <label htmlFor="city">شهر:</label>
-        <select
-          className='text-black'
-          id="city"
-          required
-          {...register("city")}
-        >
-          <option value="" disabled>انتخاب کنید</option>
-          {
-          filteredCities.map((city, index) => (
-            <option
-              className='text-black'
-              key={index}
-              value={city.name}
-            >
-              {city.name}
-            </option>
-          ))}
-        </select>
+        <Controller
+        control={control}
+        name='city'
+        render={({field:{ onChange, value}})=>{
+          return <Select
+            value={cityOptions.find(c => c.value === value)}
+            onChange={val => onChange(val ? val.value : null)}
+            className='select_signup bg-[#1f1f1f]'
+            placeholder="...انتخاب کنید"
+            styles={{
+              input: (styles) => ({ ...styles, color: "white", fontSize: "12px", whiteSpace: "nowrap", direction: "rtl" }),
+              placeholder: (styles) => ({ ...styles, color: "#757575", fontSize: "12px", whiteSpace: "nowrap" }),
+              control: (styles) => ({ ...styles, background: "#212121", border: "none" }),
+              option: (styles) => ({ ...styles, background: "#212121", border: "none", direction: "rtl", fontSize: "13px" }),
+              singleValue: (base) => ({ ...base, color: 'white', fontSize: "13px", direction: "rtl" }),
+              valueContainer: (base) => ({
+                ...base,
+                background: "#212121",
+                color: 'white',
+                width: '100%',
+                minWidth: '90px'
+              }),
+            }}
+            options={cityOptions} />;
+        }}
+        />
+        
         {errors.city &&( 
-        <p className='text-sm text-red-700 absolute bottom-0 translate-y-5'>{`${errors.city.message}`}</p>
+        <p className='text-sm text-red-700 absolute bottom-0 translate-y-5 whitespace-nowrap'>{`${errors.city.message}`}</p>
       )}
       </div>
     </div>
 
 
-
-
-
-
-
-
-      <div className='flex justify-start mt-4 gap-2'>
+  <div className=' flex justify-center mt-[30px] gap-2 w-[100%] relative'>
   <label htmlFor="birthDate" className='flex items-center gap-2'>   تاریخ تولد :<FaCalendarAlt /></label>
-
-      <DatePicker
+      <Controller
+      control={control}
+      name='birthDate'
+      render={()=>(
+        <DatePicker
         id='birthDate'
         calendar={persian}
         locale={persian_fa}
         calendarPosition="bottom-right"
-        value={bdate}
         onChange={handleDateChange}
         maxDate={new DateObject({ calendar: persian }).set("day", 15)}
-        required
+      />)
+      }
       />
+     
+      {errors.birthDate &&(
+        <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5 whitespace-nowrap'>{errors.birthDate.message}</p>
+      ) }
 </div>
 
 
@@ -428,6 +493,7 @@ const SignupForm = () => {
         ثبت نام
       </button>
     </form>
+
   );
 };
 
