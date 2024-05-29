@@ -1,3 +1,12 @@
+# import django
+# from django.utils.translation import gettext
+# from django.utils.translation import gettext_lazy
+
+
+# django.utils.translation.ugettext = gettext
+# django.utils.translation.ugettext_lazy = gettext_lazy
+
+
 from pathlib import Path
 from decouple import (
     config,
@@ -16,6 +25,7 @@ ALLOWED_HOSTS = ["*"]
 
 
 INSTALLED_APPS = [
+    # "django.contrib.sites",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -25,6 +35,9 @@ INSTALLED_APPS = [
     # Third party apps
     "corsheaders",
     "graphene_django",
+    # "graphql_jwt.refresh_token.apps.RefreshTokenConfig",
+    # "django_filters",
+    # "django_graphql_auth",
     # My apps
     "main",
     "sales",
@@ -155,19 +168,26 @@ CORS_EXPOSE_HEADERS = [
     "X-CSRFToken",
 ]
 
+# SITE_ID = 1
 
-# # celery settings
-# CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
-# CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND")
 
-# # SMTP configuration
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# EMAIL_HOST = "smtp.gmail.com"
-# EMAIL_USE_TLS = True
-# EMAIL_PORT = 587
-# EMAIL_HOST_USER = "unieggplant@gmail.com"
-# EMAIL_HOST_PASSWORD = "kzvwhimpnnsxfmlx"
-# DEFAULT_FROM_EMAIL = "Celery Testing | EggplantUni"
+# CELERY_BROKER_URL = config("CELERY_BROKER_URL")
+# CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND")
+
+# CELERY_ACCEPT_CONTENT = config("CELERY_ACCEPT_CONTENT")
+# CELERY_TASK_SERIALIZER = config("CELERY_TASK_SERIALIZER")
+# CELERY_RESULT_SERIALIZER = config("CELERY_RESULT_SERIALIZER")
+# CELERY_TIMEZONE = config("CELERY_TIMEZONE")
+
+
+# SMTP configuration
+# EMAIL_BACKEND = config("EMAIL_BACKEND")
+# EMAIL_HOST = config("EMAIL_HOST")
+# EMAIL_USE_TLS = config("EMAIL_USE_TLS")
+# EMAIL_PORT = config("EMAIL_PORT")
+# EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+# EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+# DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
 
 
 # CACHES = {

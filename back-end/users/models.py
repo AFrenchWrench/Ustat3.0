@@ -22,6 +22,7 @@ class User(AbstractUser):
     position = models.CharField(max_length=32, null=True, blank=True)
     date_joined = models.DateField(auto_now_add=True)
     birth_date = models.DateField()
+    is_fully_authenticated = models.BooleanField(default=False)
 
     def __str__(self):
         return self.username
