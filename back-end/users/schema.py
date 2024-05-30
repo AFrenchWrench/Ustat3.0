@@ -30,7 +30,7 @@ from utils.schema_utils import (
     staff_member_required,
 )
 
-# from .tasks import send_verification_email
+from .tasks import send_verification_email
 # from utils.email_verification import generate_verification_code
 
 from users.forms import (
@@ -189,7 +189,7 @@ class Login(graphene.Mutation):
     redirect_url = graphene.String()
 
     def mutate(root, info, username, password):
-        print('\n\n\n\n\n\n',info.context.headers,'\n\n\n\n\n\n')
+        send_verification_email.delay()
         sender = info.context.user
         try:
             token = BurnedTokens.objects.get(

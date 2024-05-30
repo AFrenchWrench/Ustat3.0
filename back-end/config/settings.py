@@ -1,12 +1,3 @@
-# import django
-# from django.utils.translation import gettext
-# from django.utils.translation import gettext_lazy
-
-
-# django.utils.translation.ugettext = gettext
-# django.utils.translation.ugettext_lazy = gettext_lazy
-
-
 from pathlib import Path
 from decouple import (
     config,
@@ -14,6 +5,7 @@ from decouple import (
 )
 from datetime import timedelta
 import os
+from celery import Celery
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -171,13 +163,13 @@ CORS_EXPOSE_HEADERS = [
 # SITE_ID = 1
 
 
-# CELERY_BROKER_URL = config("CELERY_BROKER_URL")
-# CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND")
+CELERY_BROKER_URL = config("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND")
 
-# CELERY_ACCEPT_CONTENT = config("CELERY_ACCEPT_CONTENT")
-# CELERY_TASK_SERIALIZER = config("CELERY_TASK_SERIALIZER")
-# CELERY_RESULT_SERIALIZER = config("CELERY_RESULT_SERIALIZER")
-# CELERY_TIMEZONE = config("CELERY_TIMEZONE")
+CELERY_ACCEPT_CONTENT = config("CELERY_ACCEPT_CONTENT", cast=Csv())
+CELERY_TASK_SERIALIZER = config("CELERY_TASK_SERIALIZER")
+CELERY_RESULT_SERIALIZER = config("CELERY_RESULT_SERIALIZER")
+CELERY_TIMEZONE = config("CELERY_TIMEZONE")
 
 
 # SMTP configuration
