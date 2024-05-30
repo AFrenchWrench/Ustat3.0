@@ -2,6 +2,7 @@ import React from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import Cookies from 'js-cookie';
 
 const SigninForm = () => {
   const userSchema = z.object({
@@ -15,12 +16,19 @@ const SigninForm = () => {
 
   type SignInSchema = z.infer<typeof userSchema>;
 
+  const { register, handleSubmit, formState: { errors, isSubmitting }, setError, reset } = useForm<SignInSchema>({
+    mode: 'all',
+    resolver: zodResolver(userSchema)
+  });
+
   const onSubmit: SubmitHandler<SignInSchema> = async (userInfo) => {
     try {
+      const token = Cookies.get('Authorization');
       const response = await fetch('http://127.0.0.1:8000/users/graphql/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': token ? token : '',
         },
         body: JSON.stringify({
           query: `
@@ -36,41 +44,26 @@ const SigninForm = () => {
           },
         }),
       });
-      
+
       const data = await response.json();
+      console.log("Response data:", data); 
+
       if (!response.ok) {
         console.error("Network response was not ok", response);
         return;
       }
 
       if (data.errors) {
-        console.error("GraphQL Error:", data.errors);
-        return;
+        console.error("Server returned errors:", data.errors); 
+        setError("username", { message: "نام کاربری یا رمز عبور اشتباه است", type: "server" });
       }
 
-      if (data.data.login.errors) {
-        const errors = JSON.parse(data.data.login.errors);
-        console.log(errors);
-
-        if (errors.username) {
-          setError("username", {
-            type: "server",
-            message: errors.username,
-          });
-        }
-        if (errors.password) {
-          setError("password", {
-            type: "server",
-            message: errors.password,
-          });
-        }
-        return;
-      }
-
-      if (data.data.login.token) {
+      if (data.data && data.data.login && data.data.login.token) {
+        Cookies.set('Authorization', `Bearer ${data.data.login.token}`);
         alert("User logged in successfully!");
         reset();
       } else {
+        console.error("Login failed with no token returned");
         alert("Failed to log in");
       }
     } catch (error) {
@@ -79,13 +72,13 @@ const SigninForm = () => {
     }
   };
 
-  const { register, handleSubmit, formState: { errors, isSubmitting }, setError, reset } = useForm<SignInSchema>({
-    mode: "all",
-    resolver: zodResolver(userSchema)
-  });
-
   return (
     <form noValidate onSubmit={handleSubmit(onSubmit)} className='signup_form flex flex-col items-center p-10 '>
+      {errors.username && (
+        <p className='text-sm text-red-700 absolute top-0 translate-y-5'>
+          {`${errors.username.message}`}
+        </p>
+      )}
       <div className='signup_form_container !mt-0'>
         <input
           {...register("username", {
@@ -98,11 +91,6 @@ const SigninForm = () => {
         />
         <label className="signup_form_label" htmlFor="user-name">نام کاربری :</label>
         <div className='line'></div>
-        {errors.username && (
-          <p className='text-sm text-red-700 absolute bottom-0 translate-y-5'>
-            {`${errors.username.message}`}
-          </p>
-        )}
       </div>
 
       <div className='signup_form_container'>
