@@ -97,53 +97,47 @@ class CreateUser(graphene.Mutation):
     success = graphene.Boolean()
     errors = graphene.JSONString()
     redirect_url = graphene.String()
+    token = graphene.String()
 
     def mutate(root, info, user_data, business_data=None):
         form = UserSignUpForm(user_data)
         if form.is_valid():
             user_data["city"] = get_object_or_404(Cities, name=user_data["city"])
+            user_instance = User.objects.create_user(**user_data)
             if business_data:
                 business_form = BusinessSignUpForm(business_data)
                 if business_form.is_valid():
-                    user_instance = User.objects.create_user(**user_data)
                     business_instance = Business.objects.create(
                         user=user_instance,
                         **business_data,
                     )
-                    verification_code = generate_verification_code(user_instance.email)
-                    send_verification_email.delay(
-                        user_instance.get_full_name(),
-                        user_instance.email,
-                        verification_code,
-                    )
+                else:
+                    errors = business_form.errors.as_data()
+                    error_messages = {
+                        field: error[0].messages[0] for field, error in errors.items()
+                    }
                     return CreateUser(
-                        success=True,
-                        errors={},
-                        redirect_url="127.0.0.1/users/email-auth/",
+                        success=False, errors=error_messages, redirect_url=None
                     )
-                errors = business_form.errors.as_data()
-                error_messages = {
-                    field: error[0].messages[0] for field, error in errors.items()
-                }
-                return CreateUser(
-                    success=False, errors=error_messages, redirect_url=None
-                )
-            user_instance = User.objects.create_user(**user_data)
-
             verification_code = generate_verification_code(user_instance.email)
             send_verification_email.delay(
-                user_instance.get_full_name(), user_instance.email, verification_code
+                user_instance.get_full_name(),
+                user_instance.email,
+                verification_code,
             )
-
+            token = get_token(user_instance)
             return CreateUser(
-                success=True, errors={}, redirect_url="127.0.0.1/users/email-auth/"
+                success=True,
+                errors={},
+                redirect_url="127.0.0.1/users/email-auth/",
+                token=token,
             )
-
-        errors = form.errors.as_data()
-        error_messages = {
-            field: error[0].messages[0] for field, error in errors.items()
-        }
-        return CreateUser(success=False, errors=error_messages, redirect_url=None)
+        else:
+            errors = form.errors.as_data()
+            error_messages = {
+                field: error[0].messages[0] for field, error in errors.items()
+            }
+            return CreateUser(success=False, errors=error_messages, redirect_url=None)
 
 
 r = redis.StrictRedis(host="localhost", port=6379, db=0)
