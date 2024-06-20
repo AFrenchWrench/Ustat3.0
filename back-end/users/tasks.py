@@ -9,7 +9,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-@shared_task
+@shared_task(bind=True)
 def send_verification_email(self, user_full_name, email, code):
     try:
         logger.info(f"Sending verification email to {email} for user {user_full_name} with code {code}")

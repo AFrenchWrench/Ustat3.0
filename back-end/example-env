@@ -34,3 +34,6 @@ FIRST_NAME=
 LAST_NAME=
 BIRTHDATE=
 PASSWORD=
+
+
+celery -A config worker -l info --pool=solo
