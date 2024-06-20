@@ -30,8 +30,8 @@ from utils.schema_utils import (
     staff_member_required,
 )
 
-# from .tasks import send_verification_email
-# from utils.email_verification import generate_verification_code
+from .tasks import send_verification_email
+from utils.email_verification import generate_verification_code
 
 from users.forms import (
     BusinessSignUpForm,
@@ -103,43 +103,41 @@ class CreateUser(graphene.Mutation):
         form = UserSignUpForm(user_data)
         if form.is_valid():
             user_data["city"] = get_object_or_404(Cities, name=user_data["city"])
+            user_instance = User.objects.create_user(**user_data)
             if business_data:
                 business_form = BusinessSignUpForm(business_data)
                 if business_form.is_valid():
-                    user_instance = User.objects.create_user(**user_data)
                     business_instance = Business.objects.create(
                         user=user_instance,
                         **business_data,
                     )
+                else:
+                    errors = business_form.errors.as_data()
+                    error_messages = {
+                        field: error[0].messages[0] for field, error in errors.items()
+                    }
                     return CreateUser(
-                        success=True,
-                        errors={},
-                        redirect_url="127.0.0.1/users/email-auth/",
+                        success=False, errors=error_messages, redirect_url=None
                     )
-                errors = business_form.errors.as_data()
-                error_messages = {
-                    field: error[0].messages[0] for field, error in errors.items()
-                }
-                return CreateUser(
-                    success=False, errors=error_messages, redirect_url=None
-                )
-            user_instance = User.objects.create_user(**user_data)
-
-            # verification_code = generate_verification_code(user_instance.id)
-            # send_verification_email.delay(
-            #     user_instance.id, user_instance.email, verification_code
-            # )
-
+            verification_code = generate_verification_code(user_instance.email)
+            send_verification_email.delay(
+                user_instance.get_full_name(),
+                user_instance.email,
+                verification_code,
+            )
             token = get_token(user_instance)
             return CreateUser(
-                success=True, errors={}, redirect_url="127.0.0.1/users/email-auth/", token=token
+                success=True,
+                errors={},
+                redirect_url="127.0.0.1/users/email-auth/",
+                token=token,
             )
-
-        errors = form.errors.as_data()
-        error_messages = {
-            field: error[0].messages[0] for field, error in errors.items()
-        }
-        return CreateUser(success=False, errors=error_messages, redirect_url=None)
+        else:
+            errors = form.errors.as_data()
+            error_messages = {
+                field: error[0].messages[0] for field, error in errors.items()
+            }
+            return CreateUser(success=False, errors=error_messages, redirect_url=None)
 
 
 r = redis.StrictRedis(host="localhost", port=6379, db=0)
@@ -155,16 +153,20 @@ class VerifyEmail(graphene.Mutation):
 
     def mutate(self, info, code):
         user = info.context.user
-        stored_code = r.get(f"verification_code_{user.pk}")
+        stored_code = r.get(f"verification_code_{user.email}")
         if stored_code and stored_code.decode("utf-8") == code:
             # Verification successful, perform necessary actions (e.g., activate user)
             user.is_fully_authenticated = True
             user.save()
-            r.delete(f"verification_code_{user.pk}")
+            r.delete(f"verification_code_{user.email}")
             return VerifyEmail(
-                success=True, error=None, redirect_url=f"127.0.0.1/users/{user.get_username()}"
+                success=True,
+                error=None,
+                redirect_url=f"127.0.0.1/users/{user.get_username()}",
             )
-        return VerifyEmail(success=False, error="کد تایید وارد شده صحیح نمیباشد", redirect_url=None)
+        return VerifyEmail(
+            success=False, error="کد تایید وارد شده صحیح نمیباشد", redirect_url=None
+        )
 
 
 class CreateDriver(graphene.Mutation):
@@ -189,7 +191,6 @@ class Login(graphene.Mutation):
     redirect_url = graphene.String()
 
     def mutate(root, info, username, password):
-        print('\n\n\n\n\n\n',info.context.headers,'\n\n\n\n\n\n')
         sender = info.context.user
         try:
             token = BurnedTokens.objects.get(
@@ -286,6 +287,7 @@ class Mutation(graphene.ObjectType):
     create_driver = CreateDriver.Field()
     login = Login.Field()
     logout = Logout.Field()
+    verify_email = VerifyEmail.Field()
 
 
 class Query(graphene.ObjectType):
