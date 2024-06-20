@@ -198,10 +198,10 @@ const SignupForm = () => {
             message: errors.city,
           });
         }
-        if (errors.birth_date) {
+        if (errors.birthdate) {
           setError("birthDate",{
             type:"server",
-            message: errors.birth_date
+            message: errors.birthdate
           })
         }
         return;
