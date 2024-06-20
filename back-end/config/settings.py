@@ -10,12 +10,10 @@ from celery import Celery
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = ["*"]
-
 
 INSTALLED_APPS = [
     # "django.contrib.sites",
@@ -69,7 +67,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -96,9 +93,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Tehran"
 USE_I18N = True
 USE_TZ = True
 
@@ -172,17 +168,15 @@ CELERY_TASK_SERIALIZER = config("CELERY_TASK_SERIALIZER")
 CELERY_RESULT_SERIALIZER = config("CELERY_RESULT_SERIALIZER")
 CELERY_TIMEZONE = config("CELERY_TIMEZONE")
 
-
 # SMTP configuration
 EMAIL_BACKEND = config("EMAIL_BACKEND")
 EMAIL_HOST = config("EMAIL_HOST")
 EMAIL_USE_TLS = config("EMAIL_USE_TLS", cast=bool)
 EMAIL_USE_SSL = config("EMAIL_USE_SSL", cast=bool)
-EMAIL_PORT = config("EMAIL_PORT")
+EMAIL_PORT = config("EMAIL_PORT", cast=int)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
-
 
 # CACHES = {
 #     "default": {

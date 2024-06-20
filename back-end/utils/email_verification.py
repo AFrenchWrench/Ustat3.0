@@ -13,8 +13,4 @@ def generate_verification_code(user_email):
     r.set(f"verification_code_{user_email}", code)
     r.expireat(f"verification_code_{user_email}", expiry_time)
 
-    expiry_time = datetime.now() + timedelta(days=1)
-    r.set(f"email_{code}", user_email)
-    r.expireat(f"email_{code}", expiry_time)
-
     return code

@@ -1,6 +1,8 @@
 import re
+from hmac import compare_digest
 
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from django.core.validators import (
     RegexValidator,
@@ -10,11 +12,12 @@ from users.models import (
     Business,
     User,
 )
+from main.models import Cities
 from utils.validation_utils import is_persian_string
 import datetime
 
 
-class UserSignUpForm(forms.ModelForm):
+class UserSignUpForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super(UserSignUpForm, self).__init__(*args, **kwargs)
@@ -26,8 +29,9 @@ class UserSignUpForm(forms.ModelForm):
             "email",
             "first_name",
             "last_name",
-            "password",
-            "birth_date",
+            "password1",
+            "password2",
+            "birthdate",
             "phone_number",
             "landline_number",
         ]
@@ -43,22 +47,26 @@ class UserSignUpForm(forms.ModelForm):
 
         return username
 
-    def clean_password(self):
-        password = self.cleaned_data.get("password")
+    def clean_password1(self):
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.data.get("password2")
 
-        if len(password) < 8:
+        if not compare_digest(password1, password2):
+            raise ValidationError("گذرواژه ها یکسان نیستند")
+
+        if len(password1) < 8:
             raise ValidationError("گذرواژه باید حداقل 8 کاراکتر باشد.")
 
-        if not re.search(r"[A-Z]", password):
+        if not re.search(r"[A-Z]", password1):
             raise ValidationError("گذرواژه باید حداقل شامل یک حرف بزرگ انگلیسی باشد.")
 
-        if not re.search(r"[0-9]", password):
+        if not re.search(r"[0-9]", password1):
             raise ValidationError("گذرواژه باید حداقل شامل یک عدد باشد.")
 
-        if not re.search(r'[!@#$%^&*(),.?":{}|<>_]', password):
-            raise ValidationError("گذرواژه باید حداقل شامل یک کاراکتر ویژه باشد.")
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>_]', password1):
+            raise ValidationError("گذرواژه باید حداقل شامل یک کاراکتر خاص باشد.")
 
-        return password
+        return password1
 
     def clean_first_name(self):
         first_name = self.cleaned_data.get("first_name")
@@ -77,7 +85,7 @@ class UserSignUpForm(forms.ModelForm):
         if birthdate >= datetime.date.today():
             raise ValidationError("تاریخ تولد باید گذشته باشد")
         elif birthdate > (
-            datetime.date.today() - datetime.timedelta(days=(365.25 * 18))
+                datetime.date.today() - datetime.timedelta(days=(365.25 * 18))
         ):
             raise ValidationError("شما حداقل باید 18 سال سن داشته باشید")
         return birthdate
@@ -111,6 +119,18 @@ class UserSignUpForm(forms.ModelForm):
                 raise ValidationError("شماره تلفن وارد شده در سیستم وجود دارد")
 
         return phone_number
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        city_name = self.data.get("city")
+        try:
+            user.city = Cities.objects.get(name=city_name)
+        except Cities.DoesNotExist:
+            raise forms.ValidationError(f"City named '{city_name}' does not exist.")
+
+        if commit:
+            user.save()
+        return user
 
     def clean_landline_number(self):
         landline_number = self.cleaned_data.get("landline_number")
@@ -185,3 +205,11 @@ class BusinessSignUpForm(forms.ModelForm):
                 "در آدرس تنها از حروف فارسی، اغداد انگلیسی، و ویرگول و یا قاصله استفاده کنید"
             )
         return address
+
+    def save(self, user=None, commit=True):
+        business = super(BusinessSignUpForm, self).save(commit=False)
+        if user:
+            business.user = user
+        if commit:
+            business.save()
+        return business
