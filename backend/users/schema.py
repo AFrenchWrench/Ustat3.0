@@ -1,3 +1,4 @@
+import email
 import graphene
 from django.contrib.auth import (
     get_user_model,
@@ -16,7 +17,10 @@ from main.models import (
 from utils.schema_utils import (
     login_required,
 )
-from .tasks import send_verification_email
+from .tasks import (
+    send_verification_email,
+    send_otp_email,
+)
 from utils.email_verification import generate_verification_code
 from users.forms import (
     BusinessSignUpForm,
@@ -98,7 +102,9 @@ class CreateUser(graphene.Mutation):
                         field: error[0].messages[0] for field, error in errors.items()
                     }
                     return CreateUser(
-                        success=False, errors=error_messages, redirect_url="127.0.0.1/users/signup/"
+                        success=False,
+                        errors=error_messages,
+                        redirect_url="/users/signup/",
                     )
             verification_code = generate_verification_code(user_instance.email)
             send_verification_email.delay(
@@ -106,18 +112,22 @@ class CreateUser(graphene.Mutation):
                 user_instance.email,
                 verification_code,
             )
-            info.context.session['email'] = user_instance.email
+            info.context.session["email"] = user_instance.email
             return CreateUser(
                 success=True,
                 errors={},
-                redirect_url="127.0.0.1/users/email-auth/",
+                redirect_url="/users/email-auth/",
             )
         else:
             errors = form.errors.as_data()
             error_messages = {
                 field: error[0].messages[0] for field, error in errors.items()
             }
-            return CreateUser(success=False, errors=error_messages, redirect_url="127.0.0.1/users/signup/")
+            return CreateUser(
+                success=False,
+                errors=error_messages,
+                redirect_url="/users/signup/",
+            )
 
 
 r = redis.StrictRedis(host="redis", port=6379, db=0)
@@ -133,7 +143,7 @@ class VerifyEmail(graphene.Mutation):
         code = graphene.String(required=True)
 
     def mutate(self, info, code):
-        user = get_object_or_404(User, email=info.context.session.get('email'))
+        user = get_object_or_404(User, email=info.context.session.get("email"))
         stored_code = r.get(f"verification_code_{user.email}")
         if stored_code and stored_code.decode("utf-8") == code:
             user.is_fully_authenticated = True
@@ -144,12 +154,14 @@ class VerifyEmail(graphene.Mutation):
             return VerifyEmail(
                 success=True,
                 error=None,
-                redirect_url=f"127.0.0.1/users/{user.get_username()}",
-                token=token
+                redirect_url=f"/users/{user.get_username()}",
+                token=token,
             )
         return VerifyEmail(
-            success=False, error="کد تایید وارد شده صحیح نمیباشد",
-            redirect_url="127.0.0.1/users/email-auth/", token=None
+            success=False,
+            error="کد تایید وارد شده صحیح نمیباشد",
+            redirect_url="/users/email-auth/",
+            token=None,
         )
 
 
@@ -197,14 +209,91 @@ class Login(graphene.Mutation):
                 user.email,
                 verification_code,
             )
-            info.context.session['email'] = user.email
-            return Login(
-                token=None, success=False, redirect_url="127.0.0.1/users/email-auth/"
-            )
+            info.context.session["email"] = user.email
+            return Login(token=None, success=False, redirect_url="/users/email-auth/")
 
         token = get_token(user)
         return Login(
-            token=token, success=True, redirect_url=f"127.0.0.1/users/{user.username}/"
+            token=token, success=True, redirect_url=f"/users/{user.get_username()}/"
+        )
+
+
+class OtpLoginRequest(graphene.Mutation):
+    class Arguments:
+        email = graphene.String(required=True)
+
+    success = graphene.Boolean()
+    redirect_url = graphene.String()
+
+    def mutate(self, info, email):
+        sender = info.context.user
+        try:
+            token = BurnedTokens.objects.get(
+                token=info.context.headers.get("Authorization")
+            )
+            token = False
+        except BurnedTokens.DoesNotExist:
+            token = True
+
+        if sender.is_authenticated and token:
+            raise GraphQLError("You are already logged in")
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise GraphQLError("Email Does Not Exists")
+
+        if user is not None and not user.is_fully_authenticated:
+            verification_code = generate_verification_code(user.email)
+            send_verification_email.delay(
+                user.get_full_name(),
+                user.email,
+                verification_code,
+            )
+            info.context.session["email"] = user.email
+            return OtpLoginRequest(success=False, redirect_url="/users/email-auth/")
+
+        verification_code = generate_verification_code(user.email)
+        send_otp_email.delay(
+            user.get_full_name(),
+            user.email,
+            verification_code,
+        )
+        info.context.session["email"] = user.email
+
+        return OtpLoginRequest(success=True, redirect_url=f"/users/otplogin/")
+
+
+r = redis.StrictRedis(host="redis", port=6379, db=0)
+
+
+class OtpLogin(graphene.Mutation):
+    success = graphene.Boolean()
+    error = graphene.String()
+    redirect_url = graphene.String()
+    token = graphene.String()
+
+    class Arguments:
+        code = graphene.String(required=True)
+
+    def mutate(self, info, code):
+        user = get_object_or_404(User, email=info.context.session.get("email"))
+        stored_code = r.get(f"verification_code_{user.email}")
+        if stored_code and stored_code.decode("utf-8") == code:
+            r.delete(f"verification_code_{user.email}")
+            info.context.session.clear()
+            token = get_token(user)
+            return OtpLogin(
+                success=True,
+                error=None,
+                redirect_url=f"/users/{user.get_username()}",
+                token=token,
+            )
+        return OtpLogin(
+            success=False,
+            error="کد وارد شده صحیح نمیباشد",
+            redirect_url="/users/otplogin/",
+            token=None,
         )
 
 
@@ -217,7 +306,7 @@ class Logout(graphene.Mutation):
     def mutate(self, info):
         token = info.context.headers.get("Authorization")
         BurnedTokens.objects.create(token=token)
-        return Logout(success=True, redirect_url="127.0.0.1/")
+        return Logout(success=True, redirect_url="/")
 
 
 # class ResetPasswordRequest(graphene.Mutation):
@@ -278,6 +367,8 @@ class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
     create_driver = CreateDriver.Field()
     login = Login.Field()
+    otp_login_request = OtpLoginRequest.Field()
+    otp_login = OtpLogin.Field()
     logout = Logout.Field()
     verify_email = VerifyEmail.Field()
 
