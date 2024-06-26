@@ -1,0 +1,36 @@
+# Exclude Python cache files and directories
+__pycache__
+*.pyc
+*.pyo
+
+# Exclude virtual environments
+venv
+env
+.venv
+
+# Exclude local SQLite database files
+*.db
+
+# Exclude Django migrations
+*/migrations/*
+
+# Exclude test and coverage reports
+htmlcov
+.coverage
+.tox
+.nox
+.pytest_cache
+.pytest_cache/*
+.pytest_cache/**/*
+.coverage.*
+.cache
+
+# Exclude IDE and editor files
+.vscode
+.idea
+*.swp
+*~
+
+# Exclude Docker related files
+Dockerfile
+docker-compose.yml
