@@ -1,0 +1,72 @@
+version: '3'
+
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+    command: ./scripts/start.sh
+    healthcheck:
+      test: [ "CMD", "python", "manage.py", "check_db_connection" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    container_name: ustatBackend
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    container_name: ustatPostgres
+
+  redis:
+    image: redis:7
+    container_name: ustatRedis
+    ports:
+      - "6379:6379"
+    expose:
+      - "6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-h", "localhost", "ping" ]
+      interval: 1m
+      timeout: 5s
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: ustatFrontend
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: ./scripts/start-celery.sh
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - backend
+      - redis
+    container_name: ustatCeleryWorker

@@ -1,0 +1,23 @@
+# Exclude node_modules directory
+node_modules
+
+# Exclude build directories
+.next
+dist
+build
+next.config.mjs
+
+# Exclude logs and debug files
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Exclude IDE and editor files
+.vscode
+.idea
+*.swp
+*~
+
+# Exclude Docker related files
+Dockerfile
+docker-compose.yml
