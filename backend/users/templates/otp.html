@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>پیام خوش‌آمدگویی</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        padding: 20px 0;
+      }
+      .header img {
+        max-width: 150px;
+      }
+      .content {
+        text-align: center;
+        padding: 20px;
+      }
+      .content h1 {
+        color: #d32f2f; /* رنگ قرمز برای عنوان */
+      }
+      .content p {
+        color: #666666;
+      }
+      .verification-code {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #d32f2f; /* پس‌زمینه قرمز برای کد تایید */
+        color: #ffffff;
+        border-radius: 5px;
+        font-size: 1.2em;
+        margin: 20px 0;
+      }
+      .footer {
+        text-align: center;
+        padding: 20px;
+        color: #999999;
+        font-size: 0.9em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <img
+          src="https://ustatticaret.com/images/%C3%9Cstat-Ticaret-Email-Header.png"
+          alt="Header"
+          style="margin-bottom: -70px"
+        />
+      </div>
+      <div class="content">
+        <h1 style="font-size: 25px;">{{full_name}} عزیز به استاد تجارت خوش اومدی</h1>
+        <p>کد یک بار مصرف شما</p>
+        <div class="verification-code">{{otp_code}}</div>
+        <p>
+          لطفا از این کد برای ورود یک بار مصرف به سایت استفاده کنید
+        </p>
+      </div>
+      <div class="footer">
+        <p>
+          اگر شما درخواست ورود با کد یک بار مصرف نداده اید، لطفاً این ایمیل را نادیده بگیرید
+        </p>
+        <p>&copy; 2024 استاد تجارت. تمامی حقوق محفوظ است</p>
+      </div>
+    </div>
+  </body>
+</html>
