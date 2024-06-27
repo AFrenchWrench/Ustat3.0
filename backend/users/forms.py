@@ -1,8 +1,11 @@
+from dataclasses import field
 import re
 from hmac import compare_digest
 
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import (
+    UserCreationForm,
+)
 from django.core.exceptions import ValidationError
 from django.core.validators import (
     RegexValidator,
@@ -85,9 +88,10 @@ class UserSignUpForm(UserCreationForm):
         if birthdate >= datetime.date.today():
             raise ValidationError("تاریخ تولد باید گذشته باشد")
         elif birthdate > (
-                datetime.date.today() - datetime.timedelta(days=(365.25 * 18))
+            datetime.date.today() - datetime.timedelta(days=(365.25 * 18))
         ):
             raise ValidationError("شما حداقل باید 18 سال سن داشته باشید")
+
         return birthdate
 
     def clean_email(self):
@@ -213,3 +217,40 @@ class BusinessSignUpForm(forms.ModelForm):
         if commit:
             business.save()
         return business
+
+
+class PasswordChangeForm(forms.ModelForm):
+    password1 = forms.CharField(max_length=32)
+    password2 = forms.CharField(max_length=32)
+
+    def __init__(self, *args, **kwargs):
+        super(PasswordChangeForm, self).__init__(*args, **kwargs)
+
+    class Meta:
+        model = User
+        fields = ["password1", "password2"]
+
+    def clean_password1(self):
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+
+        if not compare_digest(password1, password2):
+            raise ValidationError("گذرواژه ها یکسان نیستند")
+
+        if len(password1) < 8:
+            raise ValidationError("گذرواژه باید حداقل 8 کاراکتر باشد.")
+
+        if not re.search(r"[A-Z]", password1):
+            raise ValidationError("گذرواژه باید حداقل شامل یک حرف بزرگ انگلیسی باشد.")
+
+        if not re.search(r"[0-9]", password1):
+            raise ValidationError("گذرواژه باید حداقل شامل یک عدد باشد.")
+
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>_]', password1):
+            raise ValidationError("گذرواژه باید حداقل شامل یک کاراکتر خاص باشد.")
+
+        return password1
+
+    def save(self, commit):
+        self.instance.set_password(self.clean_password1())
+        return super().save(commit)

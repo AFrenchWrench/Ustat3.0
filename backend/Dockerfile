@@ -21,6 +21,7 @@ RUN chmod +x /app/entrypoint.sh
 RUN chmod +x /app/scripts/start.sh
 RUN chmod +x /app/scripts/start-celery.sh
 
+EXPOSE 8000
 
 # Set the entrypoint to the entrypoint.sh script
 ENTRYPOINT ["/app/entrypoint.sh"]

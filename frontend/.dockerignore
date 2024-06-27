@@ -5,6 +5,7 @@ node_modules
 .next
 dist
 build
+next.config.mjs
 
 # Exclude logs and debug files
 npm-debug.log

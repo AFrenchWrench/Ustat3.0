@@ -10,18 +10,18 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task(bind=True)
-def send_verification_email(self, user_full_name, email, code):
+def send_code_email(self, user_full_name, email, code, template):
     try:
         logger.info(
-            f"Sending verification email to {email} for user {user_full_name} with code {code}"
+            f"Sending email to {email} for user {user_full_name} with code {code}"
         )
 
-        subject = "تایید ایمیل"
+        subject = "کد تایید"
         to = email
-        context = {"full_name": user_full_name, "verification_code": code}
+        context = {"full_name": user_full_name, f"{template}_code": code}
 
-        text_content = render_to_string("email.txt", context)
-        html_content = render_to_string("email.html", context)
+        text_content = render_to_string(f"{template}.txt", context)
+        html_content = render_to_string(f"{template}.html", context)
 
         email = EmailMultiAlternatives(
             subject, text_content, settings.EMAIL_HOST_USER, [to]
@@ -30,7 +30,7 @@ def send_verification_email(self, user_full_name, email, code):
 
         email.send()
 
-        logger.info(f"Verification email sent successfully to {email}")
+        logger.info(f"Email sent successfully to {email}")
         return "DONE"
 
     except BadHeaderError as e:
@@ -38,7 +38,7 @@ def send_verification_email(self, user_full_name, email, code):
         return "FAILED"
 
     except Exception as e:
-        logger.error(f"Error sending verification email to {email}: {e}")
+        logger.error(f"Error sending email to {email}: {e}")
         raise self.retry(exc=e, countdown=60, max_retries=3)
 
 

@@ -1,3 +1,4 @@
+from datetime import timedelta
 import email
 import graphene
 from django.contrib.auth import (
@@ -18,13 +19,13 @@ from utils.schema_utils import (
     login_required,
 )
 from .tasks import (
-    send_verification_email,
-    send_otp_email,
+    send_code_email,
 )
 from utils.email_verification import generate_verification_code
 from users.forms import (
     BusinessSignUpForm,
     UserSignUpForm,
+    PasswordChangeForm,
 )
 from users.models import (
     Business,
@@ -32,6 +33,17 @@ from users.models import (
 )
 
 User = get_user_model()
+
+
+def send_email(info, user, template):
+    send_code_email.delay(
+        user.get_full_name(),
+        user.email,
+        generate_verification_code(user.email),
+        template,
+    )
+    info.context.session["email"] = user.email
+    info.context.session.set_expiry(timedelta(minutes=15))
 
 
 class UserType(DjangoObjectType):
@@ -106,13 +118,7 @@ class CreateUser(graphene.Mutation):
                         errors=error_messages,
                         redirect_url="/users/signup/",
                     )
-            verification_code = generate_verification_code(user_instance.email)
-            send_verification_email.delay(
-                user_instance.get_full_name(),
-                user_instance.email,
-                verification_code,
-            )
-            info.context.session["email"] = user_instance.email
+            send_email(info, user_instance, "verification")
             return CreateUser(
                 success=True,
                 errors={},
@@ -203,13 +209,11 @@ class Login(graphene.Mutation):
         if user is None:
             raise GraphQLError("Invalid username or password")
         elif user is not None and not user.is_fully_authenticated:
-            verification_code = generate_verification_code(user.email)
-            send_verification_email.delay(
-                user.get_full_name(),
-                user.email,
-                verification_code,
+            send_email(
+                info,
+                user,
+                "verification",
             )
-            info.context.session["email"] = user.email
             return Login(token=None, success=False, redirect_url="/users/email-auth/")
 
         token = get_token(user)
@@ -244,23 +248,18 @@ class OtpLoginRequest(graphene.Mutation):
             raise GraphQLError("Email Does Not Exists")
 
         if user is not None and not user.is_fully_authenticated:
-            verification_code = generate_verification_code(user.email)
-            send_verification_email.delay(
-                user.get_full_name(),
-                user.email,
-                verification_code,
+            send_email(
+                info,
+                user,
+                "verification",
             )
-            info.context.session["email"] = user.email
             return OtpLoginRequest(success=False, redirect_url="/users/email-auth/")
 
-        verification_code = generate_verification_code(user.email)
-        send_otp_email.delay(
-            user.get_full_name(),
-            user.email,
-            verification_code,
+        send_email(
+            info,
+            user,
+            "otp",
         )
-        info.context.session["email"] = user.email
-
         return OtpLoginRequest(success=True, redirect_url=f"/users/otplogin/")
 
 
@@ -309,58 +308,112 @@ class Logout(graphene.Mutation):
         return Logout(success=True, redirect_url="/")
 
 
-# class ResetPasswordRequest(graphene.Mutation):
-#     success = graphene.Boolean()
+class ForgotPasswordRequest(graphene.Mutation):
+    class Arguments:
+        email = graphene.String(required=True)
 
-#     class Arguments:
-#         email = graphene.String(required=True)
+    success = graphene.Boolean()
+    redirect_url = graphene.String()
 
-#     @staticmethod
-#     def mutate(self, info, email):
-#         user = get_object_or_404(User, email=email)
-#         subject = "Reset your password"
-#         token = get_random_string(length=32)
+    def mutate(self, info, email):
+        sender = info.context.user
+        try:
+            token = BurnedTokens.objects.get(
+                token=info.context.headers.get("Authorization")
+            )
+            token = False
+        except BurnedTokens.DoesNotExist:
+            token = True
 
-#         text = f"""
-#         Hi {user.get_full_name()} ... \n Your token is {token}
-#                """
-#         send = send_email(email, subject, text)
-#         r = Redis(host="localhost", port=6379, db=0)
-#         r.set(token, email)
-#         r.expire(token, 60 * 2 * 1)  # 2 minutes
-#         return ResetPasswordRequest(success=send)
+        if sender.is_authenticated and token:
+            raise GraphQLError("You are already logged in")
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise GraphQLError("Email Does Not Exists")
+
+        if user is not None and not user.is_fully_authenticated:
+            send_email(
+                info,
+                user,
+            )
+            return ForgotPasswordRequest(
+                success=False, redirect_url="/users/email-auth/"
+            )
+
+        send_email(
+            info,
+            user,
+            "resetpass",
+        )
+
+        return ForgotPasswordRequest(
+            success=True, redirect_url=f"/users/forgotpassword/"
+        )
 
 
-# class ResetPassword(graphene.Mutation):
-#     success = graphene.Boolean()
+r = redis.StrictRedis(host="redis", port=6379, db=0)
 
-#     class Arguments:
-#         tk = graphene.String(required=True)
-#         email = graphene.String(required=True)
-#         new_password = graphene.String(required=True)
 
-#     @staticmethod
-#     def mutate(self, info, tk, email, new_password):
-#         r = Redis(host="localhost", port=6379, db=0)
-#         stored_email = r.get(tk)
+class ForgotPassword(graphene.Mutation):
+    success = graphene.Boolean()
+    error = graphene.String()
+    redirect_url = graphene.String()
 
-#         print(stored_email)
-#         if not stored_email or stored_email.decode("utf-8") != email:
-#             raise GraphQLError("Invalid token or email")
-#         user = get_object_or_404(User, email=email)
+    class Arguments:
+        code = graphene.String(required=True)
 
-#         form = UpdateUserForm({"password": new_password})
-#         if form.is_valid():
-#             user.set_password(new_password)
-#             user.save()
+    def mutate(self, info, code):
+        user = get_object_or_404(User, email=info.context.session.get("email"))
+        stored_code = r.get(f"verification_code_{user.email}")
+        if stored_code and stored_code.decode("utf-8") == code:
+            r.delete(f"verification_code_{user.email}")
+            info.context.session["reset_pass_auth_complete"] = True
+            info.context.session.set_expiry(timedelta(minutes=15))
+            return ForgotPassword(
+                success=True,
+                error=None,
+                redirect_url=f"/users/{user.get_username()}/resetpassword/",
+            )
+        return ForgotPassword(
+            success=False,
+            error="کد وارد شده صحیح نمیباشد",
+            redirect_url="/users/forgotpassword/",
+        )
 
-#             r.delete(tk)
 
-#             return ResetPassword(success=True)
-#         else:
-#             errors = form.errors.as_data()
-#             error_messages = [error[0].messages[0] for error in errors.values()]
-#             raise GraphQLError(", ".join(error_messages))
+class ResetPassword(graphene.Mutation):
+    success = graphene.Boolean()
+    error = graphene.String()
+    redirect_url = graphene.String()
+
+    class Arguments:
+        password1 = graphene.String(required=True)
+        password2 = graphene.String(required=True)
+
+    def mutate(self, info, password1, password2):
+        user = get_object_or_404(User, email=info.context.session.get("email"))
+        if info.context.session.get("reset_pass_auth_complete"):
+            print("KKK")
+            form = PasswordChangeForm(password1, password2, instance=user)
+            if form.is_valid():
+                info.context.session.clear()
+                return ResetPassword(
+                    success=True,
+                    error=None,
+                    redirect_url=f"/users/{user.get_username()}/",
+                )
+            else:
+                errors = form.errors.as_data()
+                error_messages = {
+                    field: error[0].messages[0] for field, error in errors.items()
+                }
+                return ResetPassword(
+                    success=True,
+                    error=error_messages,
+                    redirect_url=f"/users/{user.get_username()}/resetpassword/",
+                )
 
 
 class Mutation(graphene.ObjectType):
@@ -370,6 +423,9 @@ class Mutation(graphene.ObjectType):
     otp_login_request = OtpLoginRequest.Field()
     otp_login = OtpLogin.Field()
     logout = Logout.Field()
+    forgot_password_request = ForgotPasswordRequest.Field()
+    forgot_password = ForgotPassword.Field()
+    reset_password = ResetPassword.Field()
     verify_email = VerifyEmail.Field()
 
 
