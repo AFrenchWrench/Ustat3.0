@@ -4,17 +4,14 @@ FROM node:20
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the package.json and package-lock.json files
-COPY package.json package-lock.json ./
+# Copy the rest of the application code to the working directory
+COPY . .
 
 # Install dependencies
 RUN npm install
 
 # Fund ??
 RUN npm fund
-
-# Copy the rest of the application code to the working directory
-COPY . .
 
 # Build the Next.js application
 RUN npm run build
