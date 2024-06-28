@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Collect static files
-python manage.py collectstatic --noinput
+# python manage.py collectstatic --noinput
 
 # Wait for PostgreSQL to be ready
 echo "Waiting for PostgreSQL to be ready..."
