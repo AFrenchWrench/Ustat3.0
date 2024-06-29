@@ -337,6 +337,7 @@ class ForgotPasswordRequest(graphene.Mutation):
             send_email(
                 info,
                 user,
+                "verification",
             )
             return ForgotPasswordRequest(
                 success=False, redirect_url="/users/email-auth/"
