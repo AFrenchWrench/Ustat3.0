@@ -74,11 +74,7 @@ const SigninForm = () => {
 
   return (
     <form noValidate onSubmit={handleSubmit(onSubmit)} className='signup_form flex flex-col items-center p-10 '>
-      {errors.username && (
-        <p className='text-sm text-red-700 absolute top-0 translate-y-5'>
-          {`${errors.username.message}`}
-        </p>
-      )}
+     
       <div className='signup_form_container !mt-0'>
         <input
           {...register("username", {
@@ -89,8 +85,13 @@ const SigninForm = () => {
           type='text'
           required
         />
+         {errors.username && (
+        <p className='text-sm text-red-700 absolute bottom-0 translate-y-5'>
+          {`${errors.username.message}`}
+        </p>
+      )}
         <label className="signup_form_label" htmlFor="user-name">نام کاربری :</label>
-        <div className='line'></div>
+        <span className='line'></span>
       </div>
 
       <div className='signup_form_container'>

@@ -23,10 +23,14 @@ import { FaCalendarAlt } from "react-icons/fa";
 
 
 const is_persian_string=(str: string): boolean => {
-  const persianPattern = /^[\u0600-\u06FF]+$/;
+  const persianPattern = /^[\u0600-\u06FF\s]+$/;
 
   return persianPattern.test(str);
 }
+const isValidPhoneNumber = (phoneNumber: string) => {
+  const regex = /^\+\d{9,15}$/;
+  return regex.test(phoneNumber);
+};
 
 
 const userSchema = z.object({
@@ -55,24 +59,113 @@ const userSchema = z.object({
   phoneNumber: z.string()
     .regex(/^\d{9,15}$/, "شماره تلفن وارد شده معتبر نمی‌باشد فرمت درست : ...98+")
     .min(1,"شماره تلفن نمی‌تواند خالی باشد")
-    .min(12,"شماره تلفن باید 12 رقم باشد")
-    ,
+    .min(12,"شماره تلفن باید 12 رقم باشد"),
 
   landlineNumber: z.string()
     .regex(/^\d{9,15}$/, "شماره ثابت وارد شده معتبر نمی‌باشد فرمت درست : ...98+")
     .min(1,"شماره ثابت نمی‌تواند خالی باشد")
-    .min(12,"شماره تلفن ثابت باید 12 رقم باشد")
-    ,
-
+    .min(12,"شماره تلفن ثابت باید 12 رقم باشد"),
 
   city: z.string({required_error: "شهر نمی‌تواند خالی باشد"}),
-  birthDate: z.string({required_error:"تاریخ تولد الزامی است"})
+  birthDate: z.string({required_error:"تاریخ تولد الزامی است"}),
 
-})
-.refine((data) => data.password === data.confirmPassword, {
-  message: "رمزعبور یکسان نیست",
-  path: ["confirmPassword"]
+  isBusinessSigninInput: z.boolean(),
+
+  businessName: z.string().optional(),
+  ownerFirstName: z.string().optional(),
+  ownerLastName: z.string().optional(),
+  ownerPhoneNumber: z.string().optional(),
+  address: z.string().optional(),
+
+}).superRefine((data, ctx) => {
+  if (data.password !== data.confirmPassword) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "رمزعبور یکسان نیست",
+      path: ["confirmPassword"]
+    });
+  }
+
+  if (data.isBusinessSigninInput) {
+    if (!data.businessName) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "نام شرکت الزامی است",
+        path: ["businessName"]
+      });
+    } else if (!is_persian_string(data.businessName)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "نام شرکت باید فارسی باشد",
+        path: ["businessName"]
+      });
+    }
+
+    if (!data.ownerFirstName) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "نام صاحب شرکت الزامی است",
+        path: ["ownerFirstName"]
+      });
+    } else if (!is_persian_string(data.ownerFirstName)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "نام صاحب شرکت باید فارسی باشد",
+        path: ["ownerFirstName"]
+      });
+    }
+
+    if (!data.ownerLastName) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "نام خانوادگی صاحب شرکت الزامی است",
+        path: ["ownerLastName"]
+      });
+    } else if (!is_persian_string(data.ownerLastName)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "نام خانوادگی صاحب شرکت باید فارسی باشد",
+        path: ["ownerLastName"]
+      });
+    }
+
+    if (!data.ownerPhoneNumber) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "شماره تلفن صاحب شرکت الزامی است",
+        path: ["ownerPhoneNumber"]
+      });
+    } else if (!isValidPhoneNumber(data.ownerPhoneNumber)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "شماره تلفن وارد شده معتبر نمی‌باشد فرمت درست : ...98+",
+        path: ["ownerPhoneNumber"]
+      });
+    } // بررسی موجود بودن شماره تلفن در سیستم باید در اینجا اضافه شود
+
+    if (!data.address) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "آدرس الزامی است",
+        path: ["address"]
+      });
+    } else {
+      const pattern = /^[\u0600-\u06FF0-9\s,]+$/;
+      if (!pattern.test(data.address)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "در آدرس تنها از حروف فارسی، اعداد انگلیسی، و ویرگول و یا فاصله استفاده کنید",
+          path: ["address"]
+        });
+      }
+    }
+  }
 });
+
+
+
+
+
 
 type signUpSchema = z.infer<typeof userSchema>;
 
@@ -92,6 +185,7 @@ const SignupForm = () => {
 
 
   const [filteredCities, setFilteredCities] = useState<IfilterCitys[]>([]);
+  const [isBusinessSigninInput,setIsBusinessSigninInput] = useState(false)
 
   const handleStateChange = (selectedOption: SingleValue<StateOption>,
     actionMeta: ActionMeta<StateOption>) => {
@@ -119,36 +213,56 @@ const SignupForm = () => {
 
 
   const onSubmit = async (userInfo: signUpSchema) => {
+
+    console.log(userInfo.isBusinessSigninInput);
+    
     try {
-      const response = await fetch('http://127.0.0.1:8000/users/graphql/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: `
-          mutation {
-            createUser(
-              userData: {
-                username: "${userInfo.username}",
-                firstName: "${userInfo.firstName}",
-                lastName: "${userInfo.lastName}",
-                password: "${userInfo.password}",
-                phoneNumber: "+${userInfo.phoneNumber}",
-                landlineNumber: "+${userInfo.landlineNumber}",
-                email: "${userInfo.email}",
-                city: "${userInfo.city}",
-                birthDate: "${userInfo.birthDate}"
-              }
-            ) {
-              success
-              errors
-            }
-          }
-        `,
-        }),
-      });
       
+      const userData = `
+      userData: {
+        username: "${userInfo.username}",
+        firstName: "${userInfo.firstName}",
+        lastName: "${userInfo.lastName}",
+        password: "${userInfo.password}",
+        phoneNumber: "+${userInfo.phoneNumber}",
+        landlineNumber: "+${userInfo.landlineNumber}",
+        email: "${userInfo.email}",
+        city: "${userInfo.city}",
+        birthDate: "${userInfo.birthDate}"
+      }
+    `;
+
+    const businessData = userInfo.isBusinessSigninInput ? `
+      businessData: {
+        name: "${userInfo.businessName}",
+        ownerFirstName: "${userInfo.ownerFirstName}",
+        ownerLastName: "${userInfo.ownerLastName}",
+        ownerPhoneNumber: "${userInfo.ownerPhoneNumber}",
+        address: "${userInfo.address}"
+      }
+    ` : '';
+
+    const query = `
+      mutation {
+        createUser(
+          ${userData}
+          ${businessData}
+        ) {
+          success
+          errors
+          redirectUrl
+        }
+      }
+    `;
+      
+    const response = await fetch('http://127.0.0.1:8000/users/graphql/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query }),
+    });
+
       const data = await response.json();
       if (!response.ok) {
         return;
@@ -198,10 +312,40 @@ const SignupForm = () => {
             message: errors.city,
           });
         }
-        if (errors.birthdate) {
+        if (errors.birth_date) {
           setError("birthDate",{
             type:"server",
-            message: errors.birthdate
+            message: errors.birth_date
+          })
+        }
+        if (errors.name) {
+          setError("businessName",{
+            type:"server",
+            message: errors.name
+          })
+        }
+        if (errors.owner_first_name) {
+          setError("ownerFirstName",{
+            type:"server",
+            message: errors.owner_first_name
+          })
+        }
+        if (errors.owner_last_name) {
+          setError("ownerLastName",{
+            type:"server",
+            message: errors.owner_last_name
+          })
+        }
+        if (errors.owner_phone_number) {
+          setError("ownerPhoneNumber",{
+            type:"server",
+            message: errors.owner_phone_number
+          })
+        }
+        if (errors.address) {
+          setError("address",{
+            type:"server",
+            message: errors.address
           })
         }
         return;
@@ -227,6 +371,7 @@ const SignupForm = () => {
       setError,
       reset,
       setValue,
+      getValues,
       control
     } = useForm<signUpSchema>({
       resolver:zodResolver(userSchema),
@@ -250,7 +395,7 @@ const SignupForm = () => {
     <label className="signup_form_label" htmlFor="user-name">نام کاربری :</label>
   <div className='line'></div>
   {errors.username && (
-    <p className='text-sm text-red-700 absolute bottom-0 translate-y-5'>
+    <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5'>
       {`${errors.username.message}`}
     </p>
   )}
@@ -272,7 +417,7 @@ const SignupForm = () => {
         required
       />
       {errors.password &&( 
-        <p className='text-sm text-red-700 absolute bottom-0 translate-y-5'>{`${errors.password.message}`}</p>
+        <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5'>{`${errors.password.message}`}</p>
       )}
       <span className='line'></span>
       <label className="signup_form_label" htmlFor="password">رمز عبور :</label>
@@ -288,7 +433,7 @@ const SignupForm = () => {
         required
       />
       {errors.confirmPassword &&( 
-        <p className='text-sm text-red-700 absolute bottom-0 translate-y-5'>{`${errors.confirmPassword.message}`}</p>
+        <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5'>{`${errors.confirmPassword.message}`}</p>
       )}
       <span className='line'></span>
       <label className="signup_form_label" htmlFor="confirmPassword">تکرار رمز عبور :</label>
@@ -303,7 +448,7 @@ const SignupForm = () => {
         required
       />
       {errors.firstName &&( 
-        <p className='text-sm text-red-700 absolute bottom-0 translate-y-5'>{`${errors.firstName.message}`}</p>
+        <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5'>{`${errors.firstName.message}`}</p>
       )}
       <span className='line'></span>
       <label className="signup_form_label" htmlFor="firstName">نام :</label>
@@ -318,7 +463,7 @@ const SignupForm = () => {
         required
       />
       {errors.lastName &&( 
-        <p className='text-sm text-red-700 absolute bottom-0 translate-y-5'>{`${errors.lastName.message}`}</p>
+        <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5'>{`${errors.lastName.message}`}</p>
       )}
       <span className='line'></span>
       <label className="signup_form_label" htmlFor="lastName">نام خانوادگی :</label>
@@ -339,7 +484,7 @@ const SignupForm = () => {
         required
       />
       {errors.email &&( 
-        <p className='text-sm text-red-700 absolute bottom-0 translate-y-5'>{`${errors.email.message}`}</p>
+        <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5'>{`${errors.email.message}`}</p>
       )}
       <span className='line'></span>
       <label className="signup_form_label" htmlFor="email">ایمیل :</label>
@@ -361,7 +506,7 @@ const SignupForm = () => {
         }}
       />
       {errors.phoneNumber &&( 
-        <p className='text-sm text-red-700 absolute bottom-0 translate-y-5'>{`${errors.phoneNumber.message}`}</p>
+        <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5'>{`${errors.phoneNumber.message}`}</p>
       )}
       <span className='line'></span>
       <label className="signup_form_label" htmlFor="phoneNumber">شماره تلفن :</label>
@@ -383,7 +528,7 @@ const SignupForm = () => {
         }}
       />
       {errors.landlineNumber &&( 
-        <p className='text-sm text-red-700 absolute bottom-0 translate-y-5'>{`${errors.landlineNumber.message}`}</p>
+        <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5'>{`${errors.landlineNumber.message}`}</p>
       )}
       <span className='line'></span>
       <label className="signup_form_label" htmlFor="landlineNumber">شماره تلفن ثابت :</label>
@@ -454,7 +599,7 @@ const SignupForm = () => {
         />
         
         {errors.city &&( 
-        <p className='text-sm text-red-700 absolute bottom-0 translate-y-5 whitespace-nowrap'>{`${errors.city.message}`}</p>
+        <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5 whitespace-nowrap'>{`${errors.city.message}`}</p>
       )}
       </div>
     </div>
@@ -482,14 +627,73 @@ const SignupForm = () => {
       ) }
 </div>
 
-
+{isBusinessSigninInput && (
+  <div className='bg-blue-700 p-5 w-full mt-5 rounded-sm'>
+    <div className='signup_form_container !mt-0'>
+      <input {...register("businessName")} className="signup_form_input" id='business-name' type='text' required />
+      <label className="signup_form_label" htmlFor="business-name">نام شرکت :</label>
+      <div className='line'></div>
+      {errors.businessName && (
+        <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5'>
+          {errors.businessName.message}
+        </p>
+      )}
+    </div>
+    <div className='signup_form_container'>
+      <input {...register("ownerFirstName")} className="signup_form_input" id='owner-first-name' type='text' required />
+      <label className="signup_form_label" htmlFor="owner-first-name">نام صاحبت شرکت :</label>
+      <div className='line'></div>
+      {errors.ownerFirstName && (
+        <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5'>
+          {errors.ownerFirstName.message}
+        </p>
+      )}
+    </div>
+    <div className='signup_form_container'>
+      <input {...register("ownerLastName")} className="signup_form_input" id='owner-last-name' type='text' required />
+      <label className="signup_form_label" htmlFor="owner-last-name">نام خانوادگی صاحبت شرکت :</label>
+      <div className='line'></div>
+      {errors.ownerLastName && (
+        <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5'>
+          {errors.ownerLastName.message}
+        </p>
+      )}
+    </div>
+    <div className='signup_form_container'>
+      <input {...register("ownerPhoneNumber")} className="signup_form_input" id='ownerPhoneNumber' type='text' required />
+      <label className="signup_form_label" htmlFor="ownerPhoneNumber">شماره تلفن صاحب شرکت :</label>
+      <div className='line'></div>
+      {errors.ownerPhoneNumber && (
+        <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5'>
+          {errors.ownerPhoneNumber.message}
+        </p>
+      )}
+    </div>
+    <div className='signup_form_container'>
+      <textarea {...register("address")} className="signup_form_input !pt-[20px] resize-none" id='address' required />
+      <label className="signup_form_label" htmlFor="address">آدرس :</label>
+      <div className='line'></div>
+      {errors.address && (
+        <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5'>
+          {errors.address.message}
+        </p>
+      )}
+    </div>
+  </div>
+)}
       <button 
+        onClick={()=>{console.log(getValues("isBusinessSigninInput"));
+        }}
         disabled={isSubmitting}
         type='submit'
         className="w-1/8 py-2 mt-4 bg-red-600 text-[#212121] rounded hover:bg-red-700 focus:outline-none disabled:bg-red-300"
       >
         ثبت نام
       </button>
+      <div className='flex gap-3 mt-5 w-full justify-end'>
+      <label  htmlFor="isBusinessSigninInput">ثبت نام شرکت</label>
+      <input {...register("isBusinessSigninInput")} checked={isBusinessSigninInput} onChange={()=>setIsBusinessSigninInput(!isBusinessSigninInput)} type="checkbox" name='isBusinessSigninInput' id='isBusinessSigninInput'/>
+      </div>
     </form>
 
   );
