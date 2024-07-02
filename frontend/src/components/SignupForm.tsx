@@ -1,13 +1,16 @@
 "use client"
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+import Cookies from 'js-cookie';
 
 import {Controller, useForm} from "react-hook-form"
 
 import citys from "../../public/c.json"
 import States from "../../public/p.json"
 
-import { z } from "zod"
+import { string, z } from "zod"
 import { zodResolver } from '@hookform/resolvers/zod';
 
 
@@ -19,6 +22,7 @@ import Select, { ActionMeta, SingleValue } from "react-select"
 
 
 import { FaCalendarAlt } from "react-icons/fa";
+
 
 
 
@@ -187,6 +191,8 @@ const SignupForm = () => {
   const [filteredCities, setFilteredCities] = useState<IfilterCitys[]>([]);
   const [isBusinessSigninInput,setIsBusinessSigninInput] = useState(false)
 
+  const { push } = useRouter();
+
   const handleStateChange = (selectedOption: SingleValue<StateOption>,
     actionMeta: ActionMeta<StateOption>) => {
     if (selectedOption) {
@@ -212,69 +218,69 @@ const SignupForm = () => {
   };
 
 
-  const onSubmit = async (userInfo: signUpSchema) => {
-
-    console.log(userInfo.isBusinessSigninInput);
-    
+  const onSubmit = async (userInfo:signUpSchema) => {
     try {
-      
       const userData = `
-      userData: {
-        username: "${userInfo.username}",
-        firstName: "${userInfo.firstName}",
-        lastName: "${userInfo.lastName}",
-        password: "${userInfo.password}",
-        phoneNumber: "+${userInfo.phoneNumber}",
-        landlineNumber: "+${userInfo.landlineNumber}",
-        email: "${userInfo.email}",
-        city: "${userInfo.city}",
-        birthDate: "${userInfo.birthDate}"
-      }
-    `;
-
-    const businessData = userInfo.isBusinessSigninInput ? `
-      businessData: {
-        name: "${userInfo.businessName}",
-        ownerFirstName: "${userInfo.ownerFirstName}",
-        ownerLastName: "${userInfo.ownerLastName}",
-        ownerPhoneNumber: "${userInfo.ownerPhoneNumber}",
-        address: "${userInfo.address}"
-      }
-    ` : '';
-
-    const query = `
-      mutation {
-        createUser(
-          ${userData}
-          ${businessData}
-        ) {
-          success
-          errors
-          redirectUrl
+        userData: {
+          username: "${userInfo.username}",
+          firstName: "${userInfo.firstName}",
+          lastName: "${userInfo.lastName}",
+          password1: "${userInfo.password}",
+          password2: "${userInfo.confirmPassword}",
+          phoneNumber: "+${userInfo.phoneNumber}",
+          landlineNumber: "+${userInfo.landlineNumber}",
+          email: "${userInfo.email}",
+          city: "${userInfo.city}",
+          birthdate: "${userInfo.birthDate}"
         }
-      }
-    `;
-      
-    const response = await fetch('http://127.0.0.1:8000/users/graphql/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ query }),
-    });
+      `;
+  
+      const businessData = userInfo.isBusinessSigninInput ? `
+        businessData: {
+          name: "${userInfo.businessName}",
+          ownerFirstName: "${userInfo.ownerFirstName}",
+          ownerLastName: "${userInfo.ownerLastName}",
+          ownerPhoneNumber: "${userInfo.ownerPhoneNumber}",
+          address: "${userInfo.address}"
+        }
+      ` : '';
+  
+      const query = `
+        mutation CreateUser{
+          createUser(
+            ${userData}
+            ${businessData}
+          ) {
+            success
+            errors
+            redirectUrl
+          }
+        }
+      `;
 
+  
+      const response = await fetch('http://127.0.0.1:8000/users/graphql/', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query }),
+      });
       const data = await response.json();
-      if (!response.ok) {
-        return;
-      }
-  
+      const { createUser } = data.data;
+      console.log(createUser.errors);
+      console.log(createUser.success);
+      
+
       if (data.errors) {
-        console.error("GraphQL Error:", data.errors);
+        console.error('GraphQL Error:', data.errors);
         return;
       }
   
-      if (data.data.createUser.errors) {
-        const errors = JSON.parse(data.data.createUser.errors)        
+  
+      if (createUser.errors && createUser.success == false) {
+        const errors = JSON.parse(createUser.errors);
   
         if (errors.username) {
           setError("username", {
@@ -282,8 +288,14 @@ const SignupForm = () => {
             message: errors.username,
           });
         }
-        if (errors.password) {
+        if (errors.password1) {
           setError("password", {
+            type: "server",
+            message: errors.password,
+          });
+        }
+        if (errors.password2) {
+          setError("confirmPassword", {
             type: "server",
             message: errors.password,
           });
@@ -312,10 +324,10 @@ const SignupForm = () => {
             message: errors.city,
           });
         }
-        if (errors.birth_date) {
+        if (errors.birthdate) {
           setError("birthDate",{
             type:"server",
-            message: errors.birth_date
+            message: errors.birthdate
           })
         }
         if (errors.name) {
@@ -348,18 +360,21 @@ const SignupForm = () => {
             message: errors.address
           })
         }
+  
         return;
       }
   
-      if (data.data.createUser.success) {
-        alert("User created successfully!");
-        reset();
+
+      
+      if (createUser.success) {
+        push(createUser.redirectUrl)
       } else {
-        alert("Failed to create user");
+        alert('Failed to create user');
+
       }
     } catch (error) {
-      console.error("Error submitting the form:", error);
-      alert("An unexpected error occurred");
+      console.error('Error submitting the form:', error);
+      alert('An unexpected error occurred');
     }
   };
   
@@ -628,7 +643,7 @@ const SignupForm = () => {
 </div>
 
 {isBusinessSigninInput && (
-  <div className='bg-blue-700 p-5 w-full mt-5 rounded-sm'>
+  <div className=' w-full mt-8 rounded-sm'>
     <div className='signup_form_container !mt-0'>
       <input {...register("businessName")} className="signup_form_input" id='business-name' type='text' required />
       <label className="signup_form_label" htmlFor="business-name">نام شرکت :</label>
@@ -682,11 +697,9 @@ const SignupForm = () => {
   </div>
 )}
       <button 
-        onClick={()=>{console.log(getValues("isBusinessSigninInput"));
-        }}
         disabled={isSubmitting}
         type='submit'
-        className="w-1/8 py-2 mt-4 bg-red-600 text-[#212121] rounded hover:bg-red-700 focus:outline-none disabled:bg-red-300"
+        className="w-1/8 py-2 mt-6 bg-red-600 text-[#212121] rounded hover:bg-red-700 focus:outline-none disabled:bg-red-300"
       >
         ثبت نام
       </button>

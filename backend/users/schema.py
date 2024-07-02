@@ -136,7 +136,7 @@ class CreateUser(graphene.Mutation):
             )
 
 
-r = redis.StrictRedis(host="redis", port=6379, db=0)
+r = redis.StrictRedis(host="127.0.0.1", port=6379, db=0)
 
 
 class VerifyEmail(graphene.Mutation):
@@ -149,6 +149,7 @@ class VerifyEmail(graphene.Mutation):
         code = graphene.String(required=True)
 
     def mutate(self, info, code):
+        print(info.context.session.items())
         user = get_object_or_404(User, email=info.context.session.get("email"))
         stored_code = r.get(f"verification_code_{user.email}")
         if stored_code and stored_code.decode("utf-8") == code:
@@ -263,7 +264,7 @@ class OtpLoginRequest(graphene.Mutation):
         return OtpLoginRequest(success=True, redirect_url=f"/users/otplogin/")
 
 
-r = redis.StrictRedis(host="redis", port=6379, db=0)
+r = redis.StrictRedis(host="127.0.0.1", port=6379, db=0)
 
 
 class OtpLogin(graphene.Mutation):
@@ -353,7 +354,7 @@ class ForgotPasswordRequest(graphene.Mutation):
         )
 
 
-r = redis.StrictRedis(host="redis", port=6379, db=0)
+r = redis.StrictRedis(host="127.0.0.1", port=6379, db=0)
 
 
 class ForgotPassword(graphene.Mutation):

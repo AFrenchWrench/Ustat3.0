@@ -6,3 +6,4 @@ chown -R celeryuser:celeryuser /app/
 
 # Switch to the new user and start Celery
 su celeryuser -c "celery -A config worker --loglevel=info"
+# celery -A config worker -l info --pool=solo
