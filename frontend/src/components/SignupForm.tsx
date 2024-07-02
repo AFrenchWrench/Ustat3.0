@@ -3,14 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import Cookies from 'js-cookie';
 
 import {Controller, useForm} from "react-hook-form"
 
 import citys from "../../public/c.json"
 import States from "../../public/p.json"
 
-import { string, z } from "zod"
+import {  z } from "zod"
 import { zodResolver } from '@hookform/resolvers/zod';
 
 
@@ -268,6 +267,8 @@ const SignupForm = () => {
         body: JSON.stringify({ query }),
       });
       const data = await response.json();
+      console.log(data);
+      
       const { createUser } = data.data;
       console.log(createUser.errors);
       console.log(createUser.success);
@@ -384,9 +385,7 @@ const SignupForm = () => {
       handleSubmit,
       formState:{errors,isSubmitting},
       setError,
-      reset,
       setValue,
-      getValues,
       control
     } = useForm<signUpSchema>({
       resolver:zodResolver(userSchema),
