@@ -116,13 +116,13 @@ class CreateUser(graphene.Mutation):
                     return CreateUser(
                         success=False,
                         errors=error_messages,
-                        redirect_url="/users/signup/",
+                        redirect_url="/auth/",
                     )
             send_email(info, user_instance, "verification")
             return CreateUser(
                 success=True,
                 errors={},
-                redirect_url="/users/email-auth/",
+                redirect_url="/auth/email-auth/",
             )
         else:
             errors = form.errors.as_data()
@@ -132,7 +132,7 @@ class CreateUser(graphene.Mutation):
             return CreateUser(
                 success=False,
                 errors=error_messages,
-                redirect_url="/users/signup/",
+                redirect_url="/auth/",
             )
 
 
@@ -149,7 +149,7 @@ class VerifyEmail(graphene.Mutation):
         code = graphene.String(required=True)
 
     def mutate(self, info, code):
-        print(info.context.session.items())
+        print(info.context.session.get("email"))
         user = get_object_or_404(User, email=info.context.session.get("email"))
         stored_code = r.get(f"verification_code_{user.email}")
         if stored_code and stored_code.decode("utf-8") == code:
@@ -167,7 +167,7 @@ class VerifyEmail(graphene.Mutation):
         return VerifyEmail(
             success=False,
             error="کد تایید وارد شده صحیح نمیباشد",
-            redirect_url="/users/email-auth/",
+            redirect_url="/auth/email-auth/",
             token=None,
         )
 
@@ -215,7 +215,7 @@ class Login(graphene.Mutation):
                 user,
                 "verification",
             )
-            return Login(token=None, success=False, redirect_url="/users/email-auth/")
+            return Login(token=None, success=False, redirect_url="/auth/email-auth/")
 
         token = get_token(user)
         return Login(
@@ -254,14 +254,14 @@ class OtpLoginRequest(graphene.Mutation):
                 user,
                 "verification",
             )
-            return OtpLoginRequest(success=False, redirect_url="/users/email-auth/")
+            return OtpLoginRequest(success=False, redirect_url="/auth/email-auth/")
 
         send_email(
             info,
             user,
             "otp",
         )
-        return OtpLoginRequest(success=True, redirect_url=f"/users/otplogin/")
+        return OtpLoginRequest(success=True, redirect_url=f"/auth/otplogin/")
 
 
 r = redis.StrictRedis(host="127.0.0.1", port=6379, db=0)
@@ -292,7 +292,7 @@ class OtpLogin(graphene.Mutation):
         return OtpLogin(
             success=False,
             error="کد وارد شده صحیح نمیباشد",
-            redirect_url="/users/otplogin/",
+            redirect_url="/auth/otplogin/",
             token=None,
         )
 
@@ -340,7 +340,7 @@ class ForgotPasswordRequest(graphene.Mutation):
                 user,
             )
             return ForgotPasswordRequest(
-                success=False, redirect_url="/users/email-auth/"
+                success=False, redirect_url="/auth/email-auth/"
             )
 
         send_email(
@@ -350,7 +350,7 @@ class ForgotPasswordRequest(graphene.Mutation):
         )
 
         return ForgotPasswordRequest(
-            success=True, redirect_url=f"/users/forgotpassword/"
+            success=True, redirect_url=f"/auth/forgotpassword/"
         )
 
 
@@ -375,12 +375,12 @@ class ForgotPassword(graphene.Mutation):
             return ForgotPassword(
                 success=True,
                 error=None,
-                redirect_url=f"/users/{user.get_username()}/resetpassword/",
+                redirect_url=f"/auth/{user.get_username()}/resetpassword/",
             )
         return ForgotPassword(
             success=False,
             error="کد وارد شده صحیح نمیباشد",
-            redirect_url="/users/forgotpassword/",
+            redirect_url="/auth/forgotpassword/",
         )
 
 
@@ -413,7 +413,7 @@ class ResetPassword(graphene.Mutation):
                 return ResetPassword(
                     success=True,
                     error=error_messages,
-                    redirect_url=f"/users/{user.get_username()}/resetpassword/",
+                    redirect_url=f"/auth/{user.get_username()}/resetpassword/",
                 )
 
 

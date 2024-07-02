@@ -34,8 +34,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     # Third party middlewares
-    "corsheaders.middleware.CorsMiddleware",    
-    # Main middlewares 
+    "corsheaders.middleware.CorsMiddleware",
+    # Main middlewares
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -133,10 +133,10 @@ CORS_ALLOWED_ORIGINS = config("ALLOWED_ORIGINS", cast=Csv())
 
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOW_METHODS = [
-    "POST",
-    "OPTIONS"
-]
+SESSION_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SECURE = True
+
+CORS_ALLOW_METHODS = ["POST", "OPTIONS"]
 
 # Allow specific HTTP headers
 CORS_ALLOW_HEADERS = [
