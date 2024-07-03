@@ -5,6 +5,8 @@ import { useForm, Controller } from 'react-hook-form';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 
+import Cookies from 'js-cookie';
+
 import { z } from "zod";
 import { zodResolver } from '@hookform/resolvers/zod';
 import CountdownTimer from '@/components/countDown';
@@ -71,8 +73,11 @@ const Page = () => {
       });
 
       const { data } = await response.json();
+      console.log(data);
+      
 
       if (data.verifyEmail.success) {
+        Cookies.set('Authorization', `Bearer ${data.verifyEmail.token}`);
         router.push(data.verifyEmail.redirectUrl);
       } else {
         setError("verificationCode", {
