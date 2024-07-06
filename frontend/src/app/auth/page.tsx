@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 
 const Auth = () => {
 
-  const[signin,setSignin] = useState(false)
+  const[signin,setSignin] = useState(true)
 
   const signInSignUpHandler = ()=>{
     setSignin(!signin)

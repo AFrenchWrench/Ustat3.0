@@ -44,7 +44,34 @@ const Page = () => {
     return () => clearInterval(countdown); // پاک کردن تایمر در cleanup
   }, []); // اجرای این useEffect یکبار تنها هنگام بارگذاری صفحه
 
-  const handleResend = () => {
+  const handleResend =async () => {
+    const emailCookie = Cookies.get("email")
+    const query = `
+            mutation ResendEmail {
+                resendEmail(emailType:"verification") {
+                success
+                error
+    }
+}
+    `;
+    try {
+      const response = await fetch('http://127.0.0.1:8000/users/graphql/', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'email': emailCookie ? emailCookie : '',
+        },
+        body: JSON.stringify({ query }),
+      });
+      
+      const  data  = await response.json();
+      
+
+    } catch (error) {
+      console.log(error);
+      
+    }
     setIsTimerRunning(true); // شروع مجدد تایمر
     setResendvar(false); // غیر فعال کردن دکمه ارسال دوباره کد
   };
@@ -92,7 +119,7 @@ const Page = () => {
     } catch (error) {
       setError("verificationCode", {
         type: "server",
-        message: "اشتباهی از سمت سرور پیش آمده، لطفا بعدا دوباره امتحان کنید",
+        message: `${error}` || "اشتباهی از سمت سرور پیش آمده، لطفا بعدا دوباره امتحان کنید",
       });
     }
   };

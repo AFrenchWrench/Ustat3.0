@@ -1,15 +1,10 @@
-"use client"
+"use client";
 
 import React, { useEffect, useState } from 'react';
-
 import { useRouter } from 'next/navigation';
-
 import Cookies from 'js-cookie';
-
 import styles from '../style/profilePageStyles.module.css';
-
 import * as jalaali from 'jalaali-js';
-
 import { RiLogoutBoxLine } from "react-icons/ri";
 import { FiEdit } from "react-icons/fi";
 
@@ -17,6 +12,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const { push } = useRouter();
 
   useEffect(() => {
@@ -40,6 +36,15 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
                   landlineNumber
                   email
                   birthdate
+                  business {
+            id
+            name
+            ownerFirstName
+            ownerLastName
+            ownerPhoneNumber
+            address
+            isConfirmed
+        }
                 }
               }
             `,
@@ -47,7 +52,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
         });
         const data = await response.json();
         console.log(data);
-        
+
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
@@ -57,22 +62,29 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
         }
 
         setUserData(data.data.currentUser);
-        push(`/users/${data.data.currentUser.username}`)
+
+        if (!isRedirecting) {
+          setIsRedirecting(true);
+          push(`/users/${data.data.currentUser.username}`);
+        }
       } catch (error) {
         if (error instanceof Error) {
           setError(error.message);
         } else {
           setError('An unknown error occurred');
         }
-        setError("not login")
-        push("/auth")
+        if (!isRedirecting) {
+          setIsRedirecting(true);
+          setError("not login");
+          push("/auth");
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchUserData();
-  }, [params.username, push]);
+  }, [params.username, push, isRedirecting]);
 
   const convertToJalaali = (gregorianDate: string) => {
     const [year, month, day] = gregorianDate.split('-');
@@ -80,8 +92,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
     return `${jalaaliDate.jy}/${jalaaliDate.jm}/${jalaaliDate.jd}`;
   };
 
-
-  const handleLogout =async ()=>{
+  const handleLogout = async () => {
     const token = Cookies.get('Authorization');
 
     try {
@@ -103,62 +114,95 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
         }),
       });
       const data = await response.json();
-        console.log(data);
-        
-        if (data.data.logout.success) {
-          Cookies.remove("Authorization")
-          push(data.data.logout.redirectUrl)
-        }
-        else{
-          setError("از حساب کاربری خارج هستید")
-        }
+      console.log(data);
 
+      if (data.data.logout.success) {
+        Cookies.remove("Authorization");
+        push(data.data.logout.redirectUrl);
+      } else {
+        setError("از حساب کاربری خارج هستید");
+      }
     } catch (error) {
       console.log(error);
-      push("/")
-      
+      push("/");
     }
-  }
+  };
 
   if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (error) return ;
 
   return (
     <div className={styles.profileContainer}>
       <div className={styles.profileDetails}>
         <h1 className={styles.username}>{userData.username}</h1>
 
-      <div className={styles.firsLastName}>
-        <span>
-           <strong>نام:</strong><p> {userData.firstName}</p>
-        </span>
-
-        <span>
-           <strong>نام خانوادگی:</strong><p> {userData.lastName}</p>
-        </span>
-      </div>
-
         <div className={styles.firsLastName}>
-        <span>
-           <strong>تلفن همراه :</strong><p> {userData.phoneNumber}</p>
-        </span>
-        <span>
-          <strong>تلفن ثابت :</strong><p> {userData.landlineNumber}</p>
-        </span>
+          <span>
+            <strong>نام:</strong><p> {userData.firstName}</p>
+          </span>
+
+          <span>
+            <strong>نام خانوادگی:</strong><p> {userData.lastName}</p>
+          </span>
         </div>
 
         <div className={styles.firsLastName}>
-        <span>
-           <strong>ایمیل :</strong><p> {userData.email}</p>
-        </span>
-        <span>
-          <strong>تاریخ تولد :</strong><p> {convertToJalaali(userData.birthdate)}</p>
-        </span>
+          <span>
+            <strong>تلفن همراه :</strong><p dir='ltr'> {userData.phoneNumber}</p>
+          </span>
+          <span>
+            <strong>تلفن ثابت :</strong><p dir='ltr'> {userData.landlineNumber}</p>
+          </span>
         </div>
+
+        <div className={styles.firsLastName}>
+          <span>
+            <strong>ایمیل :</strong><p dir='ltr' className='text-xs'> {userData.email}</p>
+          </span>
+          <span>
+            <strong>تاریخ تولد :</strong><p> {convertToJalaali(userData.birthdate)}</p>
+          </span>
+        </div>
+
+        {
+          userData.business?
+          <>
+          
+          <div className={styles.firsLastName}>
+          <span>
+            <strong>نام شرکت :</strong><p  className='text-xs'> {userData.business.name}</p>
+          </span>
+          <span>
+            <strong>وضعیت تایید :</strong><p className={userData.business.isConfirmed?"!text-green-400":"!text-red-400"}> {userData.business.isConfirmed?"تایید شده":"تایید نشده"}</p>
+          </span>
+        </div>
+
+        <div className={styles.firsLastName}>
+          <span>
+            <strong>نام صاحب شرکت :</strong><p  className='text-xs'> {userData.business.ownerFirstName}</p>
+          </span>
+          <span>
+            <strong>نام خانوادگی صاحب شرکت :</strong><p> {userData.business.ownerLastName}</p>
+          </span>
+        </div>
+        <div className={styles.firsLastName}>
+          <span>
+            <strong>شماره همراه صاحب شرکت :</strong><p > {userData.business.ownerPhoneNumber}</p>
+          </span>
+          <span>
+            <strong >آدرس :</strong><p style={{fontSize:"11px"}}> {userData.business.address}</p>
+          </span>
+        </div>
+
+        
+
+        
+          </>
+        :""}
 
         <div className={styles.buttonContainer}>
-          <button className='hover:text-gray-300'>ویرایش<FiEdit/></button>
-          <button onClick={handleLogout} className='text-red-400 hover:text-red-200'>خروج از حساب<RiLogoutBoxLine size='20px'/></button>
+          <button className='hover:text-gray-300'>ویرایش<FiEdit /></button>
+          <button onClick={handleLogout} className='text-red-400 hover:text-red-200'>خروج از حساب<RiLogoutBoxLine size='20px' /></button>
         </div>
       </div>
     </div>

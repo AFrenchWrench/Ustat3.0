@@ -42,9 +42,36 @@ const Page = () => {
     }, 1000); // هر 1000 میلی‌ثانیه (یک ثانیه) اجرا شود
 
     return () => clearInterval(countdown); // پاک کردن تایمر در cleanup
-  }, []); // اجرای این useEffect یکبار تنها هنگام بارگذاری صفحه
+  }, [isTimerRunning]); // اجرای این useEffect یکبار تنها هنگام بارگذاری صفحه
 
-  const handleResend = () => {
+  const handleResend = async () => {
+    const emailCookie = Cookies.get("email")
+    const query = `
+            mutation ResendEmail {
+                resendEmail(emailType:"verification") {
+                success
+                error
+    }
+}
+    `;
+    try {
+      const response = await fetch('http://127.0.0.1:8000/users/graphql/', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'email': emailCookie ? emailCookie : '',
+        },
+        body: JSON.stringify({ query }),
+      });
+      
+      const  data  = await response.json();
+      
+
+    } catch (error) {
+      console.log(error);
+      
+    }
     setIsTimerRunning(true); // شروع مجدد تایمر
     setResendvar(false); // غیر فعال کردن دکمه ارسال دوباره کد
   };
@@ -81,7 +108,7 @@ const Page = () => {
       
 
       if (data.data.verifyEmail.success) {
-        Cookies.set('Authorization', `Bearer ${data.verifyEmail.token}`,{ expires:.5});
+        Cookies.set('Authorization', `Bearer ${data.data.verifyEmail.token}`,{ expires:.5});
         Cookies.remove("email")
         push(data.data.verifyEmail.redirectUrl);
       } else {
@@ -140,7 +167,7 @@ const Page = () => {
           render={({ field }) => <CustomReactCodeInput {...field} {...props} />}
         />
         <div className='w-full flex justify-between items-center mt-5'>
-          <button disabled={isSubmitting} className='w-1/8 py-2 bg-red-600 text-[#212121] rounded hover:bg-red-700 focus:outline-none disabled:bg-red-300' type='submit'>تایید</button>
+          <button  disabled={isSubmitting} className='w-1/8 py-2 bg-red-600 text-[#212121] rounded hover:bg-red-700 focus:outline-none disabled:bg-red-300' type='submit'>تایید</button>
           
           <div className='flex flex-col items-start h-[30px]'>
             {isTimerRunning && <CountdownTimer setResendvar={setResendvar} setIsTimerRunning={setIsTimerRunning} />} {/* Pass state setters to CountdownTimer */}

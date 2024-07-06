@@ -1,3 +1,5 @@
+"use client"
+
 import React from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
@@ -31,59 +33,65 @@ const SigninForm = () => {
 
   const onSubmit: SubmitHandler<SignInSchema> = async (userInfo) => {
     try {
-      const token = Cookies.get('Authorization');
       const response = await fetch('http://127.0.0.1:8000/users/graphql/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token ? token : '',
         },
         body: JSON.stringify({
           query: `
-          mutation Login($username: String!, $password: String!) {
-            login(username: $username, password: $password) {
-              token
-              success
-              redirectUrl
+            mutation Login($username: String!, $password: String!) {
+              login(username: $username, password: $password) {
+                token
+                success
+                redirectUrl
+              }
             }
-          }
-        `,
+          `,
           variables: {
             username: userInfo.username,
             password: userInfo.password,
           },
         }),
       });
-
+  
       const data = await response.json();
-      console.log("Response data:", data); 
-
+      console.log("Response data:", data);
+  
       if (!response.ok) {
         console.error("Network response was not ok", response);
+        setError("username", { message: "Network response was not ok", type: "network" });
         return;
       }
-
+  
       if (data.errors) {
-        console.error("Server returned errors:", data.errors); 
-        setError("username", { message: "نام کاربری یا رمز عبور اشتباه است", type: "server" });
+        console.error("Server returned errors:", data.errors);
+        setError("username", { message: data.errors[0].message || "نام کاربری یا رمز عبور اشتباه است", type: "server" });
+        return;
       }
-
-      if (data.data && data.data.login.success && data.data.login.token) {
-        Cookies.set('Authorization', `Bearer ${data.data.login.token}`);
-        push(data.data.login.redirectUrl);
-        reset();
-      }
-      if (data.data.login.success == false && data.data.login.redirectUrl){
-        Cookies.set('username', `${userInfo.username}`);
-        push(data.data.login.redirectUrl)
-      }
-      else {
-        console.error("Login failed with no token returned");
-        setError("username", { message: "نام کاربری یا رمز عبور اشتباه است", type: "server" });
+  
+      const { login } = data.data;
+      if (login.success) {
+        if (login.token) {
+          Cookies.set('Authorization', `Bearer ${login.token}`);
+          push(login.redirectUrl);
+          reset();
+        } else {
+          console.error("Login succeeded but no token was returned");
+          setError("username", { message: "No token returned", type: "server" });
+        }
+      } else {
+        if (login.redirectUrl) {
+          Cookies.set('username', userInfo.username);
+          push(login.redirectUrl);
+        } else {
+          console.error("Login failed without a redirect URL");
+          setError("username", { message: "نام کاربری یا رمز عبور اشتباه است", type: "server" });
+        }
       }
     } catch (error) {
       console.error("Error submitting the form:", error);
-      alert("An unexpected error occurred");
+      setError("username", { message: "An unexpected error occurred", type: "unknown" });
     }
   };
 
