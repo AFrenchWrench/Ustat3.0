@@ -141,6 +141,37 @@ class CreateUser(graphene.Mutation):
             )
 
 
+class CreateBusiness(graphene.Mutation):
+    class Arguments:
+        business_data = BusinessInput(required=True)
+
+    success = graphene.Boolean()
+    errors = graphene.JSONString()
+    redirect_url = graphene.String()
+
+    @login_required
+    def mutate(self, info, business_data):
+        user = info.context.user
+        business_form = BusinessSignUpForm(business_data)
+        if business_form.is_valid():
+            business_form.save(user=user)
+            return CreateBusiness(
+                success=True,
+                errors=None,
+                redirect_url=f"/users/{user.get_username()}",
+            )
+        else:
+            errors = business_form.errors.as_data()
+            error_messages = {
+                field: error[0].messages[0] for field, error in errors.items()
+            }
+            return CreateBusiness(
+                success=False,
+                errors=error_messages,
+                redirect_url=f"/users/{user.get_username()}",
+            )
+
+
 class CreateDriver(graphene.Mutation):
     class Arguments:
         input = DriverInput(required=True)
@@ -479,6 +510,7 @@ class Logout(graphene.Mutation):
 
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
+    create_business = CreateBusiness.Field()
     create_driver = CreateDriver.Field()
     update_user = UpdateUser.Field()
     login = Login.Field()
