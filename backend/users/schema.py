@@ -35,7 +35,7 @@ from users.models import (
 User = get_user_model()
 
 
-def send_email(info, user, template):
+def send_email(user, template):
     send_code_email.delay(
         user.get_full_name(),
         user.email,
@@ -116,7 +116,7 @@ class CreateUser(graphene.Mutation):
                         errors=error_messages,
                         redirect_url="/auth/",
                     )
-            send_email(info, user_instance, "verification")
+            send_email(user_instance, "verification")
             return CreateUser(
                 success=True,
                 errors={},
@@ -173,6 +173,31 @@ class VerifyEmail(graphene.Mutation):
         )
 
 
+class ResendEmail(graphene.Mutation):
+
+    success = graphene.Boolean()
+    error = graphene.String()
+
+    class Arguments:
+        email_type = graphene.String(required=True)
+
+    def mutate(self, info, email_type):
+        try:
+            if info.context.session.get("email"):
+                user = get_object_or_404(User, email=info.context.session.get("email"))
+            else:
+                user = get_object_or_404(
+                    User, username=info.context.session.get("username")
+                )
+            send_email(
+                user,
+                email_type,
+            )
+            return ResendEmail(success=True, error=None)
+        except Exception as e:
+            return ResendEmail(success=False, error=str(e))
+
+
 class CreateDriver(graphene.Mutation):
     class Arguments:
         input = DriverInput(required=True)
@@ -212,7 +237,6 @@ class Login(graphene.Mutation):
             raise GraphQLError("Invalid username or password")
         elif user is not None and not user.is_fully_authenticated:
             send_email(
-                info,
                 user,
                 "verification",
             )
@@ -251,18 +275,16 @@ class OtpLoginRequest(graphene.Mutation):
 
         if user is not None and not user.is_fully_authenticated:
             send_email(
-                info,
                 user,
                 "verification",
             )
             return OtpLoginRequest(success=False, redirect_url="/auth/email-auth/")
 
         send_email(
-            info,
             user,
             "otp",
         )
-        return OtpLoginRequest(success=True, redirect_url=f"/auth/otplogin/")
+        return OtpLoginRequest(success=True, redirect_url=f"/auth/otp-login/")
 
 
 r = redis.StrictRedis(host="127.0.0.1", port=6379, db=0)
@@ -292,7 +314,7 @@ class OtpLogin(graphene.Mutation):
         return OtpLogin(
             success=False,
             error="کد وارد شده صحیح نمیباشد",
-            redirect_url="/auth/otplogin/",
+            redirect_url="/auth/otp-login/",
             token=None,
         )
 
