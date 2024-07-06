@@ -133,9 +133,6 @@ CORS_ALLOWED_ORIGINS = config("ALLOWED_ORIGINS", cast=Csv())
 
 CORS_ALLOW_CREDENTIALS = True
 
-SESSION_COOKIE_SAMESITE = "None"
-SESSION_COOKIE_SECURE = True
-
 CORS_ALLOW_METHODS = ["POST", "OPTIONS"]
 
 # Allow specific HTTP headers
@@ -150,6 +147,8 @@ CORS_ALLOW_HEADERS = [
     "X-Mx-ReqToken",
     "X-Requested-With",
     "X-CSRFToken",
+    "email",
+    "username",
 ]
 
 # Expose specific headers to the browser

@@ -147,11 +147,11 @@ class VerifyEmail(graphene.Mutation):
         code = graphene.String(required=True)
 
     def mutate(self, info, code):
-        if info.context.session.get("email"):
-            user = get_object_or_404(User, email=info.context.session.get("email"))
+        if info.context.headers.get("email"):
+            user = get_object_or_404(User, email=info.context.headers.get("email"))
         else:
             user = get_object_or_404(
-                User, username=info.context.session.get("username")
+                User, username=info.context.headers.get("username")
             )
         stored_code = r.get(f"verification_code_{user.email}")
         if stored_code and stored_code.decode("utf-8") == code:
@@ -183,11 +183,11 @@ class ResendEmail(graphene.Mutation):
 
     def mutate(self, info, email_type):
         try:
-            if info.context.session.get("email"):
-                user = get_object_or_404(User, email=info.context.session.get("email"))
+            if info.context.headers.get("email"):
+                user = get_object_or_404(User, email=info.context.headers.get("email"))
             else:
                 user = get_object_or_404(
-                    User, username=info.context.session.get("username")
+                    User, username=info.context.headers.get("username")
                 )
             send_email(
                 user,
@@ -300,7 +300,7 @@ class OtpLogin(graphene.Mutation):
         code = graphene.String(required=True)
 
     def mutate(self, info, code):
-        user = get_object_or_404(User, email=info.context.session.get("email"))
+        user = get_object_or_404(User, email=info.context.headers.get("email"))
         stored_code = r.get(f"verification_code_{user.email}")
         if stored_code and stored_code.decode("utf-8") == code:
             r.delete(f"verification_code_{user.email}")
@@ -340,6 +340,7 @@ class Mutation(graphene.ObjectType):
     logout = Logout.Field()
     verify_email = VerifyEmail.Field()
     resend_email = ResendEmail.Field()
+
 
 class Query(graphene.ObjectType):
     current_user = graphene.Field(UserType)
