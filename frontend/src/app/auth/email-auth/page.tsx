@@ -51,6 +51,7 @@ const Page = () => {
 
   const onSubmit = async (formData: TcodeSchema) => {
     const emailCookie = Cookies.get("email")
+    const usernameCookie = Cookies.get("username")
     const { verificationCode } = formData;
     const query = `
       mutation VerifyEmail {
@@ -70,6 +71,7 @@ const Page = () => {
         headers: {
           'Content-Type': 'application/json',
           'email': emailCookie ? emailCookie : '',
+          'username': usernameCookie ? usernameCookie : '',
         },
         body: JSON.stringify({ query }),
       });

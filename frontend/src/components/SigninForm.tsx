@@ -70,11 +70,11 @@ const SigninForm = () => {
 
       if (data.data && data.data.login.success && data.data.login.token) {
         Cookies.set('Authorization', `Bearer ${data.data.login.token}`);
-        Cookies.set('username', `${userInfo.username}`);
         push(data.data.login.redirectUrl);
         reset();
       }
       if (data.data.login.success == false && data.data.login.redirectUrl){
+        Cookies.set('username', `${userInfo.username}`);
         push(data.data.login.redirectUrl)
       }
       else {
