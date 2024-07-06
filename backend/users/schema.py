@@ -339,7 +339,7 @@ class Mutation(graphene.ObjectType):
     otp_login = OtpLogin.Field()
     logout = Logout.Field()
     verify_email = VerifyEmail.Field()
-
+    resend_email = ResendEmail.Field()
 
 class Query(graphene.ObjectType):
     current_user = graphene.Field(UserType)
