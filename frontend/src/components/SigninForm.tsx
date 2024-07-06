@@ -4,15 +4,23 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Cookies from 'js-cookie';
 
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+
+
+const userSchema = z.object({
+  username: z.string()
+    .min(1, "نام کاربری نمی‌تواند خالی باشد")
+    .regex(/^[a-zA-Z][a-zA-Z0-9_]{3,20}$/, "نام کاربری معتبر نمیباشد"),
+  password: z.string()
+    .min(1, "گذرواژه نمی‌تواند خالی باشد")
+    .min(8, "گذرواژه باید حداقل 8 کاراکتر باشد."),
+});
+
 const SigninForm = () => {
-  const userSchema = z.object({
-    username: z.string()
-      .min(1, "نام کاربری نمی‌تواند خالی باشد")
-      .regex(/^[a-zA-Z][a-zA-Z0-9_]{3,20}$/, "نام کاربری معتبر نمیباشد"),
-    password: z.string()
-      .min(1, "گذرواژه نمی‌تواند خالی باشد")
-      .min(8, "گذرواژه باید حداقل 8 کاراکتر باشد."),
-  });
+
+
+  const {push} = useRouter()
 
   type SignInSchema = z.infer<typeof userSchema>;
 
@@ -60,13 +68,18 @@ const SigninForm = () => {
         setError("username", { message: "نام کاربری یا رمز عبور اشتباه است", type: "server" });
       }
 
-      if (data.data && data.data.login && data.data.login.token) {
+      if (data.data && data.data.login.success && data.data.login.token) {
         Cookies.set('Authorization', `Bearer ${data.data.login.token}`);
-        alert("User logged in successfully!");
+        Cookies.set('username', `${userInfo.username}`);
+        push(data.data.login.redirectUrl);
         reset();
-      } else {
+      }
+      if (data.data.login.success == false && data.data.login.redirectUrl){
+        push(data.data.login.redirectUrl)
+      }
+      else {
         console.error("Login failed with no token returned");
-        alert("Failed to log in");
+        setError("username", { message: "نام کاربری یا رمز عبور اشتباه است", type: "server" });
       }
     } catch (error) {
       console.error("Error submitting the form:", error);
@@ -75,7 +88,7 @@ const SigninForm = () => {
   };
 
   return (
-    <form noValidate onSubmit={handleSubmit(onSubmit)} className='signup_form flex flex-col items-center p-10 '>
+    <form noValidate onSubmit={handleSubmit(onSubmit)} className='signup_form flex flex-col items-center p-10 relative'>
      
       <div className='signup_form_container !mt-0'>
         <input
@@ -88,7 +101,7 @@ const SigninForm = () => {
           required
         />
          {errors.username && (
-        <p className='text-sm text-red-700 absolute bottom-0 translate-y-5'>
+        <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5'>
           {`${errors.username.message}`}
         </p>
       )}
@@ -108,7 +121,7 @@ const SigninForm = () => {
           required
         />
         {errors.password && (
-          <p className='text-sm text-red-700 absolute bottom-0 translate-y-5'>
+          <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5'>
             {`${errors.password.message}`}
           </p>
         )}
@@ -117,6 +130,7 @@ const SigninForm = () => {
       </div>
 
       <button className="w-1/8 py-2 mt-4 bg-red-600 text-[#212121] rounded hover:bg-red-700 focus:outline-none disabled:bg-red-300" type="submit" disabled={isSubmitting}>ورود</button>
+        <Link className='text-gray-300 text-sm absolute left-5 bottom-5' href={"/auth/otp-login-request"}>فراموشی رمزعبور؟</Link>
     </form>
   );
 }

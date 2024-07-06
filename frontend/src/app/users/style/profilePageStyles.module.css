@@ -1,0 +1,92 @@
+.profileContainer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f4f4f4;
+    padding: 20px;
+    border-radius: 8px;
+  }
+
+  
+  .profileInfo {
+    text-align: center;
+    margin-top: -50px;
+  }
+  
+  .avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 4px solid #fff;
+  }
+  
+  .username {
+    margin: 10px 0;
+    font-size: 24px;
+    font-weight: bold;
+    width: 100%;
+    text-align: center;
+  }
+  
+  
+  .profileDetails {
+    margin-top: 20px;
+    width: 80%;
+    max-width: 600px;
+    min-width: 300px;
+    padding: 20px;
+    background-color:rgb(42, 42, 42);
+    border: 2px solid gray;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .profileDetails p {
+    margin: 10px 0;
+    font-size: 15px;
+    font-weight: 100;
+    color: rgb(193, 193, 193);
+    background-color: rgb(34, 34, 34);
+    padding: 5px 8px;
+    border-radius: 5px;
+  }
+  .profileDetails strong{
+    font-size: 16px;
+    color: white;
+    margin-left: 10px;
+  }
+
+  .firsLastName{
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    margin: 5px;
+  }
+
+  .firsLastName span{
+    display: flex;
+    align-items: center;
+    width: 50%;
+    margin-right: 40px;
+  }
+
+  .buttonContainer{
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+  }
+  .buttonContainer button{
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  

@@ -53,8 +53,8 @@ const Page = () => {
     const emailCookie = Cookies.get("email")
     const { verificationCode } = formData;
     const query = `
-      mutation VerifyEmail {
-        verifyEmail(code: "${verificationCode}") {
+      mutation OtpLogin {
+        otpLogin(code: "${verificationCode}") {
           success
           error
           redirectUrl
@@ -62,7 +62,7 @@ const Page = () => {
         }
       }
     `;
-
+  
     try {
       const response = await fetch('http://127.0.0.1:8000/users/graphql/', {
         method: 'POST',
@@ -73,19 +73,20 @@ const Page = () => {
         },
         body: JSON.stringify({ query }),
       });
-
-      const  data  = await response.json();
+  
+      const data  = await response.json();
       console.log(data);
+      console.log(data.data.otpLogin.success);
       
-
-      if (data.data.verifyEmail.success) {
-        Cookies.set('Authorization', `Bearer ${data.verifyEmail.token}`,{ expires:.5});
-        Cookies.remove("email")
-        push(data.data.verifyEmail.redirectUrl);
+  
+      if (data.data.otpLogin.success) {
+        Cookies.set('Authorization', `Bearer ${data.data.otpLogin.token}`, { expires: 0.5 });
+        Cookies.remove("email");
+        push(data.data.otpLogin.redirectUrl);
       } else {
         setError("verificationCode", {
           type: "server",
-          message: data.data.verifyEmail.error,
+          message: data.data.otpLogin.error || "اشتباهی از سمت سرور پیش آمده، لطفا بعدا دوباره امتحان کنید",
         });
       }
     } catch (error) {

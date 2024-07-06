@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+import Cookies from 'js-cookie';
 
 import {Controller, useForm} from "react-hook-form"
 
@@ -368,6 +369,7 @@ const SignupForm = () => {
 
       
       if (createUser.success) {
+        Cookies.set('email', userInfo.email);
         push(createUser.redirectUrl)
       } else {
         alert('Failed to create user');
