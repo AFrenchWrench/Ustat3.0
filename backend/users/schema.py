@@ -25,7 +25,8 @@ from utils.email_verification import generate_verification_code
 from users.forms import (
     BusinessSignUpForm,
     UserSignUpForm,
-    PasswordChangeForm,
+    BusinessUpdateForm,
+    UserUpdateForm,
 )
 from users.models import (
     Business,
@@ -57,6 +58,12 @@ class BusinessType(DjangoObjectType):
 class DriverType(DjangoObjectType):
     class Meta:
         model = Driver
+
+
+# ========================Mutations Start========================
+
+
+# ========================Create Start========================
 
 
 class UserInput(graphene.InputObjectType):
@@ -101,11 +108,11 @@ class CreateUser(graphene.Mutation):
     def mutate(self, info, user_data, business_data=None):
         form = UserSignUpForm(user_data)
         if form.is_valid():
-            user_instance = form.save()
+            user = form.save()
             if business_data:
                 business_form = BusinessSignUpForm(business_data)
                 if business_form.is_valid():
-                    business_form.save(user=user_instance)
+                    business_form.save(user=user)
                 else:
                     errors = business_form.errors.as_data()
                     error_messages = {
@@ -116,7 +123,7 @@ class CreateUser(graphene.Mutation):
                         errors=error_messages,
                         redirect_url="/auth/",
                     )
-            send_email(user_instance, "verification")
+            send_email(user, "verification")
             return CreateUser(
                 success=True,
                 errors={},
@@ -133,6 +140,148 @@ class CreateUser(graphene.Mutation):
                 redirect_url="/auth/",
             )
 
+
+class CreateDriver(graphene.Mutation):
+    class Arguments:
+        input = DriverInput(required=True)
+
+    success = graphene.Boolean()
+
+    def mutate(self, info, data):
+        driver_instance = Driver(**data)
+        driver_instance.save()
+        return CreateDriver(success=True)
+
+
+# ========================Create End========================
+
+
+# ========================Update Start========================
+
+
+class UpdateUserInput(graphene.InputObjectType):
+    username = graphene.String()
+    first_name = graphene.String()
+    last_name = graphene.String()
+    password1 = graphene.String()
+    password2 = graphene.String()
+    phone_number = graphene.String()
+    landline_number = graphene.String()
+    email = graphene.String()
+    city = graphene.String()
+    birthdate = graphene.Date()
+
+
+class UpdateBusinessInput(graphene.InputObjectType):
+    name = graphene.String()
+    owner_first_name = graphene.String()
+    owner_last_name = graphene.String()
+    owner_phone_number = graphene.String()
+    address = graphene.String()
+
+
+class UpdateUser(graphene.Mutation):
+    class Arguments:
+        user_data = UpdateUserInput()
+        business_data = UpdateBusinessInput()
+
+    success = graphene.Boolean()
+    errors = graphene.JSONString()
+    redirect_url = graphene.String()
+
+    @login_required
+    def mutate(self, info, user_data=None, business_data=None):
+        user = info.context.user
+        if not user_data and not business_data:
+            return UpdateUser(
+                success=False,
+                errors="At least one input should be provided",
+                redirect_url=f"/users/{user.get_username()}/",
+            )
+
+        if user_data:
+            form = UserUpdateForm(user_data, instance=user)
+            if form.is_valid():
+                user = form.save()
+                if business_data:
+                    try:
+                        business_form = BusinessUpdateForm(
+                            business_data, instance=user.business
+                        )
+                    except Business.DoesNotExist:
+                        return UpdateUser(
+                            success=False,
+                            errors="You don't have a business account",
+                            redirect_url=f"/users/{user.get_username()}/",
+                        )
+                    if business_form.is_valid():
+                        business_form.save()
+                    else:
+                        errors = business_form.errors.as_data()
+                        error_messages = {
+                            field: error[0].messages[0]
+                            for field, error in errors.items()
+                        }
+                        return UpdateUser(
+                            success=False,
+                            errors=error_messages,
+                            redirect_url=f"/users/{user.get_username()}/",
+                        )
+
+                if not user.is_fully_authenticated:
+                    token = info.context.headers.get("Authorization")
+                    BurnedTokens.objects.create(token=token)
+                    send_email(user, "verification")
+                    return UpdateUser(
+                        success=True,
+                        errors={},
+                        redirect_url="/auth/email-auth/",
+                    )
+                else:
+                    return UpdateUser(
+                        success=True,
+                        errors={},
+                        redirect_url=f"/users/{user.get_username()}/",
+                    )
+            else:
+                errors = form.errors.as_data()
+                error_messages = {
+                    field: error[0].messages[0] for field, error in errors.items()
+                }
+                return UpdateUser(
+                    success=False,
+                    errors=error_messages,
+                    redirect_url=f"/users/{user.get_username()}/",
+                )
+        elif business_data:
+            try:
+                business_form = BusinessUpdateForm(
+                    business_data, instance=user.business
+                )
+            except Business.DoesNotExist:
+                return UpdateUser(
+                    success=False,
+                    errors="You don't have a business account",
+                    redirect_url=f"/users/{user.get_username()}/",
+                )
+            if business_form.is_valid():
+                business_form.save()
+            else:
+                errors = business_form.errors.as_data()
+                error_messages = {
+                    field: error[0].messages[0] for field, error in errors.items()
+                }
+                return UpdateUser(
+                    success=False,
+                    errors=error_messages,
+                    redirect_url=f"/users/{user.get_username()}/",
+                )
+
+
+# ========================Update End========================
+
+
+# ========================Verification Start========================
 
 r = redis.StrictRedis(host="127.0.0.1", port=6379, db=0)
 
@@ -162,7 +311,7 @@ class VerifyEmail(graphene.Mutation):
             return VerifyEmail(
                 success=True,
                 error=None,
-                redirect_url=f"/users/{user.get_username()}",
+                redirect_url=f"/users/{user.get_username()}/",
                 token=token,
             )
         return VerifyEmail(
@@ -171,6 +320,12 @@ class VerifyEmail(graphene.Mutation):
             redirect_url="/auth/email-auth/",
             token=None,
         )
+
+
+# ========================Verification End========================
+
+
+# ========================Auth Start========================
 
 
 class ResendEmail(graphene.Mutation):
@@ -196,18 +351,6 @@ class ResendEmail(graphene.Mutation):
             return ResendEmail(success=True, error=None)
         except Exception as e:
             return ResendEmail(success=False, error=str(e))
-
-
-class CreateDriver(graphene.Mutation):
-    class Arguments:
-        input = DriverInput(required=True)
-
-    success = graphene.Boolean()
-
-    def mutate(self, info, data):
-        driver_instance = Driver(**data)
-        driver_instance.save()
-        return CreateDriver(success=True)
 
 
 class Login(graphene.Mutation):
@@ -308,7 +451,7 @@ class OtpLogin(graphene.Mutation):
             return OtpLogin(
                 success=True,
                 error=None,
-                redirect_url=f"/users/{user.get_username()}",
+                redirect_url=f"/users/{user.get_username()}/",
                 token=token,
             )
         return OtpLogin(
@@ -331,15 +474,25 @@ class Logout(graphene.Mutation):
         return Logout(success=True, redirect_url="/")
 
 
+# ========================Auth End========================
+
+
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
     create_driver = CreateDriver.Field()
+    update_user = UpdateUser.Field()
     login = Login.Field()
     otp_login_request = OtpLoginRequest.Field()
     otp_login = OtpLogin.Field()
     logout = Logout.Field()
     verify_email = VerifyEmail.Field()
     resend_email = ResendEmail.Field()
+
+
+# ========================Mutations End========================
+
+
+# ========================Queries Start========================
 
 
 class Query(graphene.ObjectType):
@@ -351,5 +504,7 @@ class Query(graphene.ObjectType):
         sender = info.context.user
         return sender
 
+
+# ========================Queries End========================
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
