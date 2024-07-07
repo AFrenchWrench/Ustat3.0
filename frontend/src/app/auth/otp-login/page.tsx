@@ -48,7 +48,7 @@ const Page = () => {
     const emailCookie = Cookies.get("email")
     const query = `
             mutation ResendEmail {
-                resendEmail(emailType:"verification") {
+                resendEmail(emailType:"otp") {
                 success
                 error
     }
