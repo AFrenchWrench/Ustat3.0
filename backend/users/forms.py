@@ -238,7 +238,7 @@ class UserUpdateForm(UserSignUpForm):
             return username
 
     def clean_password1(self):
-        if self.data.get("password1"):
+        if self.data.get("password1") and self.data.get("password2"):
             password1 = self.cleaned_data.get("password1")
             password2 = self.data.get("password2")
 
@@ -260,6 +260,8 @@ class UserUpdateForm(UserSignUpForm):
                 raise ValidationError("گذرواژه باید حداقل شامل یک کاراکتر خاص باشد.")
 
             return password1
+        else:
+            raise ValidationError("رمز عبور و تکرار رمز عبور باید وارد شود")
 
     def clean_first_name(self):
         if self.data.get("first_name"):
@@ -403,7 +405,9 @@ class BusinessUpdateForm(BusinessSignUpForm):
                         "شماره تلفن وارد شده معتبر نمی‌باشد فرمت درست : ...98+"
                     )
 
-                if Business.objects.filter(owner_phone_number=owner_phone_number).exists():
+                if Business.objects.filter(
+                    owner_phone_number=owner_phone_number
+                ).exists():
                     raise ValidationError("شماره تلفن وارد شده در سیستم وجود دارد")
 
             return owner_phone_number

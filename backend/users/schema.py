@@ -18,7 +18,7 @@ from main.models import (
 from utils.schema_utils import (
     login_required,
 )
-from .tasks import (
+from users.tasks import (
     send_code_email,
 )
 from utils.email_verification import generate_verification_code
@@ -48,16 +48,6 @@ def send_email(user, template):
 class UserType(DjangoObjectType):
     class Meta:
         model = User
-
-
-class BusinessType(DjangoObjectType):
-    class Meta:
-        model = Business
-
-
-class DriverType(DjangoObjectType):
-    class Meta:
-        model = Driver
 
 
 # ========================Mutations Start========================
@@ -194,6 +184,7 @@ class UpdateUserInput(graphene.InputObjectType):
     username = graphene.String()
     first_name = graphene.String()
     last_name = graphene.String()
+    old_password = graphene.String()
     password1 = graphene.String()
     password2 = graphene.String()
     phone_number = graphene.String()
@@ -231,6 +222,16 @@ class UpdateUser(graphene.Mutation):
             )
 
         if user_data:
+            if user_data.get("old_password"):
+                user = authenticate(
+                    username=user.username, password=user_data.get("old_password")
+                )
+                if not user:
+                    return UpdateUser(
+                        success=False,
+                        errors="Old password is not correct",
+                        redirect_url=f"/users/{user.get_username()}/",
+                    )
             form = UserUpdateForm(user_data, instance=user)
             if form.is_valid():
                 user = form.save()
