@@ -1,5 +1,6 @@
 from datetime import timedelta
 import email
+from hmac import compare_digest
 import graphene
 from django.contrib.auth import (
     get_user_model,
@@ -230,6 +231,16 @@ class UpdateUser(graphene.Mutation):
                     return UpdateUser(
                         success=False,
                         errors="Old password is not correct",
+                        redirect_url=f"/users/{user.get_username()}/",
+                    )
+                elif compare_digest(
+                    user_data.get("old_password"), user_data.get("password1")
+                ) or compare_digest(
+                    user_data.get("old_password"), user_data.get("password2")
+                ):
+                    return UpdateUser(
+                        success=False,
+                        errors="Your password is the same as your last one",
                         redirect_url=f"/users/{user.get_username()}/",
                     )
             form = UserUpdateForm(user_data, instance=user)

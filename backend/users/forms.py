@@ -348,6 +348,10 @@ class UserUpdateForm(UserSignUpForm):
                     and getattr(user, field_name) != self.cleaned_data[field_name]
                 ):
                     email_changed = True
+
+            if field_name == "password1":
+                user.set_password(self.cleaned_data[field_name])
+            else:
                 setattr(user, field_name, self.cleaned_data[field_name])
 
         # Set is_fully_authenticated to False if email is changed
