@@ -3,7 +3,6 @@ import email
 from hmac import compare_digest
 import graphene
 from django.contrib.auth import (
-    get_user_model,
     authenticate,
 )
 from django.shortcuts import get_object_or_404
@@ -15,6 +14,8 @@ from graphql_jwt.shortcuts import get_token
 import redis
 from main.models import (
     BurnedTokens,
+    Cities,
+    Provinces,
 )
 from utils.schema_utils import (
     login_required,
@@ -30,11 +31,10 @@ from users.forms import (
     UserUpdateForm,
 )
 from users.models import (
+    User,
     Business,
     Driver,
 )
-
-User = get_user_model()
 
 
 def send_email(user, template):
@@ -49,6 +49,21 @@ def send_email(user, template):
 class UserType(DjangoObjectType):
     class Meta:
         model = User
+
+
+class BusinessType(DjangoObjectType):
+    class Meta:
+        model = Business
+
+
+class ProvinceType(DjangoObjectType):
+    class Meta:
+        model = Provinces
+
+
+class CityType(DjangoObjectType):
+    class Meta:
+        model = Cities
 
 
 # ========================Mutations Start========================
