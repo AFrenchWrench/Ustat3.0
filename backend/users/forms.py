@@ -260,7 +260,9 @@ class UserUpdateForm(UserSignUpForm):
                 raise ValidationError("گذرواژه باید حداقل شامل یک کاراکتر خاص باشد.")
 
             return password1
-        else:
+        elif (self.data.get("password1") and not self.data.get("password2")) or (
+            not self.data.get("password1") and self.data.get("password2")
+        ):
             raise ValidationError("رمز عبور و تکرار رمز عبور باید وارد شود")
 
     def clean_first_name(self):
