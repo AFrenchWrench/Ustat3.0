@@ -201,7 +201,7 @@ class UpdateUserInput(graphene.InputObjectType):
     first_name = graphene.String()
     last_name = graphene.String()
     old_password = graphene.String()
-    password1 = graphene.String()
+    password = graphene.String()
     password2 = graphene.String()
     phone_number = graphene.String()
     landline_number = graphene.String()
@@ -230,6 +230,7 @@ class UpdateUser(graphene.Mutation):
     @login_required
     def mutate(self, info, user_data=None, business_data=None):
         user = info.context.user
+        username = user.username
         if not user_data and not business_data:
             return UpdateUser(
                 success=False,
@@ -249,7 +250,7 @@ class UpdateUser(graphene.Mutation):
                         redirect_url=f"/users/{user.get_username()}/",
                     )
                 elif compare_digest(
-                    user_data.get("old_password"), user_data.get("password1")
+                    user_data.get("old_password"), user_data.get("password")
                 ) or compare_digest(
                     user_data.get("old_password"), user_data.get("password2")
                 ):
@@ -258,14 +259,12 @@ class UpdateUser(graphene.Mutation):
                         errors="Your password is the same as your last one",
                         redirect_url=f"/users/{user.get_username()}/",
                     )
-            form = UserUpdateForm(user_data, instance=user)
+            form = UserUpdateForm(user_data)
             if form.is_valid():
-                user = form.save()
+                user = form.save(user)
                 if business_data:
                     try:
-                        business_form = BusinessUpdateForm(
-                            business_data, instance=user.business
-                        )
+                        business_form = BusinessUpdateForm(business_data)
                     except Business.DoesNotExist:
                         return UpdateUser(
                             success=False,
@@ -273,7 +272,7 @@ class UpdateUser(graphene.Mutation):
                             redirect_url=f"/users/{user.get_username()}/",
                         )
                     if business_form.is_valid():
-                        business_form.save()
+                        business_form.save(user.business)
                     else:
                         errors = business_form.errors.as_data()
                         error_messages = {
@@ -295,12 +294,19 @@ class UpdateUser(graphene.Mutation):
                         errors={},
                         redirect_url="/auth/email-auth/",
                     )
-                else:
+                elif username != user.username:
+                    token = info.context.headers.get("Authorization")
+                    BurnedTokens.objects.create(token=token)
                     return UpdateUser(
                         success=True,
                         errors={},
-                        redirect_url=f"/users/{user.get_username()}/",
+                        redirect_url="/auth/login/",
                     )
+                return UpdateUser(
+                    success=True,
+                    errors={},
+                    redirect_url=f"/users/{user.get_username()}/",
+                )
             else:
                 errors = form.errors.as_data()
                 error_messages = {
@@ -313,9 +319,7 @@ class UpdateUser(graphene.Mutation):
                 )
         elif business_data:
             try:
-                business_form = BusinessUpdateForm(
-                    business_data, instance=user.business
-                )
+                business_form = BusinessUpdateForm(business_data)
             except Business.DoesNotExist:
                 return UpdateUser(
                     success=False,
@@ -323,7 +327,12 @@ class UpdateUser(graphene.Mutation):
                     redirect_url=f"/users/{user.get_username()}/",
                 )
             if business_form.is_valid():
-                business_form.save()
+                business_form.save(user.business)
+                return UpdateUser(
+                    success=True,
+                    errors={},
+                    redirect_url=f"/users/{user.get_username()}/",
+                )
             else:
                 errors = business_form.errors.as_data()
                 error_messages = {

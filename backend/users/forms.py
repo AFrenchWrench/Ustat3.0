@@ -3,9 +3,7 @@ import re
 from hmac import compare_digest
 
 from django import forms
-from django.contrib.auth.forms import (
-    UserCreationForm,
-)
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError
 from django.core.validators import (
     RegexValidator,
@@ -219,11 +217,24 @@ class BusinessSignUpForm(forms.ModelForm):
         return business
 
 
-class UserUpdateForm(UserSignUpForm):
+class UserUpdateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(UserUpdateForm, self).__init__(*args, **kwargs)
         for field_name in self.fields:
             self.fields[field_name].required = False
+
+    class Meta:
+        model = User
+        fields = [
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "password",
+            "birthdate",
+            "phone_number",
+            "landline_number",
+        ]
 
     def clean_username(self):
         if self.data.get("username"):
@@ -237,31 +248,31 @@ class UserUpdateForm(UserSignUpForm):
 
             return username
 
-    def clean_password1(self):
-        if self.data.get("password1") and self.data.get("password2"):
-            password1 = self.cleaned_data.get("password1")
+    def clean_password(self):
+        if self.data.get("password") and self.data.get("password2"):
+            password = self.cleaned_data.get("password")
             password2 = self.data.get("password2")
 
-            if not compare_digest(password1, password2):
+            if not compare_digest(password, password2):
                 raise ValidationError("گذرواژه ها یکسان نیستند")
 
-            if len(password1) < 8:
+            if len(password) < 8:
                 raise ValidationError("گذرواژه باید حداقل 8 کاراکتر باشد.")
 
-            if not re.search(r"[A-Z]", password1):
+            if not re.search(r"[A-Z]", password):
                 raise ValidationError(
                     "گذرواژه باید حداقل شامل یک حرف بزرگ انگلیسی باشد."
                 )
 
-            if not re.search(r"[0-9]", password1):
+            if not re.search(r"[0-9]", password):
                 raise ValidationError("گذرواژه باید حداقل شامل یک عدد باشد.")
 
-            if not re.search(r'[!@#$%^&*(),.?":{}|<>_]', password1):
+            if not re.search(r'[!@#$%^&*(),.?":{}|<>_]', password):
                 raise ValidationError("گذرواژه باید حداقل شامل یک کاراکتر خاص باشد.")
 
-            return password1
-        elif (self.data.get("password1") and not self.data.get("password2")) or (
-            not self.data.get("password1") and self.data.get("password2")
+            return password
+        elif (self.data.get("password") and not self.data.get("password2")) or (
+            not self.data.get("password") and self.data.get("password2")
         ):
             raise ValidationError("رمز عبور و تکرار رمز عبور باید وارد شود")
 
@@ -339,10 +350,8 @@ class UserUpdateForm(UserSignUpForm):
                     raise ValidationError("شماره ثابت وارد شده در سیستم وجود دارد")
             return landline_number
 
-    def save(self, commit=True):
-        user = self.instance  # Get the user instance being updated
+    def save(self, user, commit=True):
         email_changed = False
-
         for field_name in self.fields:
             if field_name in self.data and self.cleaned_data[field_name] is not None:
                 if (
@@ -351,10 +360,10 @@ class UserUpdateForm(UserSignUpForm):
                 ):
                     email_changed = True
 
-            if field_name == "password1":
-                user.set_password(self.cleaned_data[field_name])
-            else:
-                setattr(user, field_name, self.cleaned_data[field_name])
+                if field_name == "password":
+                    user.set_password(self.cleaned_data[field_name])
+                else:
+                    setattr(user, field_name, self.cleaned_data[field_name])
 
         # Set is_fully_authenticated to False if email is changed
         if email_changed:
@@ -428,8 +437,7 @@ class BusinessUpdateForm(BusinessSignUpForm):
                 )
             return address
 
-    def save(self, commit=True):
-        business = self.instance  # Get the business instance being updated
+    def save(self, business, commit=True):
 
         for field_name in self.fields:
             if field_name in self.data and self.cleaned_data[field_name] is not None:
