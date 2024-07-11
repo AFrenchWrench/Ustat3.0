@@ -188,12 +188,21 @@ class Mutation(graphene.ObjectType):
 
 class Query(graphene.ObjectType):
     current_user = graphene.Field(UserType)
+    display_items = graphene.List(DisplayItem)
+    display_item = graphene.Field(DisplayItem)
 
-    @staticmethod
     @login_required
     def resolve_current_user(self, info):
         sender = info.context.user
         return sender
+
+    def resolve_display_items(self, info):
+        display_items = DisplayItem.objects.all()
+        return display_items
+
+    def resolve_display_items(self, info, id):
+        display_item = get_object_or_404(DisplayItem, pk=id)
+        return display_item
 
 
 # ========================Queries End========================
