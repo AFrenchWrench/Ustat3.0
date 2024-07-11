@@ -33,7 +33,6 @@ from users.forms import (
 from users.models import (
     User,
     Business,
-    Driver,
 )
 
 
@@ -91,15 +90,6 @@ class BusinessInput(graphene.InputObjectType):
     owner_last_name = graphene.String(required=True)
     owner_phone_number = graphene.String(required=True)
     address = graphene.String(required=True)
-
-
-class DriverInput(graphene.InputObjectType):
-    first_name = graphene.String(required=True)
-    last_name = graphene.String(required=True)
-    phone_number = graphene.String(required=True)
-    national_code = graphene.String(required=True)
-    plate_number = graphene.String(required=True)
-    car_model = graphene.String(required=True)
 
 
 class CreateUser(graphene.Mutation):
@@ -176,18 +166,6 @@ class CreateBusiness(graphene.Mutation):
                 errors=error_messages,
                 redirect_url=f"/users/{user.get_username()}",
             )
-
-
-class CreateDriver(graphene.Mutation):
-    class Arguments:
-        input = DriverInput(required=True)
-
-    success = graphene.Boolean()
-
-    def mutate(self, info, data):
-        driver_instance = Driver(**data)
-        driver_instance.save()
-        return CreateDriver(success=True)
 
 
 # ========================Create End========================
@@ -547,7 +525,6 @@ class Logout(graphene.Mutation):
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
     create_business = CreateBusiness.Field()
-    create_driver = CreateDriver.Field()
     update_user = UpdateUser.Field()
     login = Login.Field()
     otp_login_request = OtpLoginRequest.Field()

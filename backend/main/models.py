@@ -10,5 +10,5 @@ class Provinces(models.Model):
 
 
 class Cities(models.Model):
-    name = models.CharField(max_length=32)
     province = models.ForeignKey("Provinces", on_delete=models.CASCADE)
+    name = models.CharField(max_length=32)
