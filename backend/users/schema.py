@@ -1,5 +1,3 @@
-from datetime import timedelta
-import email
 from hmac import compare_digest
 import graphene
 from django.contrib.auth import (
@@ -215,9 +213,12 @@ class UpdateUser(graphene.Mutation):
                 errors="At least one input should be provided",
                 redirect_url=f"/users/{user.get_username()}/",
             )
-
         if user_data:
-            if user_data.get("old_password"):
+            if (
+                user_data.get("old_password")
+                or user_data.get("password")
+                or user_data.get("password2")
+            ):
                 user = authenticate(
                     username=user.username, password=user_data.get("old_password")
                 )
@@ -262,7 +263,6 @@ class UpdateUser(graphene.Mutation):
                             errors=error_messages,
                             redirect_url=f"/users/{user.get_username()}/",
                         )
-
                 if not user.is_fully_authenticated:
                     token = info.context.headers.get("Authorization")
                     BurnedTokens.objects.create(token=token)
