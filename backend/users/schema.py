@@ -219,10 +219,10 @@ class UpdateUser(graphene.Mutation):
                 or user_data.get("password")
                 or user_data.get("password2")
             ):
-                user = authenticate(
+                test_user = authenticate(
                     username=user.username, password=user_data.get("old_password")
                 )
-                if not user:
+                if not test_user:
                     return UpdateUser(
                         success=False,
                         errors="گذرواژه قدیمی صحیح نمیباشد",
