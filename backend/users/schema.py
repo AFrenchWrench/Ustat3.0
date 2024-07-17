@@ -210,7 +210,7 @@ class UpdateUser(graphene.Mutation):
         if not user_data and not business_data:
             return UpdateUser(
                 success=False,
-                errors="At least one input should be provided",
+                errors="حداقل یک وروردی جهت تغییر دادن اطلاعات نیاز است",
                 redirect_url=f"/users/{user.get_username()}/",
             )
         if user_data:
@@ -225,7 +225,7 @@ class UpdateUser(graphene.Mutation):
                 if not user:
                     return UpdateUser(
                         success=False,
-                        errors="Old password is not correct",
+                        errors="گذرواژه قدیمی صحیح نمیباشد",
                         redirect_url=f"/users/{user.get_username()}/",
                     )
                 elif compare_digest(
@@ -235,7 +235,7 @@ class UpdateUser(graphene.Mutation):
                 ):
                     return UpdateUser(
                         success=False,
-                        errors="Your password is the same as your last one",
+                        errors="گذرواژه جدید با گذرواژه قبلی یکسان است",
                         redirect_url=f"/users/{user.get_username()}/",
                     )
             form = UserUpdateForm(user_data)
@@ -247,7 +247,7 @@ class UpdateUser(graphene.Mutation):
                     except Business.DoesNotExist:
                         return UpdateUser(
                             success=False,
-                            errors="You don't have a business account",
+                            errors="حساب کاربری شما شرکتی نمیباشد",
                             redirect_url=f"/users/{user.get_username()}/",
                         )
                     if business_form.is_valid():

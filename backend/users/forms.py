@@ -143,7 +143,7 @@ class UserSignUpForm(UserCreationForm):
         try:
             user.city = Cities.objects.get(name=city_name)
         except Cities.DoesNotExist:
-            raise forms.ValidationError(f"City named '{city_name}' does not exist.")
+            raise ValidationError(f"شهر با اسم {city_name} یافت نشد")
 
         if commit:
             user.save()
@@ -374,7 +374,7 @@ class UserUpdateForm(forms.ModelForm):
             try:
                 user.city = Cities.objects.get(name=city_name)
             except Cities.DoesNotExist:
-                raise forms.ValidationError(f"City named '{city_name}' does not exist.")
+                raise ValidationError(f"شهر با اسم {city_name} یافت نشد")
 
         if commit:
             user.save()
