@@ -188,8 +188,8 @@ class Mutation(graphene.ObjectType):
 
 class Query(graphene.ObjectType):
     current_user = graphene.Field(UserType)
-    display_items = graphene.List(DisplayItem)
-    display_item = graphene.Field(DisplayItem)
+    display_items = graphene.List(DisplayItemType)
+    display_item = graphene.Field(DisplayItemType)
 
     @login_required
     def resolve_current_user(self, info):
