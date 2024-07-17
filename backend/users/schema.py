@@ -206,7 +206,7 @@ class UpdateUser(graphene.Mutation):
     @login_required
     def mutate(self, info, user_data=None, business_data=None):
         user = info.context.user
-        username = user.username
+        password = user.password
         if not user_data and not business_data:
             return UpdateUser(
                 success=False,
@@ -272,13 +272,13 @@ class UpdateUser(graphene.Mutation):
                         errors={},
                         redirect_url="/auth/email-auth/",
                     )
-                elif username != user.username:
+                elif password != user.password:
                     token = info.context.headers.get("Authorization")
                     BurnedTokens.objects.create(token=token)
                     return UpdateUser(
                         success=True,
                         errors={},
-                        redirect_url="/auth/login/",
+                        redirect_url="/auth/",
                     )
                 return UpdateUser(
                     success=True,
