@@ -7,12 +7,16 @@ import styles from '../style/profilePageStyles.module.css';
 import * as jalaali from 'jalaali-js';
 import { RiLogoutBoxLine } from "react-icons/ri";
 import { FiEdit } from "react-icons/fi";
+import Edit from '@/components/authcomponents/edit';
+
+import IuserData from '@/types/IuserData';
 
 const UserProfile = ({ params }: { params: { username: string } }) => {
-  const [userData, setUserData] = useState<any>(null);
+  const [userData, setUserData] = useState<IuserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const { push } = useRouter();
 
   useEffect(() => {
@@ -36,15 +40,22 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
                   landlineNumber
                   email
                   birthdate
+                  city {
+                        id
+                        name
+                        province {
+                            id
+                            name
+                        }
+                  }
                   business {
-            id
-            name
-            ownerFirstName
-            ownerLastName
-            ownerPhoneNumber
-            address
-            isConfirmed
-        }
+                    name
+                    ownerFirstName
+                    ownerLastName
+                    ownerPhoneNumber
+                    address
+                    isConfirmed
+                  }
                 }
               }
             `,
@@ -84,7 +95,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
     };
 
     fetchUserData();
-  }, [params.username, push, isRedirecting]);
+  }, [params, push, isRedirecting]);
 
   const convertToJalaali = (gregorianDate: string) => {
     const [year, month, day] = gregorianDate.split('-');
@@ -129,83 +140,99 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
   };
 
   if (loading) return <div>Loading...</div>;
-  if (error) return ;
+  if (error) return;
 
   return (
-    <div className={styles.profileContainer}>
+    <section className={styles.profileContainer}>
       <div className={styles.profileDetails}>
-        <h1 className={styles.username}>{userData.username}</h1>
-
-        <div className={styles.firsLastName}>
-          <span>
-            <strong>نام:</strong><p> {userData.firstName}</p>
-          </span>
-
-          <span>
-            <strong>نام خانوادگی:</strong><p> {userData.lastName}</p>
-          </span>
-        </div>
-
-        <div className={styles.firsLastName}>
-          <span>
-            <strong>تلفن همراه :</strong><p dir='ltr'> {userData.phoneNumber}</p>
-          </span>
-          <span>
-            <strong>تلفن ثابت :</strong><p dir='ltr'> {userData.landlineNumber}</p>
-          </span>
-        </div>
-
-        <div className={styles.firsLastName}>
-          <span>
-            <strong>ایمیل :</strong><p dir='ltr' className='text-xs'> {userData.email}</p>
-          </span>
-          <span>
-            <strong>تاریخ تولد :</strong><p> {convertToJalaali(userData.birthdate)}</p>
-          </span>
-        </div>
-
         {
-          userData.business?
-          <>
-          
-          <div className={styles.firsLastName}>
-          <span>
-            <strong>نام شرکت :</strong><p  className='text-xs'> {userData.business.name}</p>
-          </span>
-          <span>
-            <strong>وضعیت تایید :</strong><p className={userData.business.isConfirmed?"!text-green-400":"!text-red-400"}> {userData.business.isConfirmed?"تایید شده":"تایید نشده"}</p>
-          </span>
-        </div>
+          isEditing ? (
+            <Edit userData={userData} setIsEditing={setIsEditing} />
+          ) : (
+            userData && (
+              <>
+                <h1 className={styles.username}>{userData.username}</h1>
 
-        <div className={styles.firsLastName}>
-          <span>
-            <strong>نام صاحب شرکت :</strong><p  className='text-xs'> {userData.business.ownerFirstName}</p>
-          </span>
-          <span>
-            <strong>نام خانوادگی صاحب شرکت :</strong><p> {userData.business.ownerLastName}</p>
-          </span>
-        </div>
-        <div className={styles.firsLastName}>
-          <span>
-            <strong>شماره همراه صاحب شرکت :</strong><p > {userData.business.ownerPhoneNumber}</p>
-          </span>
-          <span>
-            <strong >آدرس :</strong><p style={{fontSize:"11px"}}> {userData.business.address}</p>
-          </span>
-        </div>
+                <div className={styles.firsLastName}>
+                  <span>
+                    <strong>نام:</strong><p> {userData.firstName}</p>
+                  </span>
 
-        
+                  <span>
+                    <strong>نام خانوادگی:</strong><p> {userData.lastName}</p>
+                  </span>
+                </div>
 
-        
-          </>
-        :""}
+                <div className={styles.firsLastName}>
+                  <span>
+                    <strong>تلفن همراه :</strong><p dir='ltr'> {userData.phoneNumber}</p>
+                  </span>
+                  <span>
+                    <strong>تلفن ثابت :</strong><p dir='ltr'> {userData.landlineNumber}</p>
+                  </span>
+                </div>
+
+                <div className={styles.firsLastName}>
+                  <span>
+                    <strong>استان :</strong><p> {userData.city.province.name}</p>
+                  </span>
+                  <span>
+                    <strong>شهر :</strong><p> {userData.city.name}</p>
+                  </span>
+                </div>
+
+                <div className={styles.firsLastName}>
+                  <span>
+                    <strong>ایمیل :</strong><p dir='ltr' className='text-xs'> {userData.email}</p>
+                  </span>
+                  <span>
+                    <strong>تاریخ تولد :</strong><p> {convertToJalaali(userData.birthdate)}</p>
+                  </span>
+                </div>
+
+                {
+                  userData.business && (
+                    <>
+                      <div className={styles.firsLastName}>
+                        <span>
+                          <strong>نام شرکت :</strong><p className='text-xs'> {userData.business.name}</p>
+                        </span>
+                        <span>
+                          <strong>وضعیت تایید :</strong><p className={userData.business.isConfirmed ? "!text-green-400" : "!text-red-400"}> {userData.business.isConfirmed ? "تایید شده" : "تایید نشده"}</p>
+                        </span>
+                      </div>
+
+                      <div className={styles.firsLastName}>
+                        <span>
+                          <strong>نام صاحب شرکت :</strong><p className='text-xs'> {userData.business.ownerFirstName}</p>
+                        </span>
+                        <span>
+                          <strong>نام خانوادگی صاحب شرکت :</strong><p> {userData.business.ownerLastName}</p>
+                        </span>
+                      </div>
+
+                      <div className={styles.firsLastName}>
+                        <span>
+                          <strong>شماره همراه صاحب شرکت :</strong><p> {userData.business.ownerPhoneNumber}</p>
+                        </span>
+                        <span>
+                          <strong>آدرس :</strong><p style={{ fontSize: "11px" }}> {userData.business.address}</p>
+                        </span>
+                      </div>
+                    </>
+                  )
+                }
+              </>
+            )
+          )
+        }
 
         <div className={styles.buttonContainer}>
-          <button className='hover:text-gray-300'>ویرایش<FiEdit /></button>
+          <button onClick={() => setIsEditing(!isEditing)} className='hover:text-gray-300'>{isEditing ? "نمایش" : "ویرایش"}<FiEdit /></button>
           <button onClick={handleLogout} className='text-red-400 hover:text-red-200'>خروج از حساب<RiLogoutBoxLine size='20px' /></button>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

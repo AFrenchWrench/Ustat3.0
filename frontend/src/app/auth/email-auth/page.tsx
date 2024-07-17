@@ -26,7 +26,7 @@ const Page = () => {
     resolver: zodResolver(codeSchema)
   });
 
-  const {push} = useRouter();
+  const { push } = useRouter();
 
   useEffect(() => {
     const countdown = setInterval(() => {
@@ -64,13 +64,13 @@ const Page = () => {
         },
         body: JSON.stringify({ query }),
       });
-      
-      const  data  = await response.json();
-      
+
+      const data = await response.json();
+
 
     } catch (error) {
       console.log(error);
-      
+
     }
     setIsTimerRunning(true); // شروع مجدد تایمر
     setResendvar(false); // غیر فعال کردن دکمه ارسال دوباره کد
@@ -103,12 +103,13 @@ const Page = () => {
         body: JSON.stringify({ query }),
       });
 
-      const  data  = await response.json();
+      const data = await response.json();
       console.log(data);
-      
+
 
       if (data.data.verifyEmail.success) {
-        Cookies.set('Authorization', `Bearer ${data.data.verifyEmail.token}`,{ expires:.5});
+        Cookies.set('Authorization', `Bearer ${data.data.verifyEmail.token}`, { expires: .5 });
+        Cookies.remove("username")
         Cookies.remove("email")
         push(data.data.verifyEmail.redirectUrl);
       } else {
@@ -167,8 +168,8 @@ const Page = () => {
           render={({ field }) => <CustomReactCodeInput {...field} {...props} />}
         />
         <div className='w-full flex justify-between items-center mt-5'>
-          <button  disabled={isSubmitting} className='w-1/8 py-2 bg-red-600 text-[#212121] rounded hover:bg-red-700 focus:outline-none disabled:bg-red-300' type='submit'>تایید</button>
-          
+          <button disabled={isSubmitting} className='w-1/8 py-2 bg-red-600 text-[#212121] rounded hover:bg-red-700 focus:outline-none disabled:bg-red-300' type='submit'>تایید</button>
+
           <div className='flex flex-col items-start h-[30px]'>
             {isTimerRunning && <CountdownTimer setResendvar={setResendvar} setIsTimerRunning={setIsTimerRunning} />} {/* Pass state setters to CountdownTimer */}
             <button type='button' onClick={handleResend} disabled={!resendvar} className='bg-transparent disabled:text-gray-500 p-0'>ارسال مجدد کد</button>

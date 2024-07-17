@@ -88,6 +88,12 @@ input:-webkit-autofill:active{
 }
 /* styles */
 
+.select_signup{
+  border-radius: 5px;
+}
+
+
+
 .signup_form{
   width:100%;
   min-width: 290px;
@@ -195,4 +201,18 @@ input::-webkit-inner-spin-button {
 input[type=number] {
     -moz-appearance:textfield; /* Firefox */
 }
+
+
+
+
+/* datePicker styles */
+/* customDatePicker.css */
+
+/* Background color of the date picker */
+.custom-input{
+  background-color: #1f1f1f;
+  border-radius: 5px;
+}
+
+/* datePicker styles */
 
