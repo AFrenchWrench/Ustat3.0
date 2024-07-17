@@ -392,6 +392,8 @@ class BusinessUpdateForm(BusinessSignUpForm):
             name = self.cleaned_data.get("name")
             if not is_persian_string(name):
                 raise ValidationError("نام شرکت باید فارسی باشد")
+            if Business.objects.filter(name=name).exists():
+                raise ValidationError("نام شرکت وارد شده در سیستم وجود دارد")
             return name
 
     def clean_owner_first_name(self):
