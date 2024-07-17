@@ -221,7 +221,7 @@ class UpdateUser(graphene.Mutation):
                 if not test_user:
                     return UpdateUser(
                         success=False,
-                        errors="گذرواژه قدیمی صحیح نمیباشد",
+                        errors={"old_password": "گذرواژه قدیمی صحیح نمیباشد"},
                         redirect_url=f"/users/{user.get_username()}/",
                     )
                 elif user_data.get("password") and user_data.get("password2"):
@@ -232,13 +232,15 @@ class UpdateUser(graphene.Mutation):
                     ):
                         return UpdateUser(
                             success=False,
-                            errors="گذرواژه جدید با گذرواژه قدیمی یکسان است",
+                            errors={
+                                "password": "گذرواژه جدید با گذرواژه قدیمی یکسان است"
+                            },
                             redirect_url=f"/users/{user.get_username()}/",
                         )
                 else:
                     return UpdateUser(
                         success=False,
-                        errors="گذرواژه جدید و تکرار آن را وارد کنید",
+                        errors={"password": "گذرواژه جدید و تکرار آن را وارد کنید"},
                         redirect_url=f"/users/{user.get_username()}/",
                     )
             elif not user_data.get("old_password") and (
@@ -246,7 +248,7 @@ class UpdateUser(graphene.Mutation):
             ):
                 return UpdateUser(
                     success=False,
-                    errors="گذرواژه قدیمی خود را وارد کنید",
+                    errors={"old_password": "گذرواژه قدیمی خود را وارد کنید"},
                     redirect_url=f"/users/{user.get_username()}/",
                 )
             form = UserUpdateForm(user_data)
