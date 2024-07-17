@@ -214,11 +214,7 @@ class UpdateUser(graphene.Mutation):
                 redirect_url=f"/users/{user.get_username()}/",
             )
         if user_data:
-            if (
-                user_data.get("old_password")
-                or user_data.get("password")
-                or user_data.get("password2")
-            ):
+            if user_data.get("old_password"):
                 test_user = authenticate(
                     username=user.username, password=user_data.get("old_password")
                 )
@@ -228,16 +224,31 @@ class UpdateUser(graphene.Mutation):
                         errors="گذرواژه قدیمی صحیح نمیباشد",
                         redirect_url=f"/users/{user.get_username()}/",
                     )
-                elif compare_digest(
-                    user_data.get("old_password"), user_data.get("password")
-                ) or compare_digest(
-                    user_data.get("old_password"), user_data.get("password2")
-                ):
+                elif user_data.get("password") and user_data.get("password2"):
+                    if compare_digest(
+                        user_data.get("old_password"), user_data.get("password")
+                    ) or compare_digest(
+                        user_data.get("old_password"), user_data.get("password2")
+                    ):
+                        return UpdateUser(
+                            success=False,
+                            errors="گذرواژه جدید با گذرواژه قدیمی یکسان است",
+                            redirect_url=f"/users/{user.get_username()}/",
+                        )
+                else:
                     return UpdateUser(
                         success=False,
-                        errors="گذرواژه جدید با گذرواژه قبلی یکسان است",
+                        errors="گذرواژه جدید و تکرار آن را وارد کنید",
                         redirect_url=f"/users/{user.get_username()}/",
                     )
+            elif not user_data.get("old_password") and (
+                user_data.get("password") or user_data.get("password2")
+            ):
+                return UpdateUser(
+                    success=False,
+                    errors="گذرواژه قدیمی خود را وارد کنید",
+                    redirect_url=f"/users/{user.get_username()}/",
+                )
             form = UserUpdateForm(user_data)
             if form.is_valid():
                 user = form.save(user)
