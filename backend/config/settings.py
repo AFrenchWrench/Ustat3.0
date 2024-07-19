@@ -13,7 +13,7 @@ DEBUG = config("DEBUG", default=False, cast=bool)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())
 
 INSTALLED_APPS = [
-    # "django.contrib.sites",
+    "django.contrib.sites",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     # Third party apps
     "corsheaders",
     "graphene_django",
+    "image_optimizer",
     # "graphql_jwt.refresh_token.apps.RefreshTokenConfig",
     # "django_filters",
     # "django_graphql_auth",
@@ -177,6 +178,8 @@ EMAIL_PORT = config("EMAIL_PORT", cast=int)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
+
+OPTIMIZED_IMAGE_METHOD = "pillow"
 
 # CACHES = {
 #     "default": {

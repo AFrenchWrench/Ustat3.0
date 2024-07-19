@@ -115,5 +115,34 @@ class DisplayItem(models.Model):
     price = models.PositiveBigIntegerField()
     description = models.TextField()
 
+    thumbnail = OptimizedImageField(
+        upload_to="display_items/thumbnails/",
+        blank=True,
+        null=True,
+        optimized_image_output_size=(500, 500),
+        optimized_image_resize_method="cover",
+    )
+    slider1 = OptimizedImageField(
+        upload_to="display_items/sliders/",
+        blank=True,
+        null=True,
+        optimized_image_output_size=(1200, 600),
+        optimized_image_resize_method="cover",
+    )
+    slider2 = OptimizedImageField(
+        upload_to="display_items/sliders/",
+        blank=True,
+        null=True,
+        optimized_image_output_size=(1200, 600),
+        optimized_image_resize_method="cover",
+    )
+    slider3 = OptimizedImageField(
+        upload_to="display_items/sliders/",
+        blank=True,
+        null=True,
+        optimized_image_output_size=(1200, 600),
+        optimized_image_resize_method="cover",
+    )
+
     def __str__(self):
         return self.name
