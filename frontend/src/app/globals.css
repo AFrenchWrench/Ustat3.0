@@ -6,7 +6,7 @@
 
 :root {
   --primary-red: #D32F2F;
-  --secondary-black: #212121;
+  --secondary-black: #242424;
   --accent-white: #FFFFFF;
   --grey: #BDBDBD;
   --dark-grey: #757575;
@@ -74,6 +74,17 @@ footer {
        url('../../public/fonts/vazir-font/Vazir-Bold.woff') format('woff'),
        url('../../public/fonts/vazir-font/Vazir-Bold.woff2') format('woff2');
 }
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 
 
 

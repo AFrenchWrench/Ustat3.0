@@ -200,7 +200,7 @@ class Query(graphene.ObjectType):
         display_items = DisplayItem.objects.all()
         return display_items
 
-    def resolve_display_items(self, info, id):
+    def resolve_display_item(self, info, id):
         display_item = get_object_or_404(DisplayItem, pk=id)
         return display_item
 

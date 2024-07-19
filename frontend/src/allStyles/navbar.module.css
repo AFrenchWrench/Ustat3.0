@@ -18,12 +18,12 @@
 .selectedBg{
     position: absolute;
     left: 0;
-    background-color: white;
+    background-color: rgb(252, 46, 46);
     border-top-right-radius: 20%;
     border-bottom-right-radius: 20%;
     height: 45px;
     width: 60px;
-    mix-blend-mode: difference;    
+    mix-blend-mode: screen;    
     pointer-events: none;
     transition: .3s;
 }

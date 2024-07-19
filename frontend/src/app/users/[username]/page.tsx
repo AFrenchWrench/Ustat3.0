@@ -10,6 +10,10 @@ import { FiEdit } from "react-icons/fi";
 import Edit from '@/components/authcomponents/edit';
 
 import IuserData from '@/types/IuserData';
+import Loading from '@/components/Loading';
+
+import Alert from '@mui/material/Alert';
+
 
 const UserProfile = ({ params }: { params: { username: string } }) => {
   const [userData, setUserData] = useState<IuserData | null>(null);
@@ -73,6 +77,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
         }
 
         setUserData(data.data.currentUser);
+        <Alert severity="success">خوش آمدید {data.data.username}</Alert>
 
         if (!isRedirecting) {
           setIsRedirecting(true);
@@ -139,7 +144,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div><Loading /></div>;
   if (error) return;
 
   return (
