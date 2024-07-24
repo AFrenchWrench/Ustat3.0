@@ -123,7 +123,7 @@ const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
   const [filteredCities, setFilteredCities] = useState<IfilterCitys[]>([]);
   const [dateValue, setDateValue] = useState(convertToJalaali(userData?.birthdate));
   const [showPassword, setShowPassword] = useState(false);
-
+  const { push } = useRouter();
   useEffect(() => {
     if (userData) {
       const filterCity = citys.filter(city => city.province_id.toString() === userData.city.province?.id.toString());
@@ -203,7 +203,7 @@ const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
     return null;
   }
 
-  const { push } = useRouter()
+  
 
   const onSubmit = async (userInfo: TuserEditSchema) => {
     const token = Cookies.get("Authorization");

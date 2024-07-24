@@ -1,40 +1,33 @@
-import Link from 'next/link'
-import React from 'react'
-
-import Image from 'next/image'
-
-import image1 from "../../../../public/image/7819e8797424eb54391a3cc2f4ec7853.jpg"
-
-import "./componentStyles.css"
+// Article.tsx
+import React from "react";
 
 interface ArticleProps {
-    imageSrc: string;
-    productName: string;
-    description: string;
-    price: string;
-    productLink: string;
-    type: string
+  imageSrc: string;
+  productName: string;
+  description: string;
+  price: string;
+  productLink: string;
+  type: string; // Adjust the type based on your requirements
 }
 
-const Article: React.FC<ArticleProps> = ({ imageSrc, productName, description, price, productLink, type }) => {
-    return (
-        <article className='article'>
-            <div className='top_section'>
-                <picture className='picture'><Image src={imageSrc} width={800} height={800} alt="product pictiure"></Image></picture>
-                <div className='top_left_section'>
-                    <p className='product_name'><strong>{productName}</strong></p>
-                    <p className='description'>{description}</p>
-                    <p dir='ltr' className='price'>{price}</p>
+const Article: React.FC<ArticleProps> = ({
+  imageSrc,
+  productName,
+  description,
+  price,
+  productLink,
+  type,
+}) => {
+  return (
+    <div>
+      <img src={imageSrc} alt={productName} />
+      <h2>{productName}</h2>
+      <p>{description}</p>
+      <span>{price}</span>
+      <a href={productLink}>View Product</a>
+      <p>Type: {type}</p>
+    </div>
+  );
+};
 
-                </div>
-
-            </div>
-            <div className='buttons_section'>
-                <Link className='more' href={`/products/${type}/${productLink}`}>مشاهده محصول</Link>
-                <button className='add_button'>افزودن به سبد خرید</button>
-            </div>
-        </article>
-    )
-}
-
-export default Article
+export default Article;

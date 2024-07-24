@@ -10,7 +10,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({ setResendvar, setIsTime
 
   useEffect(() => {
     const countdown = setInterval(() => {
-      setTimer(prevTimer => {
+      setTimer((prevTimer) => {
         if (prevTimer > 0) {
           return prevTimer - 1;
         } else {
@@ -23,7 +23,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({ setResendvar, setIsTime
     }, 1000);
 
     return () => clearInterval(countdown);
-  }, []);
+  }, [setIsTimerRunning, setResendvar]);
 
   return (
     <div>

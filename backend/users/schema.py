@@ -342,7 +342,7 @@ class UpdateUser(graphene.Mutation):
 
 # ========================Verification Start========================
 
-r = redis.StrictRedis(host="127.0.0.1", port=6379, db=0)
+r = redis.StrictRedis(host="redis", port=6379, db=0)
 
 
 class VerifyEmail(graphene.Mutation):
@@ -489,7 +489,7 @@ class OtpLoginRequest(graphene.Mutation):
         return OtpLoginRequest(success=True, redirect_url=f"/auth/otp-login/")
 
 
-r = redis.StrictRedis(host="127.0.0.1", port=6379, db=0)
+r = redis.StrictRedis(host="redis", port=6379, db=0)
 
 
 class OtpLogin(graphene.Mutation):

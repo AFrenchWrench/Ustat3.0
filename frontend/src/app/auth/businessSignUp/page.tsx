@@ -26,7 +26,7 @@ interface ErrorMapping {
     [key: string]: FieldNames;
 }
 
-const page = () => {
+const Page = () => {
     const { push } = useRouter()
 
 
@@ -156,4 +156,4 @@ const page = () => {
     )
 }
 
-export default page
+export default Page
