@@ -13,7 +13,7 @@ const articles = [
     type: "Type 1",
   },
   {
-    imageSrc: "/media/image2.jpg", // Updated path to match Nginx media URL
+    imageSrc: "/media/display_items/thumbnails/1229091.jpg", // Updated path to match Nginx media URL
     productName: "Product 2",
     description: "Description 2",
     price: "$20",

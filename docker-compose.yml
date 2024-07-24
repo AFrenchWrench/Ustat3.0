@@ -49,6 +49,9 @@ services:
       - ./frontend:/app
       - node_modules:/app/node_modules
       - /app/.next
+    environment:
+      - NODE_ENV=development 
+      - WATCHPACK_POLLING=true  # Enable polling for file changes
     depends_on:
       - backend
 
