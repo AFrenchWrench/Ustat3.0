@@ -1,8 +1,6 @@
-from datetime import timedelta
-import email
+from hmac import compare_digest
 import graphene
 from django.contrib.auth import (
-    get_user_model,
     authenticate,
 )
 from django.shortcuts import get_object_or_404
@@ -14,36 +12,35 @@ from graphql_jwt.shortcuts import get_token
 import redis
 from main.models import (
     BurnedTokens,
+    Cities,
+    Provinces,
 )
 from utils.schema_utils import (
     login_required,
 )
-from .tasks import (
+from users.tasks import (
     send_code_email,
 )
 from utils.email_verification import generate_verification_code
 from users.forms import (
     BusinessSignUpForm,
     UserSignUpForm,
-    PasswordChangeForm,
+    BusinessUpdateForm,
+    UserUpdateForm,
 )
 from users.models import (
+    User,
     Business,
-    Driver,
 )
 
-User = get_user_model()
 
-
-def send_email(info, user, template):
+def send_email(user, template):
     send_code_email.delay(
         user.get_full_name(),
         user.email,
         generate_verification_code(user.email),
         template,
     )
-    info.context.session["email"] = user.email
-    info.context.session.set_expiry(timedelta(minutes=15))
 
 
 class UserType(DjangoObjectType):
@@ -56,9 +53,20 @@ class BusinessType(DjangoObjectType):
         model = Business
 
 
-class DriverType(DjangoObjectType):
+class ProvinceType(DjangoObjectType):
     class Meta:
-        model = Driver
+        model = Provinces
+
+
+class CityType(DjangoObjectType):
+    class Meta:
+        model = Cities
+
+
+# ========================Mutations Start========================
+
+
+# ========================Create Start========================
 
 
 class UserInput(graphene.InputObjectType):
@@ -82,15 +90,6 @@ class BusinessInput(graphene.InputObjectType):
     address = graphene.String(required=True)
 
 
-class DriverInput(graphene.InputObjectType):
-    first_name = graphene.String(required=True)
-    last_name = graphene.String(required=True)
-    phone_number = graphene.String(required=True)
-    national_code = graphene.String(required=True)
-    plate_number = graphene.String(required=True)
-    car_model = graphene.String(required=True)
-
-
 class CreateUser(graphene.Mutation):
     class Arguments:
         user_data = UserInput(required=True)
@@ -103,11 +102,11 @@ class CreateUser(graphene.Mutation):
     def mutate(self, info, user_data, business_data=None):
         form = UserSignUpForm(user_data)
         if form.is_valid():
-            user_instance = form.save()
+            user = form.save()
             if business_data:
                 business_form = BusinessSignUpForm(business_data)
                 if business_form.is_valid():
-                    business_form.save(user=user_instance)
+                    business_form.save(user=user)
                 else:
                     errors = business_form.errors.as_data()
                     error_messages = {
@@ -116,13 +115,13 @@ class CreateUser(graphene.Mutation):
                     return CreateUser(
                         success=False,
                         errors=error_messages,
-                        redirect_url="/users/signup/",
+                        redirect_url="/auth/",
                     )
-            send_email(info, user_instance, "verification")
+            send_email(user, "verification")
             return CreateUser(
                 success=True,
                 errors={},
-                redirect_url="/users/email-auth/",
+                redirect_url="/auth/email-auth/",
             )
         else:
             errors = form.errors.as_data()
@@ -132,11 +131,218 @@ class CreateUser(graphene.Mutation):
             return CreateUser(
                 success=False,
                 errors=error_messages,
-                redirect_url="/users/signup/",
+                redirect_url="/auth/",
             )
 
 
-r = redis.StrictRedis(host="127.0.0.1", port=6379, db=0)
+class CreateBusiness(graphene.Mutation):
+    class Arguments:
+        business_data = BusinessInput(required=True)
+
+    success = graphene.Boolean()
+    errors = graphene.JSONString()
+    redirect_url = graphene.String()
+
+    @login_required
+    def mutate(self, info, business_data):
+        user = info.context.user
+        business_form = BusinessSignUpForm(business_data)
+        if business_form.is_valid():
+            business_form.save(user=user)
+            return CreateBusiness(
+                success=True,
+                errors=None,
+                redirect_url=f"/users/{user.get_username()}",
+            )
+        else:
+            errors = business_form.errors.as_data()
+            error_messages = {
+                field: error[0].messages[0] for field, error in errors.items()
+            }
+            return CreateBusiness(
+                success=False,
+                errors=error_messages,
+                redirect_url=f"/users/{user.get_username()}",
+            )
+
+
+# ========================Create End========================
+
+
+# ========================Update Start========================
+
+
+class UpdateUserInput(graphene.InputObjectType):
+    username = graphene.String()
+    first_name = graphene.String()
+    last_name = graphene.String()
+    old_password = graphene.String()
+    password = graphene.String()
+    password2 = graphene.String()
+    phone_number = graphene.String()
+    landline_number = graphene.String()
+    email = graphene.String()
+    city = graphene.String()
+    birthdate = graphene.Date()
+
+
+class UpdateBusinessInput(graphene.InputObjectType):
+    name = graphene.String()
+    owner_first_name = graphene.String()
+    owner_last_name = graphene.String()
+    owner_phone_number = graphene.String()
+    address = graphene.String()
+
+
+class UpdateUser(graphene.Mutation):
+    class Arguments:
+        user_data = UpdateUserInput()
+        business_data = UpdateBusinessInput()
+
+    success = graphene.Boolean()
+    errors = graphene.JSONString()
+    redirect_url = graphene.String()
+
+    @login_required
+    def mutate(self, info, user_data=None, business_data=None):
+        user = info.context.user
+        username = user.username
+        password = user.password
+        if not user_data and not business_data:
+            return UpdateUser(
+                success=False,
+                errors="حداقل یک وروردی جهت تغییر دادن اطلاعات نیاز است",
+                redirect_url=f"/users/{user.get_username()}/",
+            )
+        if user_data:
+            if user_data.get("old_password"):
+                test_user = authenticate(
+                    username=user.username, password=user_data.get("old_password")
+                )
+                if not test_user:
+                    return UpdateUser(
+                        success=False,
+                        errors={"old_password": "گذرواژه قدیمی صحیح نمیباشد"},
+                        redirect_url=f"/users/{user.get_username()}/",
+                    )
+                elif user_data.get("password") and user_data.get("password2"):
+                    if compare_digest(
+                        user_data.get("old_password"), user_data.get("password")
+                    ) or compare_digest(
+                        user_data.get("old_password"), user_data.get("password2")
+                    ):
+                        return UpdateUser(
+                            success=False,
+                            errors={
+                                "password": "گذرواژه جدید با گذرواژه قدیمی یکسان است"
+                            },
+                            redirect_url=f"/users/{user.get_username()}/",
+                        )
+                else:
+                    return UpdateUser(
+                        success=False,
+                        errors={"password": "گذرواژه جدید و تکرار آن را وارد کنید"},
+                        redirect_url=f"/users/{user.get_username()}/",
+                    )
+            elif not user_data.get("old_password") and (
+                user_data.get("password") or user_data.get("password2")
+            ):
+                return UpdateUser(
+                    success=False,
+                    errors={"old_password": "گذرواژه قدیمی خود را وارد کنید"},
+                    redirect_url=f"/users/{user.get_username()}/",
+                )
+            form = UserUpdateForm(user_data)
+            if form.is_valid():
+                user = form.save(user)
+                if business_data:
+                    try:
+                        business_form = BusinessUpdateForm(business_data)
+                    except Business.DoesNotExist:
+                        return UpdateUser(
+                            success=False,
+                            errors="حساب کاربری شما شرکتی نمیباشد",
+                            redirect_url=f"/users/{user.get_username()}/",
+                        )
+                    if business_form.is_valid():
+                        business_form.save(user.business)
+                    else:
+                        errors = business_form.errors.as_data()
+                        error_messages = {
+                            field: error[0].messages[0]
+                            for field, error in errors.items()
+                        }
+                        return UpdateUser(
+                            success=False,
+                            errors=error_messages,
+                            redirect_url=f"/users/{user.get_username()}/",
+                        )
+                if not user.is_fully_authenticated:
+                    token = info.context.headers.get("Authorization")
+                    BurnedTokens.objects.create(token=token)
+                    send_email(user, "verification")
+                    return UpdateUser(
+                        success=True,
+                        errors={},
+                        redirect_url="/auth/email-auth/",
+                    )
+                elif password != user.password or username != user.username:
+                    token = info.context.headers.get("Authorization")
+                    BurnedTokens.objects.create(token=token)
+                    return UpdateUser(
+                        success=True,
+                        errors={},
+                        redirect_url="/auth/",
+                    )
+                return UpdateUser(
+                    success=True,
+                    errors={},
+                    redirect_url=f"/users/{user.get_username()}/",
+                )
+            else:
+                errors = form.errors.as_data()
+                error_messages = {
+                    field: error[0].messages[0] for field, error in errors.items()
+                }
+                return UpdateUser(
+                    success=False,
+                    errors=error_messages,
+                    redirect_url=f"/users/{user.get_username()}/",
+                )
+        elif business_data:
+            try:
+                business_form = BusinessUpdateForm(business_data)
+            except Business.DoesNotExist:
+                return UpdateUser(
+                    success=False,
+                    errors="You don't have a business account",
+                    redirect_url=f"/users/{user.get_username()}/",
+                )
+            if business_form.is_valid():
+                business_form.save(user.business)
+                return UpdateUser(
+                    success=True,
+                    errors={},
+                    redirect_url=f"/users/{user.get_username()}/",
+                )
+            else:
+                errors = business_form.errors.as_data()
+                error_messages = {
+                    field: error[0].messages[0] for field, error in errors.items()
+                }
+                return UpdateUser(
+                    success=False,
+                    errors=error_messages,
+                    redirect_url=f"/users/{user.get_username()}/",
+                )
+
+
+# ========================Update End========================
+
+
+# ========================Verification Start========================
+
+r = redis.StrictRedis(host="redis", port=6379, db=0)
 
 
 class VerifyEmail(graphene.Mutation):
@@ -149,39 +355,61 @@ class VerifyEmail(graphene.Mutation):
         code = graphene.String(required=True)
 
     def mutate(self, info, code):
-        print(info.context.session.items())
-        user = get_object_or_404(User, email=info.context.session.get("email"))
+        if info.context.headers.get("email"):
+            user = get_object_or_404(User, email=info.context.headers.get("email"))
+        else:
+            user = get_object_or_404(
+                User, username=info.context.headers.get("username")
+            )
         stored_code = r.get(f"verification_code_{user.email}")
         if stored_code and stored_code.decode("utf-8") == code:
             user.is_fully_authenticated = True
             user.save()
             r.delete(f"verification_code_{user.email}")
-            info.context.session.clear()
             token = get_token(user)
             return VerifyEmail(
                 success=True,
                 error=None,
-                redirect_url=f"/users/{user.get_username()}",
+                redirect_url=f"/users/{user.get_username()}/",
                 token=token,
             )
         return VerifyEmail(
             success=False,
             error="کد تایید وارد شده صحیح نمیباشد",
-            redirect_url="/users/email-auth/",
+            redirect_url="/auth/email-auth/",
             token=None,
         )
 
 
-class CreateDriver(graphene.Mutation):
-    class Arguments:
-        input = DriverInput(required=True)
+# ========================Verification End========================
+
+
+# ========================Auth Start========================
+
+
+class ResendEmail(graphene.Mutation):
 
     success = graphene.Boolean()
+    error = graphene.String()
 
-    def mutate(self, info, data):
-        driver_instance = Driver(**data)
-        driver_instance.save()
-        return CreateDriver(success=True)
+    class Arguments:
+        email_type = graphene.String(required=True)
+
+    def mutate(self, info, email_type):
+        try:
+            if info.context.headers.get("email"):
+                user = get_object_or_404(User, email=info.context.headers.get("email"))
+            else:
+                user = get_object_or_404(
+                    User, username=info.context.headers.get("username")
+                )
+            send_email(
+                user,
+                email_type,
+            )
+            return ResendEmail(success=True, error=None)
+        except Exception as e:
+            return ResendEmail(success=False, error=str(e))
 
 
 class Login(graphene.Mutation):
@@ -211,11 +439,10 @@ class Login(graphene.Mutation):
             raise GraphQLError("Invalid username or password")
         elif user is not None and not user.is_fully_authenticated:
             send_email(
-                info,
                 user,
                 "verification",
             )
-            return Login(token=None, success=False, redirect_url="/users/email-auth/")
+            return Login(token=None, success=False, redirect_url="/auth/email-auth/")
 
         token = get_token(user)
         return Login(
@@ -250,21 +477,19 @@ class OtpLoginRequest(graphene.Mutation):
 
         if user is not None and not user.is_fully_authenticated:
             send_email(
-                info,
                 user,
                 "verification",
             )
-            return OtpLoginRequest(success=False, redirect_url="/users/email-auth/")
+            return OtpLoginRequest(success=False, redirect_url="/auth/email-auth/")
 
         send_email(
-            info,
             user,
             "otp",
         )
-        return OtpLoginRequest(success=True, redirect_url=f"/users/otplogin/")
+        return OtpLoginRequest(success=True, redirect_url=f"/auth/otp-login/")
 
 
-r = redis.StrictRedis(host="127.0.0.1", port=6379, db=0)
+r = redis.StrictRedis(host="redis", port=6379, db=0)
 
 
 class OtpLogin(graphene.Mutation):
@@ -277,22 +502,21 @@ class OtpLogin(graphene.Mutation):
         code = graphene.String(required=True)
 
     def mutate(self, info, code):
-        user = get_object_or_404(User, email=info.context.session.get("email"))
+        user = get_object_or_404(User, email=info.context.headers.get("email"))
         stored_code = r.get(f"verification_code_{user.email}")
         if stored_code and stored_code.decode("utf-8") == code:
             r.delete(f"verification_code_{user.email}")
-            info.context.session.clear()
             token = get_token(user)
             return OtpLogin(
                 success=True,
                 error=None,
-                redirect_url=f"/users/{user.get_username()}",
+                redirect_url=f"/users/{user.get_username()}/",
                 token=token,
             )
         return OtpLogin(
             success=False,
             error="کد وارد شده صحیح نمیباشد",
-            redirect_url="/users/otplogin/",
+            redirect_url="/auth/otp-login/",
             token=None,
         )
 
@@ -309,125 +533,25 @@ class Logout(graphene.Mutation):
         return Logout(success=True, redirect_url="/")
 
 
-class ForgotPasswordRequest(graphene.Mutation):
-    class Arguments:
-        email = graphene.String(required=True)
-
-    success = graphene.Boolean()
-    redirect_url = graphene.String()
-
-    def mutate(self, info, email):
-        sender = info.context.user
-        try:
-            token = BurnedTokens.objects.get(
-                token=info.context.headers.get("Authorization")
-            )
-            token = False
-        except BurnedTokens.DoesNotExist:
-            token = True
-
-        if sender.is_authenticated and token:
-            raise GraphQLError("You are already logged in")
-
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            raise GraphQLError("Email Does Not Exists")
-
-        if user is not None and not user.is_fully_authenticated:
-            send_email(
-                info,
-                user,
-            )
-            return ForgotPasswordRequest(
-                success=False, redirect_url="/users/email-auth/"
-            )
-
-        send_email(
-            info,
-            user,
-            "resetpass",
-        )
-
-        return ForgotPasswordRequest(
-            success=True, redirect_url=f"/users/forgotpassword/"
-        )
-
-
-r = redis.StrictRedis(host="127.0.0.1", port=6379, db=0)
-
-
-class ForgotPassword(graphene.Mutation):
-    success = graphene.Boolean()
-    error = graphene.String()
-    redirect_url = graphene.String()
-
-    class Arguments:
-        code = graphene.String(required=True)
-
-    def mutate(self, info, code):
-        user = get_object_or_404(User, email=info.context.session.get("email"))
-        stored_code = r.get(f"verification_code_{user.email}")
-        if stored_code and stored_code.decode("utf-8") == code:
-            r.delete(f"verification_code_{user.email}")
-            info.context.session["reset_pass_auth_complete"] = True
-            info.context.session.set_expiry(timedelta(minutes=15))
-            return ForgotPassword(
-                success=True,
-                error=None,
-                redirect_url=f"/users/{user.get_username()}/resetpassword/",
-            )
-        return ForgotPassword(
-            success=False,
-            error="کد وارد شده صحیح نمیباشد",
-            redirect_url="/users/forgotpassword/",
-        )
-
-
-class ResetPassword(graphene.Mutation):
-    success = graphene.Boolean()
-    error = graphene.String()
-    redirect_url = graphene.String()
-
-    class Arguments:
-        password1 = graphene.String(required=True)
-        password2 = graphene.String(required=True)
-
-    def mutate(self, info, password1, password2):
-        user = get_object_or_404(User, email=info.context.session.get("email"))
-        if info.context.session.get("reset_pass_auth_complete"):
-            print("KKK")
-            form = PasswordChangeForm(password1, password2, instance=user)
-            if form.is_valid():
-                info.context.session.clear()
-                return ResetPassword(
-                    success=True,
-                    error=None,
-                    redirect_url=f"/users/{user.get_username()}/",
-                )
-            else:
-                errors = form.errors.as_data()
-                error_messages = {
-                    field: error[0].messages[0] for field, error in errors.items()
-                }
-                return ResetPassword(
-                    success=True,
-                    error=error_messages,
-                    redirect_url=f"/users/{user.get_username()}/resetpassword/",
-                )
+# ========================Auth End========================
 
 
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
-    create_driver = CreateDriver.Field()
+    create_business = CreateBusiness.Field()
+    update_user = UpdateUser.Field()
     login = Login.Field()
     otp_login_request = OtpLoginRequest.Field()
     otp_login = OtpLogin.Field()
     logout = Logout.Field()
-    forgot_password_request = ForgotPasswordRequest.Field()
-    forgot_password = ForgotPassword.Field()
-    reset_password = ResetPassword.Field()
     verify_email = VerifyEmail.Field()
+    resend_email = ResendEmail.Field()
+
+
+# ========================Mutations End========================
+
+
+# ========================Queries Start========================
 
 
 class Query(graphene.ObjectType):
@@ -439,5 +563,7 @@ class Query(graphene.ObjectType):
         sender = info.context.user
         return sender
 
+
+# ========================Queries End========================
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

@@ -13,7 +13,7 @@ DEBUG = config("DEBUG", default=False, cast=bool)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())
 
 INSTALLED_APPS = [
-    # "django.contrib.sites",
+    "django.contrib.sites",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     # Third party apps
     "corsheaders",
     "graphene_django",
+    "image_optimizer",
     # "graphql_jwt.refresh_token.apps.RefreshTokenConfig",
     # "django_filters",
     # "django_graphql_auth",
@@ -34,8 +35,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     # Third party middlewares
-    "corsheaders.middleware.CorsMiddleware",    
-    # Main middlewares 
+    "corsheaders.middleware.CorsMiddleware",
+    # Main middlewares
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -133,10 +134,7 @@ CORS_ALLOWED_ORIGINS = config("ALLOWED_ORIGINS", cast=Csv())
 
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOW_METHODS = [
-    "POST",
-    "OPTIONS"
-]
+CORS_ALLOW_METHODS = ["POST", "OPTIONS"]
 
 # Allow specific HTTP headers
 CORS_ALLOW_HEADERS = [
@@ -150,6 +148,8 @@ CORS_ALLOW_HEADERS = [
     "X-Mx-ReqToken",
     "X-Requested-With",
     "X-CSRFToken",
+    "email",
+    "username",
 ]
 
 # Expose specific headers to the browser
@@ -178,6 +178,8 @@ EMAIL_PORT = config("EMAIL_PORT", cast=int)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
+
+OPTIMIZED_IMAGE_METHOD = "pillow"
 
 # CACHES = {
 #     "default": {

@@ -1,12 +1,11 @@
+version: '3.8'
+
 services:
   backend:
     build:
       context: ./backend
-    ports:
-      - "8000:8000"
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     env_file:
       - ./backend/.env
     volumes:
@@ -20,7 +19,7 @@ services:
     container_name: ustatBackend
 
   db:
-    image: postgres:16
+    image: postgres:latest
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -33,10 +32,8 @@ services:
     container_name: ustatPostgres
 
   redis:
-    image: redis:7
+    image: redis:latest
     container_name: ustatRedis
-    ports:
-      - "6379:6379"
     expose:
       - "6379"
     healthcheck:
@@ -52,8 +49,9 @@ services:
       - ./frontend:/app
       - node_modules:/app/node_modules
       - /app/.next
-    ports:
-      - "3000:3000"
+    environment:
+      - NODE_ENV=development 
+      - WATCHPACK_POLLING=true  # Enable polling for file changes
     depends_on:
       - backend
 
@@ -70,6 +68,19 @@ services:
       - backend
       - redis
     container_name: ustatCeleryWorker
+
+  nginx:
+    image: nginx:latest
+    container_name: ustatNginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./backend/static:/usr/share/nginx/html/static
+      - ./backend/media:/usr/share/nginx/html/media
+    depends_on:
+      - frontend
+      - backend
 
 volumes:
   node_modules:

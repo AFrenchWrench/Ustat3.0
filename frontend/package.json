@@ -9,16 +9,24 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
     "@hookform/resolvers": "^3.6.0",
+    "@mui/material": "^5.16.4",
+    "graphql-tag": "^2.12.6",
+    "jalaali-js": "^1.2.7",
     "js-cookie": "^3.0.5",
     "next": "14.2.4",
     "react": "^18",
+    "react-code-input": "^3.10.1",
     "react-date-object": "^2.1.8",
     "react-dom": "^18",
     "react-hook-form": "^7.52.0",
     "react-icons": "^5.2.1",
     "react-multi-date-picker": "^4.5.2",
     "react-select": "^5.8.0",
+    "sharp": "^0.33.4",
+    "swiper": "^11.1.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {

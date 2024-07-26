@@ -1,5 +1,5 @@
 # Use the official Node.js image as a base image
-FROM node:20
+FROM node:latest
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -10,9 +10,6 @@ COPY . .
 # Install dependencies
 RUN npm install
 
-# Fund ??
-RUN npm fund
-
 # Build the Next.js application
 RUN npm run build
 
@@ -20,4 +17,4 @@ RUN npm run build
 EXPOSE 3000
 
 # Define the command to run the application
-CMD ["npm", "start"]
+CMD ["npm", "run", "dev"]

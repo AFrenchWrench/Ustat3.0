@@ -1,0 +1,69 @@
+.section{
+    width: 100%;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    margin-top: 2%;
+}
+.container{
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    margin-right: 4%;
+    background-color: rgb(27, 27, 27);
+    padding: 1%;
+    border-radius: 15px;
+}
+.Swiper{
+    width: 100%;
+    aspect-ratio: 2/1;
+    background-color: aqua;
+    margin-left: auto;
+    margin-right: unset;
+    border-radius: 10px;
+}
+.name_price{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 15px;
+
+}
+.product_name{
+    font-size: x-large;
+    background-color: rgb(32, 32, 32);
+    padding: 5px;
+    border-radius: 5px;
+    color: white;
+}
+.price{
+    background-color: rgb(32, 32, 32);
+    padding: 5px;
+    border-radius: 5px;
+}
+.add_to_cart{
+    margin-right: auto;
+    border-radius: 4px;
+}
+.caption{
+    background-color: rgb(32, 32, 32);
+    padding: 10px;
+    font-size: small;
+    color: grey;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+
+
+/* Styles for Swiper pagination bullets */
+.swiper-pagination-bullet {
+    background-color: rgb(255, 255, 255) !important; /* Change bullet color to red */
+  }
+  
+  .swiper-pagination-bullet-active {
+    background-color: rgb(255, 48, 48) !important; /* Change active bullet color to dark red */
+  }
+  
