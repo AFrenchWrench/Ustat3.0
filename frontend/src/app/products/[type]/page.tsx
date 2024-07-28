@@ -5,7 +5,7 @@ import Article from "../components/Article";
 // Sample data for the articles
 const articles = [
     {
-        imageSrc: "/media/display_items/thumbnails/photo_2024-07-19_10-14-16.jpg", // Updated path to match Nginx media URL
+        imageSrc: "/media/display_items/thumbnails/file_0.jpg", // Updated path to match Nginx media URL
         productName: "Product 1",
         description: "Description 1",
         price: "$10",
@@ -13,7 +13,7 @@ const articles = [
         type: "Type 1",
     },
     {
-        imageSrc: "/media/image2.jpg", // Updated path to match Nginx media URL
+        imageSrc: "/media/display_items/thumbnails/1229091.jpg", // Updated path to match Nginx media URL
         productName: "Product 2",
         description: "Description 2",
         price: "$20",

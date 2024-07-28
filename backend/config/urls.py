@@ -5,7 +5,7 @@ from graphql_jwt.decorators import jwt_cookie
 from django.contrib import admin
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    path("users/", include("users.urls")),
-    path("sales/", include("sales.urls")),
+    path("api/admin/", admin.site.urls),
+    path("api/users/", include("users.urls")),
+    path("api/sales/", include("sales.urls")),
 ]
