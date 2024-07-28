@@ -27,7 +27,7 @@ const Products = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/sales/graphql/', {
+        const response = await fetch('/api/sales/graphql/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ const Products = () => {
           {userData.map((item) => (
             <SwiperSlide key={item.id}>
               <Article
-                imageSrc={`http://127.0.0.1:8000/media/${item.thumbnail}`}
+                imageSrc={`/media/${item.thumbnail}`}
                 productName={item.name}
                 description={item.description}
                 price={item.price}
