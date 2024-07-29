@@ -71,7 +71,7 @@ class CreateOrderItem(graphene.Mutation):
             else:
                 input["order"] = Order.objects.create(due_date=input.get("due_date"))
 
-            display_item = get_object_or_404(DisplayItem, id=input.get("display_item"))
+            display_item = get_object_or_404(DisplayItem, id=input.pop("display_item"))
             input["type"] = display_item.type
             input["name"] = display_item.name
             input["dimensions"] = display_item.dimensions
