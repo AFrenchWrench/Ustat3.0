@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useEffect, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -20,6 +20,15 @@ interface DisplayItem {
   slider2: string;
   slider3: string;
 }
+
+// Mapping of types to their display names
+const typeNames: Record<string, string> = {
+  S: "مبل",
+  B: "سرویس خواب",
+  M: "میز و صندلی",
+  J: "جلومبلی و عسلی",
+  C: "آینه کنسول"
+};
 
 const Products = () => {
   const [userData, setUserData] = useState<DisplayItem[]>([]);
@@ -71,32 +80,40 @@ const Products = () => {
     fetchUserData();
   }, []);
 
+  // Filter products based on type
+  const categorizedProducts = Object.keys(typeNames).reduce((acc, type) => {
+    acc[type] = userData.filter(item => item.type === type);
+    return acc;
+  }, {} as Record<string, DisplayItem[]>);
+
   return (
     <section className='flex flex-col gap-5 items-center mt-10'>
-      <div className='type_section'>
-        <div className='type_name'>
-          <p>مبل ها</p>
-          <Link href={"/products/مبل"}>مشاهده همه <MdKeyboardDoubleArrowLeft /></Link>
+      {Object.entries(categorizedProducts).map(([type, items]) => (
+        <div key={type} className='type_section'>
+          <div className='type_name'>
+            <p>{typeNames[type]}</p>
+            <Link href={`/products/${type}`}>مشاهده همه <MdKeyboardDoubleArrowLeft /></Link>
+          </div>
+          <Swiper
+            slidesPerView={3}
+            spaceBetween={10}
+            className="mySwiper"
+          >
+            {items.map((item) => (
+              <SwiperSlide key={item.id}>
+                <Article
+                  imageSrc={`/media/${item.thumbnail}`}
+                  productName={item.name}
+                  description={item.description}
+                  price={item.price}
+                  productLink={item.id}
+                  type={item.type}
+                />
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </div>
-        <Swiper
-          slidesPerView={3}
-          spaceBetween={10}
-          className="mySwiper"
-        >
-          {userData.map((item) => (
-            <SwiperSlide key={item.id}>
-              <Article
-                imageSrc={`/media/${item.thumbnail}`}
-                productName={item.name}
-                description={item.description}
-                price={item.price}
-                productLink={item.id}
-                type={item.type}
-              />
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </div>
+      ))}
     </section>
   );
 };

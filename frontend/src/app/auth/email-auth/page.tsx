@@ -55,7 +55,7 @@ const Page = () => {
 }
     `;
     try {
-      const response = await fetch('http://127.0.0.1:8000/users/graphql/', {
+      const response = await fetch('/api/users/graphql/', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -92,7 +92,7 @@ const Page = () => {
     `;
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/users/graphql/', {
+      const response = await fetch('/api/users/graphql/', {
         method: 'POST',
         credentials: 'include',
         headers: {

@@ -1,15 +1,15 @@
-.navbar{
+.adminNavbar{
     position: fixed;
-    left: 10px;
+    right: 20px;
     top: 50%;
     transform: translateY(-50%);
-    background-color: black;
+    background-color: white;
     padding:15px 10px;
     border-radius: 30px;
     z-index: 999;
 }
 
-.navbar ul{
+.adminNavbar ul{
     gap: 50px;
     display: flex;
     flex-direction: column;
@@ -19,7 +19,7 @@
 
 .selectedBg{
     position: absolute;
-    left: 0;
+    right: 0;
     background-color: rgb(252, 46, 46);
     border-top-right-radius: 20%;
     border-bottom-right-radius: 20%;
@@ -33,7 +33,7 @@
     position: absolute;
     height: 100%;
     width: 60px;
-    left: 0;
+    right: 0;
     border-top-left-radius: 25px;
     border-bottom-left-radius: 25px;
     overflow: hidden;

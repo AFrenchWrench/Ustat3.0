@@ -15,10 +15,9 @@
     padding: 1%;
     border-radius: 15px;
 }
-.Swiper{
-    width: 100%;
+.Swiper_item{
+    width: 100% !important;
     aspect-ratio: 2/1;
-    background-color: aqua;
     margin-left: auto;
     margin-right: unset;
     border-radius: 10px;
@@ -54,6 +53,10 @@
     color: grey;
     border-radius: 5px;
     margin: 10px 0;
+}
+
+.slider_image{
+    border-radius: 10px;
 }
 
 

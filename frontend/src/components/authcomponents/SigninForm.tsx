@@ -17,7 +17,7 @@ const userSchema = z.object({
     .regex(/^[a-zA-Z][a-zA-Z0-9_]{3,20}$/, "نام کاربری معتبر نمیباشد"),
   password: z.string()
     .min(1, "گذرواژه نمی‌تواند خالی باشد")
-    .min(8, "گذرواژه باید حداقل 8 کاراکتر باشد."),
+  // .min(8, "گذرواژه باید حداقل 8 کاراکتر باشد."),
 });
 
 const SigninForm = () => {
@@ -35,7 +35,7 @@ const SigninForm = () => {
 
   const onSubmit: SubmitHandler<SignInSchema> = async (userInfo) => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/users/graphql/', {
+      const response = await fetch('/api/users/graphql/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

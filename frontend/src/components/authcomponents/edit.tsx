@@ -203,7 +203,7 @@ const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
     return null;
   }
 
-  
+
 
   const onSubmit = async (userInfo: TuserEditSchema) => {
     const token = Cookies.get("Authorization");
@@ -260,7 +260,7 @@ const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
         }
       `;
 
-      const response = await fetch('http://127.0.0.1:8000/users/graphql/', {
+      const response = await fetch('/api/users/graphql/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -328,7 +328,7 @@ const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
 
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={styles.formDetails}>
+    <form autoComplete='off' onSubmit={handleSubmit(onSubmit)} className={styles.formDetails}>
       <div className={styles.twoHolder}>
         <span>
           <label htmlFor="username-edit">نام کاربری :</label>
@@ -457,6 +457,7 @@ const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
             dir='ltr'
             type={showPassword ? "text" : "password"}
             id='password-edit'
+            autoComplete="new-password"
           />
           <button type='button' className='bg-transparent absolute right-[28%]' onClick={togglePasswordVisibility}>
             {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}

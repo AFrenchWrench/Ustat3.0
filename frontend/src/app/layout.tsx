@@ -1,8 +1,8 @@
+
 import type { Metadata } from "next";
 import "./globals.css";
 import Nav from "@/components/Nav";
-
-
+import AdminNav from "@/components/AdminNav";
 
 
 export const metadata: Metadata = {
@@ -15,13 +15,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <html lang="fa" dir="rtl">
 
       <body>
-      <Nav/>
+        <AdminNav />
+        <Nav />
+
         {children}
-        </body>
+      </body>
     </html>
   );
 }
