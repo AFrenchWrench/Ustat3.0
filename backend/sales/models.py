@@ -66,9 +66,12 @@ class Order(models.Model):
         if not self.pk and not self.due_date:
             self.due_date = timezone.now() + timezone.timedelta(days=25)
 
-        if self.status == "a" and not self.transaction:
-            OrderTransaction.objects.create(order=self)
-        elif self.status == "c" and self.transaction:
+        if self.status == "a":
+            try:
+                transaction = self.transaction
+            except:
+                transaction = OrderTransaction.objects.create(order=self)
+        elif self.status == "c":
             transaction = self.transaction
             transaction.status = "c"
             transaction.save()
