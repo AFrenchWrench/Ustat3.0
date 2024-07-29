@@ -101,10 +101,13 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField()
 
     def save(self, *args, **kwargs):
-
-        if self.order and self.order.transacrtion:
-            self.order.transacrtion.save()
-
+        
+        try:
+            if self.order and self.order.transacrtion:
+                self.order.transacrtion.save()
+        except:
+            ...
+            
         super().save(*args, **kwargs)
 
     def __str__(self):
