@@ -1,3 +1,4 @@
+from time import timezone
 import graphene
 from django.contrib.auth import (
     get_user_model,
@@ -201,14 +202,18 @@ class UpdateOrder(graphene.Mutation):
         except Order.DoesNotExist:
             raise UpdateOrder(success=False)
 
-        if order.user != info.context.user:
+        if order.user != info.context.user or order.status != "p":
             raise UpdateOrder(success=False)
 
-        if input.due_date:
+        if input.due_date and input.due_date > timezone.now():
             order.due_date = input.due_date
+        else:
+            raise UpdateOrder(success=False)
 
-        if input.status:
+        if input.status and input.status == "c":
             order.status = input.status
+        else:
+            raise UpdateOrder(success=False)
 
         order.save()
         return UpdateOrder(order=order, success=True)
