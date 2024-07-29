@@ -240,7 +240,7 @@ class DeleteOrderItem(graphene.Mutation):
             return DeleteOrderItem(success=False, message="OrderItem not found")
 
         order = order_item.order
-        if order.user != user:
+        if order.user != user or order.status != "p":
             return DeleteOrderItem(
                 success=False, message="You do not have permission to delete this item"
             )
@@ -273,6 +273,7 @@ class Mutation(graphene.ObjectType):
     update_display_item = UpdateDisplayItem.Field()
     update_order = UpdateOrder.Field()
     delete_order_item = DeleteOrderItem.Field()
+
 
 # ========================Mutations End========================
 
