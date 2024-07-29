@@ -195,7 +195,7 @@ class Query(graphene.ObjectType):
     current_user = graphene.Field(UserType)
     display_items = graphene.List(DisplayItemType)
     display_item = graphene.Field(DisplayItemType, id=graphene.ID(required=True))
-    get_user_pending_orders = graphene.List(OrderItemType)
+    get_user_pending_orders = graphene.List(OrderType)
 
     @login_required
     def resolve_current_user(self, info):
