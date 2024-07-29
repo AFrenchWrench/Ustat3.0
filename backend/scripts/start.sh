@@ -13,8 +13,8 @@ echo "PostgreSQL is ready."
 # Apply database migrations
 python manage.py migrate
 
-python manage.py custom_superuser
-
 python manage.py add_cities
+
+python manage.py custom_superuser
 
 uwsgi --ini ./uwsgi.ini

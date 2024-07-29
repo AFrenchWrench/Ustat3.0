@@ -42,11 +42,8 @@ class DisplayItemType(DjangoObjectType):
 
 class OrderItemInput(graphene.InputObjectType):
     order = graphene.ID(required=False)
+    display_item = graphene.ID(required=True)
     due_date = graphene.Date(required=False)
-    type = graphene.String(required=True)
-    name = graphene.String(required=True)
-    dimensions = graphene.JSONString(required=True)
-    price = graphene.BigInt(required=True)
     description = graphene.String(required=False)
     quantity = graphene.Int(required=True)
 
@@ -73,6 +70,12 @@ class CreateOrderItem(graphene.Mutation):
                 input["order"] = get_object_or_404(Order, id=input.get("order"))
             else:
                 input["order"] = Order.objects.create(due_date=input.get("due_date"))
+
+            display_item = get_object_or_404(DisplayItem, id=input.pop("display_item"))
+            input["type"] = display_item.type
+            input["name"] = display_item.name
+            input["dimensions"] = display_item.dimensions
+            input["price"] = display_item.price
             order_item = OrderItem.objects.create(
                 **input,
             )
@@ -189,7 +192,8 @@ class Mutation(graphene.ObjectType):
 class Query(graphene.ObjectType):
     current_user = graphene.Field(UserType)
     display_items = graphene.List(DisplayItemType)
-    display_item = graphene.Field(DisplayItemType)
+    display_item = graphene.Field(DisplayItemType, id=graphene.ID(required=True))
+    get_user_pending_orders = graphene.List(OrderItemType)
 
     @login_required
     def resolve_current_user(self, info):
@@ -203,6 +207,11 @@ class Query(graphene.ObjectType):
     def resolve_display_item(self, info, id):
         display_item = get_object_or_404(DisplayItem, pk=id)
         return display_item
+
+    @login_required
+    def resolve_get_user_pending_orders(self, info):
+        orders = Order.objects.filter(status="p", user=info.context.user)
+        return orders
 
 
 # ========================Queries End========================

@@ -27,7 +27,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
     const fetchUserData = async () => {
       const token = Cookies.get('Authorization');
       try {
-        const response = await fetch('http://127.0.0.1:8000/users/graphql/', {
+        const response = await fetch('/api/users/graphql/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -112,7 +112,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
     const token = Cookies.get('Authorization');
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/users/graphql/', {
+      const response = await fetch('/api/users/graphql/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

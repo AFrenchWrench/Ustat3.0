@@ -1,0 +1,128 @@
+.profileContainer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .form{
+    max-width:400px;
+    min-width: 250px;
+    width: 80%;
+    background-color:rgb(42, 42, 42);
+    margin-top: 20px;
+    padding: 10px 5px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .twoContainer{
+    width: 90%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px;
+  }
+
+  .twoContainer label{
+    font-size: 12px;
+    word-wrap: break-word;
+  }
+  .twoContainer input{
+      width:55%;
+      background-color: rgb(55, 55, 55);
+      border: none;
+      border-radius: 5px;
+      outline: none;
+      color: rgb(220, 220, 220);
+      padding: 2px 5px;
+      font-size: 14px;
+    }
+
+    .twoContainer span{
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        gap: auto;
+        position: relative;
+    }
+
+    .formDetails{
+        width: 90%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        position: relative;
+        margin-bottom: 40px;
+      }
+    .formDetails label{
+        width: 90%;
+        text-align: right;
+    }
+    .formDetails textarea{
+        width: 100%;
+        height: 100px;
+        outline: none;
+        padding: 5px 20px;
+        border-radius: 5px;
+        background-color: rgb(55, 55, 55);
+        resize: none;
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+
+
+
+    .thumbnail{
+        cursor: pointer;
+        width: 45% !important;
+        border-radius: 10px;
+        aspect-ratio: 1;
+        background-color: rgb(31, 31, 31);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-size: contain;
+        background-position: center;
+        background-repeat: 'no-repeat'
+    }
+
+    .slide{
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        background-color: rgb(31, 31, 31);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-size: contain;
+        background-position: center;
+        background-repeat: 'no-repeat'
+    }
+
+    .sliderContainer{
+        width: 90%;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 40px;
+    }
+    .sliderContainer span{
+        width: 33%;
+        aspect-ratio: 2/1;
+        position: relative;
+    }
+
+
+    .errorMessage{
+      font-size: x-small !important;
+      color: rgb(255, 35, 35) !important;
+      background-color: transparent !important;
+      position: absolute;
+      bottom:0; 
+      left:0;
+      transform: translateY(120%); 
+    }
