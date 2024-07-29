@@ -1,3 +1,4 @@
+from time import timezone
 import graphene
 from django.contrib.auth import (
     get_user_model,
@@ -15,6 +16,7 @@ from sales.models import (
     Order,
     OrderItem,
     DisplayItem,
+    OrderTransaction,
 )
 from users.schema import UserType
 
@@ -38,6 +40,11 @@ class OrderItemType(DjangoObjectType):
 class DisplayItemType(DjangoObjectType):
     class Meta:
         model = DisplayItem
+
+
+class OrderTransactionType(DjangoObjectType):
+    class Meta:
+        model = OrderTransaction
 
 
 class OrderItemInput(graphene.InputObjectType):
@@ -131,6 +138,12 @@ class DisplayItemInput(graphene.InputObjectType):
     description = graphene.String(required=False)
 
 
+class OrderUpdateInput(graphene.InputObjectType):
+    id = graphene.ID(required=True)  # ID of the order to update
+    due_date = graphene.Date(required=False)
+    status = graphene.String(required=False)
+
+
 class UpdateOrderItem(graphene.Mutation):
     class Arguments:
         input = OrderItemInput(required=True)
@@ -175,7 +188,87 @@ class UpdateDisplayItem(graphene.Mutation):
             return UpdateDisplayItem(success=False)
 
 
+class UpdateOrder(graphene.Mutation):
+    class Arguments:
+        input = OrderUpdateInput(required=True)
+
+    order = graphene.Field(lambda: OrderType)
+    success = graphene.Boolean()
+
+    @login_required
+    def mutate(self, info, input):
+        try:
+            order = Order.objects.get(pk=input.id)
+        except Order.DoesNotExist:
+            raise UpdateOrder(success=False)
+
+        if order.user != info.context.user or order.status != "p":
+            raise UpdateOrder(success=False)
+
+        if input.due_date and input.due_date > timezone.now():
+            order.due_date = input.due_date
+        else:
+            raise UpdateOrder(success=False)
+
+        if input.status and input.status == "c":
+            order.status = input.status
+        else:
+            raise UpdateOrder(success=False)
+
+        order.save()
+        return UpdateOrder(order=order, success=True)
+
+
 # ========================Update End========================
+
+# ========================Delete Start========================
+
+
+class DeleteOrderItemInput(graphene.InputObjectType):
+    id = graphene.ID(required=True)  # ID of the order item to delete
+
+
+class DeleteOrderItem(graphene.Mutation):
+    class Arguments:
+        input = DeleteOrderItemInput(required=True)
+
+    success = graphene.Boolean()
+    message = graphene.String()
+
+    @login_required
+    def mutate(self, info, input):
+        user = info.context.user
+
+        try:
+            order_item = OrderItem.objects.get(pk=input.id)
+        except OrderItem.DoesNotExist:
+            return DeleteOrderItem(success=False, message="OrderItem not found")
+
+        order = order_item.order
+        if order.user != user or order.status != "p":
+            return DeleteOrderItem(
+                success=False, message="You do not have permission to delete this item"
+            )
+
+        transaction = order.transaction if hasattr(order, "transaction") else None
+
+        # Delete the OrderItem
+        order_item.delete()
+
+        # Check if the Order has any remaining items
+        if not order.items.exists():
+            # Delete the Order
+            if transaction:
+                # Delete the associated OrderTransaction
+                transaction.delete()
+            order.delete()
+
+        return DeleteOrderItem(
+            success=True, message="OrderItem and related data deleted successfully"
+        )
+
+
+# ========================Delete End========================
 
 
 class Mutation(graphene.ObjectType):
@@ -183,6 +276,8 @@ class Mutation(graphene.ObjectType):
     create_display_item = CreateDisplayItem.Field()
     update_order_item = UpdateOrderItem.Field()
     update_display_item = UpdateDisplayItem.Field()
+    update_order = UpdateOrder.Field()
+    delete_order_item = DeleteOrderItem.Field()
 
 
 # ========================Mutations End========================
@@ -195,7 +290,7 @@ class Query(graphene.ObjectType):
     current_user = graphene.Field(UserType)
     display_items = graphene.List(DisplayItemType)
     display_item = graphene.Field(DisplayItemType, id=graphene.ID(required=True))
-    get_user_pending_orders = graphene.List(OrderItemType)
+    get_user_pending_orders = graphene.List(OrderType)
 
     @login_required
     def resolve_current_user(self, info):
