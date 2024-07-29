@@ -131,6 +131,12 @@ class DisplayItemInput(graphene.InputObjectType):
     description = graphene.String(required=False)
 
 
+class OrderUpdateInput(graphene.InputObjectType):
+    id = graphene.ID(required=True)  # ID of the order to update
+    due_date = graphene.Date(required=False)
+    status = graphene.String(required=False)
+
+
 class UpdateOrderItem(graphene.Mutation):
     class Arguments:
         input = OrderItemInput(required=True)
@@ -175,6 +181,33 @@ class UpdateDisplayItem(graphene.Mutation):
             return UpdateDisplayItem(success=False)
 
 
+class UpdateOrder(graphene.Mutation):
+    class Arguments:
+        input = OrderUpdateInput(required=True)
+
+    order = graphene.Field(lambda: OrderType)
+    success = graphene.Boolean()
+
+    @login_required
+    def mutate(self, info, input):
+        try:
+            order = Order.objects.get(pk=input.id)
+        except Order.DoesNotExist:
+            raise UpdateOrder(success=False)
+
+        if order.user != info.context.user:
+            raise UpdateOrder(success=False)
+
+        if input.due_date:
+            order.due_date = input.due_date
+
+        if input.status:
+            order.status = input.status
+
+        order.save()
+        return UpdateOrder(order=order, success=True)
+
+
 # ========================Update End========================
 
 
@@ -183,6 +216,7 @@ class Mutation(graphene.ObjectType):
     create_display_item = CreateDisplayItem.Field()
     update_order_item = UpdateOrderItem.Field()
     update_display_item = UpdateDisplayItem.Field()
+    update_order = UpdateOrder.Field()
 
 
 # ========================Mutations End========================
