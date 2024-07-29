@@ -216,6 +216,55 @@ class UpdateOrder(graphene.Mutation):
 
 # ========================Update End========================
 
+# ========================Delete Start========================
+
+
+class DeleteOrderItemInput(graphene.InputObjectType):
+    id = graphene.ID(required=True)  # ID of the order item to delete
+
+
+class DeleteOrderItem(graphene.Mutation):
+    class Arguments:
+        input = DeleteOrderItemInput(required=True)
+
+    success = graphene.Boolean()
+    message = graphene.String()
+
+    @login_required
+    def mutate(self, info, input):
+        user = info.context.user
+
+        try:
+            order_item = OrderItem.objects.get(pk=input.id)
+        except OrderItem.DoesNotExist:
+            return DeleteOrderItem(success=False, message="OrderItem not found")
+
+        order = order_item.order
+        if order.user != user:
+            return DeleteOrderItem(
+                success=False, message="You do not have permission to delete this item"
+            )
+
+        transaction = order.transaction if hasattr(order, "transaction") else None
+
+        # Delete the OrderItem
+        order_item.delete()
+
+        # Check if the Order has any remaining items
+        if not order.items.exists():
+            # Delete the Order
+            if transaction:
+                # Delete the associated OrderTransaction
+                transaction.delete()
+            order.delete()
+
+        return DeleteOrderItem(
+            success=True, message="OrderItem and related data deleted successfully"
+        )
+
+
+# ========================Delete End========================
+
 
 class Mutation(graphene.ObjectType):
     create_order_item = CreateOrderItem.Field()
@@ -223,7 +272,7 @@ class Mutation(graphene.ObjectType):
     update_order_item = UpdateOrderItem.Field()
     update_display_item = UpdateDisplayItem.Field()
     update_order = UpdateOrder.Field()
-
+    delete_order_item = DeleteOrderItem.Field()
 
 # ========================Mutations End========================
 
