@@ -15,6 +15,7 @@ from sales.models import (
     Order,
     OrderItem,
     DisplayItem,
+    OrderTransaction,
 )
 from users.schema import UserType
 
@@ -38,6 +39,11 @@ class OrderItemType(DjangoObjectType):
 class DisplayItemType(DjangoObjectType):
     class Meta:
         model = DisplayItem
+
+
+class OrderTransactionType(DjangoObjectType):
+    class Meta:
+        model = OrderTransaction
 
 
 class OrderItemInput(graphene.InputObjectType):
