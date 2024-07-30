@@ -94,7 +94,7 @@ class CreateOrderItem(graphene.Mutation):
                 price=input["price"],
             ).first()
             if existing_order_item:
-                existing_order_item.quantity += input["quantity"]
+                existing_order_item.quantity += input.get("quantity", 1)
                 existing_order_item.save()
                 return CreateOrderItem(order_item=existing_order_item, success=True)
 
