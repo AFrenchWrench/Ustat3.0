@@ -49,14 +49,15 @@ class Order(models.Model):
     creation_date = models.DateField(auto_now_add=True)
     order_number = models.CharField(max_length=17, unique=True, blank=True)
     status = models.CharField(
-        max_length=1,
+        max_length=2,
         choices=[
             ("p", "در انتظار تایید"),
+            ("ps", "در انتظار ثبت"),
             ("d", "تایید نشده"),
             ("a", "تایید شده"),
             ("c", "لغو شده"),
         ],
-        default="p",
+        default="ps",
     )
 
     def save(self, *args, **kwargs):
@@ -66,12 +67,9 @@ class Order(models.Model):
         if not self.pk and not self.due_date:
             self.due_date = timezone.now() + timezone.timedelta(days=25)
 
-        if self.status == "a":
-            try:
-                transaction = self.transaction
-            except:
-                transaction = OrderTransaction.objects.create(order=self)
-        elif self.status == "c":
+        if self.status == "a" and not hasattr(self, "transaction"):
+            transaction = OrderTransaction.objects.create(order=self)
+        elif self.status == "c" and hasattr(self, "transaction"):
             transaction = self.transaction
             transaction.status = "c"
             transaction.save()
@@ -101,13 +99,10 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField()
 
     def save(self, *args, **kwargs):
-        
-        try:
-            if self.order and self.order.transacrtion:
-                self.order.transacrtion.save()
-        except:
-            ...
-            
+
+        if self.order and hasattr(self.order, "transaction"):
+            self.order.transacrtion.save()
+
         super().save(*args, **kwargs)
 
     def __str__(self):

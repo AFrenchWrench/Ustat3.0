@@ -10,6 +10,7 @@ from graphql import (
 )
 from utils.schema_utils import (
     login_required,
+    resolve_model_with_filters,
     staff_member_required,
 )
 from sales.models import (
@@ -135,8 +136,6 @@ class CreateDisplayItem(graphene.Mutation):
 
 class UpdateOrderItemInput(graphene.InputObjectType):
     id = graphene.ID(required=True)
-    due_date = graphene.Date(required=False)
-    status = graphene.String(required=False)
     dimensions = graphene.JSONString(required=False)
     description = graphene.String(required=False)
     quantity = graphene.Int(required=False)
@@ -169,11 +168,7 @@ class UpdateOrderItem(graphene.Mutation):
         try:
             order_item = get_object_or_404(OrderItem, pk=input.get("id"))
             for field, value in input:
-                if field == "due_date" or field == "status":
-                    setattr(order_item.order, field, value)
-                    order_item.order.save()
-                else:
-                    setattr(order_item, field, value)
+                setattr(order_item, field, value)
             order_item.save()
             return UpdateOrderItem(order_item=order_item, success=True)
         except Exception as e:
@@ -215,7 +210,7 @@ class UpdateOrder(graphene.Mutation):
         except Order.DoesNotExist:
             raise UpdateOrder(success=False)
 
-        if order.user != info.context.user or order.status != "p":
+        if order.user != info.context.user or order.status != "ps":
             raise UpdateOrder(success=False)
 
         if input.due_date and input.due_date > timezone.now():
@@ -223,7 +218,7 @@ class UpdateOrder(graphene.Mutation):
         else:
             raise UpdateOrder(success=False)
 
-        if input.status and input.status == "c":
+        if input.status and input.status == "p":
             order.status = input.status
         else:
             raise UpdateOrder(success=False)
@@ -239,6 +234,10 @@ class UpdateOrder(graphene.Mutation):
 
 class DeleteOrderItemInput(graphene.InputObjectType):
     id = graphene.ID(required=True)  # ID of the order item to delete
+
+
+class DeleteOrderInput(graphene.InputObjectType):
+    id = graphene.ID(required=True)  # ID of the order to delete
 
 
 class DeleteOrderItem(graphene.Mutation):
@@ -281,6 +280,45 @@ class DeleteOrderItem(graphene.Mutation):
         )
 
 
+class DeleteOrder(graphene.Mutation):
+    class Arguments:
+        input = DeleteOrderInput(required=True)
+
+    success = graphene.Boolean()
+    message = graphene.String()  # To provide feedback on the operation
+
+    @login_required
+    def mutate(self, info, input):
+        user = info.context.user
+
+        try:
+            order = get_object_or_404(Order, id=input.id)
+
+            # Ensure the user owns the order
+            if order.user != user:
+                return DeleteOrder(
+                    success=False,
+                    message="You do not have permission to delete this order",
+                )
+
+            # Delete the associated OrderTransaction, if it exists
+            if hasattr(order, "transaction"):
+                order.transaction.delete()
+
+            # Delete the Order
+            order.delete()
+
+            return DeleteOrder(success=True, message="Order deleted successfully")
+
+        except Order.DoesNotExist:
+            return DeleteOrder(success=False, message="Order not found")
+        except Exception as e:
+            print(e)
+            return DeleteOrder(
+                success=False, message="An error occurred while deleting the order"
+            )
+
+
 # ========================Delete End========================
 
 
@@ -291,19 +329,27 @@ class Mutation(graphene.ObjectType):
     update_display_item = UpdateDisplayItem.Field()
     update_order = UpdateOrder.Field()
     delete_order_item = DeleteOrderItem.Field()
+    delete_order = DeleteOrder.Field()
 
 
 # ========================Mutations End========================
 
 
 # ========================Queries Start========================
+class OrderFilterInput(graphene.InputObjectType):
+    status = graphene.List(graphene.String)  # Filter by status
+    due_date__gte = graphene.Date()  # Filter by minimum due date
+    due_date__lte = graphene.Date()  # Filter by maximum due date
+    order_number__icontains = graphene.String()  # Filter by order number
+    creation_date__lte = graphene.Date()  # Filter by creation date before
+    creation_date__gte = graphene.Date()  # Filter by creation date after
 
 
 class Query(graphene.ObjectType):
     current_user = graphene.Field(UserType)
     display_items = graphene.List(DisplayItemType)
     display_item = graphene.Field(DisplayItemType, id=graphene.ID(required=True))
-    get_user_pending_orders = graphene.List(OrderType)
+    user_orders = graphene.List(OrderType, filter=OrderFilterInput())
 
     @login_required
     def resolve_current_user(self, info):
@@ -319,9 +365,12 @@ class Query(graphene.ObjectType):
         return display_item
 
     @login_required
-    def resolve_get_user_pending_orders(self, info):
-        orders = Order.objects.filter(status="p", user=info.context.user)
-        return orders
+    def resolve_user_orders(self, info, filter=None):
+        orders = resolve_model_with_filters(Order, filter)
+        if info.context.user.is_staff:
+            return orders
+        else:
+            return orders.filter(user=info.context.user)
 
 
 # ========================Queries End========================
