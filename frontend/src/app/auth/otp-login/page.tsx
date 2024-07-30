@@ -2,26 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-
 import Cookies from 'js-cookie';
-
 import { z } from "zod";
 import { zodResolver } from '@hookform/resolvers/zod';
 import CountdownTimer from '@/components/countDown';
+import CustomReactCodeInput from '@/components/CustomReactCodeInput';
 
 const codeSchema = z.object({
   verificationCode: z.string().min(1, "لطفا کد را وارد کنید")
 });
 type TcodeSchema = z.infer<typeof codeSchema>;
 
-const CustomReactCodeInput = dynamic(() => import('@/components/CustomReactCodeInput'), { ssr: false });
-
-
 const Page = () => {
-  const [resendvar, setResendvar] = useState(false); // ابتدا false
-  const [isTimerRunning, setIsTimerRunning] = useState(true); // ابتدا true
+  const [resendvar, setResendvar] = useState(false);
+  const [isTimerRunning, setIsTimerRunning] = useState(true);
 
   const { handleSubmit, control, setError, formState: { errors, isSubmitting } } = useForm<TcodeSchema>({
     resolver: zodResolver(codeSchema)
@@ -33,27 +28,27 @@ const Page = () => {
     const countdown = setInterval(() => {
       setIsTimerRunning(prevIsTimerRunning => {
         if (prevIsTimerRunning) {
-          return true; // تایمر هنوز در حال شمارش است
+          return true;
         } else {
-          clearInterval(countdown); // تایمر به پایان رسید
-          setResendvar(true); // فعال کردن دوباره دکمه
+          clearInterval(countdown);
+          setResendvar(true);
           return false;
         }
       });
-    }, 1000); // هر 1000 میلی‌ثانیه (یک ثانیه) اجرا شود
+    }, 1000);
 
-    return () => clearInterval(countdown); // پاک کردن تایمر در cleanup
-  }, []); // اجرای این useEffect یکبار تنها هنگام بارگذاری صفحه
+    return () => clearInterval(countdown);
+  }, []);
 
   const handleResend = async () => {
-    const emailCookie = Cookies.get("email")
+    const emailCookie = Cookies.get("email");
     const query = `
-            mutation ResendEmail {
-                resendEmail(emailType:"otp") {
-                success
-                error
-    }
-}
+      mutation ResendEmail {
+        resendEmail(emailType:"otp") {
+          success
+          error
+        }
+      }
     `;
     try {
       const response = await fetch('/api/users/graphql/', {
@@ -67,18 +62,16 @@ const Page = () => {
       });
 
       const data = await response.json();
-
-
+      console.log(data);
     } catch (error) {
       console.log(error);
-
     }
-    setIsTimerRunning(true); // شروع مجدد تایمر
-    setResendvar(false); // غیر فعال کردن دکمه ارسال دوباره کد
+    setIsTimerRunning(true);
+    setResendvar(false);
   };
 
   const onSubmit = async (formData: TcodeSchema) => {
-    const emailCookie = Cookies.get("email")
+    const username = Cookies.get("username");
     const { verificationCode } = formData;
     const query = `
       mutation OtpLogin {
@@ -97,7 +90,7 @@ const Page = () => {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'email': emailCookie ? emailCookie : '',
+          'username': username ? username : '',
         },
         body: JSON.stringify({ query }),
       });
@@ -105,7 +98,6 @@ const Page = () => {
       const data = await response.json();
       console.log(data);
       console.log(data.data.otpLogin.success);
-
 
       if (data.data.otpLogin.success) {
         Cookies.set('Authorization', `Bearer ${data.data.otpLogin.token}`, { expires: 0.5 });
@@ -152,10 +144,10 @@ const Page = () => {
       color: 'red',
       border: '1px solid red',
     },
-    type: 'text', // Required prop 'type'
-    fields: 6, // Required prop 'fields'
-    name: 'code', // Required prop 'name'
-    inputMode: 'text', // Required prop 'inputMode'
+    type: 'text',
+    fields: 6,
+    name: 'code',
+    inputMode: 'text',
   };
 
   return (
@@ -170,7 +162,7 @@ const Page = () => {
           <button disabled={isSubmitting} className='w-1/8 py-2 bg-red-600 text-[#212121] rounded hover:bg-red-700 focus:outline-none disabled:bg-red-300' type='submit'>تایید</button>
 
           <div className='flex flex-col items-start h-[30px]'>
-            {isTimerRunning && <CountdownTimer setResendvar={setResendvar} setIsTimerRunning={setIsTimerRunning} />} {/* Pass state setters to CountdownTimer */}
+            {isTimerRunning && <CountdownTimer setResendvar={setResendvar} setIsTimerRunning={setIsTimerRunning} />}
             <button type='button' onClick={handleResend} disabled={!resendvar} className='bg-transparent disabled:text-gray-500 p-0'>ارسال مجدد کد</button>
           </div>
         </div>

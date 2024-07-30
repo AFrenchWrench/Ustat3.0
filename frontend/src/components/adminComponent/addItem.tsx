@@ -11,6 +11,14 @@ import styles from "@/allStyles/addItemStyles.module.css";
 
 import Cookies from 'js-cookie';
 
+const maxFileSize = 3 * 1024 * 1024;
+
+const fileSchema = z.instanceof(File).refine(file => file.size <= maxFileSize, {
+    message: 'File size must be less than 3MB',
+}).refine(file => file.type.startsWith('image/'), {
+    message: 'Only image files are allowed'
+});
+
 const schema = z.object({
     type: z.string().min(1, 'Type is required'),
     name: z.string().min(1, 'Name is required'),
@@ -21,10 +29,10 @@ const schema = z.object({
     }),
     price: z.number().min(0, 'Price must be a positive number').or(z.string().min(1, 'Price is required')),
     description: z.string().min(1, 'Description is required'),
-    thumbnail: z.instanceof(File).refine(file => file.type.startsWith('image/'), 'Only image files are allowed'),
-    slider1: z.instanceof(File).refine(file => file.type.startsWith('image/'), 'Only image files are allowed'),
-    slider2: z.instanceof(File).refine(file => file.type.startsWith('image/'), 'Only image files are allowed'),
-    slider3: z.instanceof(File).refine(file => file.type.startsWith('image/'), 'Only image files are allowed'),
+    thumbnail: fileSchema,
+    slider1: fileSchema,
+    slider2: fileSchema,
+    slider3: fileSchema,
 });
 
 type FieldNames = 'thumbnail' | 'slider1' | 'slider2' | 'slider3';
@@ -171,6 +179,7 @@ const CreateDisplayItem = () => {
                         type='file'
                         accept='image/*'
                         id='thumbnail'
+
                         {...register("thumbnail")}
                         onChange={(e) => handleImageChange(e, 'thumbnail')}
                     />
@@ -186,7 +195,16 @@ const CreateDisplayItem = () => {
 
                     <span>
                         <label htmlFor="type">نوع محصول :</label>
-                        <input type="text" id='type' {...register("type")} />
+
+                        <select id='type' {...register("type")}>
+                            <option value="s">مبل</option>
+                            <option value="b">سرویس خواب</option>
+                            <option value="m">میز و صندلی</option>
+                            <option value="j">جلومبلی و عسلی</option>
+                            <option value="c">آینه کنسول</option>
+                        </select>
+
+
                         {errors.type && (<p className={styles.errorMessage}>{errors.type.message}</p>)}
                     </span>
                 </div>

@@ -8,11 +8,15 @@ import Cookies from 'js-cookie';
 import Navbar from "@/allStyles/adminNavbar.module.css";
 import Link from 'next/link';
 
+import { usePathname } from 'next/navigation';
+
 import { IoMdAddCircle } from "react-icons/io";
 
 
 const AdminNav = () => {
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
+
+    const router = usePathname();
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -55,7 +59,7 @@ const AdminNav = () => {
         };
 
         fetchUserData();
-    }, [])
+    }, [router])
 
     return (
         <>

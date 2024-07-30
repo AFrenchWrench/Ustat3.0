@@ -38,6 +38,16 @@
       padding: 2px 5px;
       font-size: 14px;
     }
+    .twoContainer select{
+      width:55%;
+      background-color: rgb(55, 55, 55);
+      border: none;
+      border-radius: 5px;
+      outline: none;
+      color: rgb(220, 220, 220);
+      padding: 2px 5px;
+      font-size: 14px;
+    }
 
     .twoContainer span{
         display: flex;
@@ -86,7 +96,7 @@
         justify-content: center;
         background-size: contain;
         background-position: center;
-        background-repeat: 'no-repeat'
+        background-repeat: no-repeat;
     }
 
     .slide{
@@ -100,7 +110,7 @@
         justify-content: center;
         background-size: contain;
         background-position: center;
-        background-repeat: 'no-repeat'
+        background-repeat: no-repeat;
     }
 
     .sliderContainer{
