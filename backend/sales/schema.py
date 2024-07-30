@@ -85,6 +85,19 @@ class CreateOrderItem(graphene.Mutation):
             input["name"] = display_item.name
             input["dimensions"] = display_item.dimensions
             input["price"] = display_item.price
+
+            existing_order_item = OrderItem.objects.filter(
+                order=input["order"],
+                type=input["type"],
+                name=input["name"],
+                dimensions=input["dimensions"],
+                price=input["price"],
+            ).first()
+            if existing_order_item:
+                existing_order_item.quantity += input["quantity"]
+                existing_order_item.save()
+                return CreateOrderItem(order_item=existing_order_item, success=True)
+
             order_item = OrderItem.objects.create(
                 **input,
             )
