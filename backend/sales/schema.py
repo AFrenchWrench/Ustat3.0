@@ -141,7 +141,7 @@ class UpdateOrderItemInput(graphene.InputObjectType):
     quantity = graphene.Int(required=False)
 
 
-class DisplayItemInput(graphene.InputObjectType):
+class UpdateDisplayItemInput(graphene.InputObjectType):
     id = graphene.ID(required=True)
     type = graphene.String(required=False)
     name = graphene.String(required=False)
@@ -150,7 +150,7 @@ class DisplayItemInput(graphene.InputObjectType):
     description = graphene.String(required=False)
 
 
-class OrderUpdateInput(graphene.InputObjectType):
+class UpdateOrderInput(graphene.InputObjectType):
     id = graphene.ID(required=True)  # ID of the order to update
     due_date = graphene.Date(required=False)
     status = graphene.String(required=False)
@@ -158,7 +158,7 @@ class OrderUpdateInput(graphene.InputObjectType):
 
 class UpdateOrderItem(graphene.Mutation):
     class Arguments:
-        input = OrderItemInput(required=True)
+        input = UpdateOrderItemInput(required=True)
 
     order_item = graphene.Field(OrderItemType)
     success = graphene.Boolean()
@@ -167,7 +167,7 @@ class UpdateOrderItem(graphene.Mutation):
     def mutate(self, info, input):
         try:
             order_item = get_object_or_404(OrderItem, pk=input.get("id"))
-            for field, value in input:
+            for field, value in input.items():
                 setattr(order_item, field, value)
             order_item.save()
             return UpdateOrderItem(order_item=order_item, success=True)
@@ -178,7 +178,7 @@ class UpdateOrderItem(graphene.Mutation):
 
 class UpdateDisplayItem(graphene.Mutation):
     class Arguments:
-        input = DisplayItemInput(required=True)
+        input = UpdateDisplayItemInput(required=True)
 
     display_item = graphene.Field(DisplayItemType)
     success = graphene.Boolean()
@@ -187,7 +187,7 @@ class UpdateDisplayItem(graphene.Mutation):
     def mutate(self, info, input):
         try:
             display_item = get_object_or_404(DisplayItem, pk=input.get("id"))
-            for field, value in input:
+            for field, value in input.items():
                 setattr(display_item, field, value)
             display_item.save()
             return UpdateDisplayItem(display_item=display_item, success=True)
@@ -198,7 +198,7 @@ class UpdateDisplayItem(graphene.Mutation):
 
 class UpdateOrder(graphene.Mutation):
     class Arguments:
-        input = OrderUpdateInput(required=True)
+        input = UpdateOrderInput(required=True)
 
     order = graphene.Field(lambda: OrderType)
     success = graphene.Boolean()
