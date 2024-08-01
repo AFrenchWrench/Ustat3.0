@@ -1,8 +1,30 @@
+"use client";
+
 import Link from 'next/link';
 import React, { useState } from 'react';
 import "./componentStyles.css";
 import AddToCartButton from './addToCartButton';
 import SelectOrder from './SelectOrder';
+
+import Cookies from 'js-cookie';
+
+interface OrderItems {
+  id: string;
+  type: string;
+  name: string;
+  dimensions: object;
+  price: number;
+  quantity: number;
+}
+
+interface DisplayItem {
+  id: string;
+  dueDate: string;
+  creationDate: string;
+  orderNumber: string;
+  status: string;
+  items: OrderItems[];
+}
 
 interface ArticleProps {
   imageSrc: string;
@@ -11,24 +33,25 @@ interface ArticleProps {
   price: string;
   productLink: string;
   type: string;
+  orderData: DisplayItem[];
+  onOrderUpdate: (newOrderData: DisplayItem[]) => void;
 }
 
-const Article: React.FC<ArticleProps> = ({ imageSrc, productName, description, price, productLink, type }) => {
-
+const Article: React.FC<ArticleProps> = ({ imageSrc, productName, description, price, productLink, type, orderData, onOrderUpdate }) => {
   const [showSelectOrder, setShowSelectOrder] = useState(false);
 
   const handleAddToCart = (id: string) => {
-    console.log('Adding to cart:', id);
-    if (!showSelectOrder) {
+    const token = Cookies.get('Authorization');
+    if (token) {
       setShowSelectOrder(true);
+    } else {
+      window.location.href = '/auth'; // Redirect to authentication page
     }
   };
 
   const handleRemoveOrder = () => {
     setShowSelectOrder(false);
   };
-
-
 
   return (
     <article className='article'>
@@ -45,10 +68,10 @@ const Article: React.FC<ArticleProps> = ({ imageSrc, productName, description, p
       <div className='buttons_section'>
         <Link className='more' href={`/products/${type}/${productLink}`}>مشاهده محصول</Link>
         <AddToCartButton id={productLink} onAddToCart={handleAddToCart} />
-        {showSelectOrder && <SelectOrder id={productLink} onRemove={handleRemoveOrder} />}
       </div>
+      {showSelectOrder && <SelectOrder id={productLink} orderData={orderData} onRemove={handleRemoveOrder} onOrderUpdate={onOrderUpdate} />}
     </article>
   );
-}
+};
 
 export default Article;

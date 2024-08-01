@@ -6,7 +6,7 @@ type CountdownTimerProps = {
 };
 
 const CountdownTimer: React.FC<CountdownTimerProps> = ({ setResendvar, setIsTimerRunning }) => {
-  const [timer, setTimer] = useState(10);
+  const [timer, setTimer] = useState(60);
 
   useEffect(() => {
     setIsTimerRunning(true);

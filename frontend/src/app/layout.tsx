@@ -1,9 +1,8 @@
-
 import type { Metadata } from "next";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import AdminNav from "@/components/AdminNav";
-
+import Errorcheck from "@/components/Errorcheck";
 
 export const metadata: Metadata = {
   title: "Ustat",
@@ -15,15 +14,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
     <html lang="fa" dir="rtl">
-
       <body>
-        <AdminNav />
-        <Nav />
-
-        {children}
+        <Errorcheck>
+          <AdminNav />
+          <Nav />
+          {children}
+        </Errorcheck>
       </body>
     </html>
   );

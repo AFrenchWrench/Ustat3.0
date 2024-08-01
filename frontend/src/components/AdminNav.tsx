@@ -45,6 +45,7 @@ const AdminNav = () => {
                 }
 
                 if (data.errors || !data.data.currentUser) {
+                    setIsAdmin(false);
                     throw new Error(data.errors ? data.errors[0].message : 'User not logged in');
                 }
 

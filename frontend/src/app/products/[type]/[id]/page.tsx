@@ -29,7 +29,6 @@ const Page = () => {
     const { id, type } = useParams();
 
     useEffect(() => {
-        console.log(id);
 
         if (!id) return; // Don't fetch if id is not available yet
 
