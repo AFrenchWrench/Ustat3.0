@@ -257,7 +257,7 @@ class DeleteOrderItem(graphene.Mutation):
             return DeleteOrderItem(success=False, message="OrderItem not found")
 
         order = order_item.order
-        if order.user != user or order.status != "p":
+        if order.user != user or order.status != "ps":
             return DeleteOrderItem(
                 success=False, message="You do not have permission to delete this item"
             )
@@ -293,7 +293,6 @@ class DeleteOrder(graphene.Mutation):
 
         try:
             order = get_object_or_404(Order, id=input.id)
-
             # Ensure the user owns the order
             if order.user != user:
                 return DeleteOrder(
