@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Cookies from 'js-cookie';
+import { useRouter } from 'next/navigation';
 
 import Styles from "@/allStyles/orderStyles.module.css";
 
@@ -56,7 +57,8 @@ const Page = () => {
     const [itemQuantities, setItemQuantities] = useState<{ [key: string]: number }>({});
     const [confirmAlert, setConfirmAlert] = useState<{ show: boolean; type: 'delete' | 'update'; itemId: string } | null>(null);
     const { order } = useParams();
-    const [updata, setUpdate] = useState();
+    const [update, setUpdate] = useState(false);
+    const { push } = useRouter()
 
     useEffect(() => {
         if (!order) return;
@@ -103,7 +105,12 @@ const Page = () => {
                     throw new Error(data.errors ? data.errors[0].message : 'No item found');
                 }
 
+
                 const fetchedOrderData = data.data.userOrders[0];
+                if (!fetchedOrderData) {
+                    push("/cart")
+                    return
+                }
                 setOrderData(fetchedOrderData);
 
                 // Initialize item quantities
@@ -120,7 +127,7 @@ const Page = () => {
         };
 
         fetchProductData();
-    }, [order, updata]);
+    }, [order, update]);
 
     const convertToJalaali = (gregorianDate: string | undefined) => {
         if (gregorianDate) {
@@ -248,7 +255,7 @@ const Page = () => {
             } else if (type === "update") {
                 console.log(`Update response: ${data.data.updateOrderItem.success}`);
             }
-            setUpdate(updata);
+            setUpdate(!update);
         } catch (error) {
             console.error('Error executing mutation:', error);
         } finally {

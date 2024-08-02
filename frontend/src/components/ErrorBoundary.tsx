@@ -1,4 +1,4 @@
-'use client';
+'use client'; // Ensure this is included if using client-side functionality
 
 import React from 'react';
 
@@ -17,18 +17,18 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     }
 
     static getDerivedStateFromError(error: Error) {
-        // Update state so the next render will show the fallback UI.
+        // Update state so the next render will show the fallback UI
         return { hasError: true };
     }
 
     componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-        // You can also log the error to an error reporting service
-        console.error("Error caught in error boundary:", error, errorInfo);
+        // Log error information
+        console.error('Error caught in error boundary:', error, errorInfo);
     }
 
     render() {
         if (this.state.hasError) {
-            // You can render any custom fallback UI
+            // Fallback UI
             return <h1>Something went wrong.</h1>;
         }
 

@@ -22,14 +22,14 @@ const Nav = () => {
       if (router.startsWith('/users')) {
         return "8px"; // Adjust based on your layout for /products and /products/[type]
       }
+      if (router == "/") {
+        return "88px"
+      }
       if (router.startsWith('/cart')) {
         return "248px"; // Adjust based on your layout for /products and /products/[type]
       }
-      if (router.startsWith('/products')) {
+      if (router.startsWith('/support')) {
         return "328px"; // Adjust based on your layout for /products and /products/[type]
-      }
-      if (router == "/") {
-        return "88px"
       }
       return "8px"
     };

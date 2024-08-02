@@ -52,7 +52,7 @@ const CreateDisplayItem = () => {
         handleSubmit,
         formState: { errors },
         setValue,
-        getValues
+        reset
     } = useForm<FormValues>({
         resolver: zodResolver(schema),
     });
@@ -137,6 +137,16 @@ const CreateDisplayItem = () => {
 
                 if (uploadResponse.ok) {
                     setMessage('Images uploaded successfully!');
+                    reset();
+
+                    (['thumbnail', 'slider1', 'slider2', 'slider3'] as const).forEach(key => {
+                        previews[key] = "";
+                    });
+
+                    setTimeout(() => {
+                        setMessage("");
+                    }, 2000);
+
                 } else {
                     setMessage('Failed to upload images.');
                     console.error('Upload Error:', uploadResult);
