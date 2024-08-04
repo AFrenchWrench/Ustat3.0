@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import React, { useEffect, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -7,6 +7,7 @@ import './components/componentStyles.css';
 import Article from './components/Article';
 import Link from 'next/link';
 import { MdKeyboardDoubleArrowLeft } from "react-icons/md";
+import Cookies from 'js-cookie';
 
 interface DisplayItem {
   id: string;
@@ -21,7 +22,24 @@ interface DisplayItem {
   slider3: string;
 }
 
-// Mapping of types to their display names
+interface OrderItems {
+  id: string;
+  type: string;
+  name: string;
+  dimensions: object;
+  price: number;
+  quantity: number;
+}
+
+interface DisplayOrder {
+  id: string;
+  dueDate: string;
+  creationDate: string;
+  orderNumber: string;
+  status: string;
+  items: OrderItems[];
+}
+
 const typeNames: Record<string, string> = {
   S: "مبل",
   B: "سرویس خواب",
@@ -32,55 +50,87 @@ const typeNames: Record<string, string> = {
 
 const Products = () => {
   const [userData, setUserData] = useState<DisplayItem[]>([]);
+  const [orderData, setOrderData] = useState<DisplayOrder[]>([]);
+  const [fetchTrigger, setFetchTrigger] = useState(false); // Trigger for re-fetching data
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch('/api/sales/graphql/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            query: `
-              query DisplayItems {
-                displayItems {
+  const fetchUserData = async () => {
+    try {
+      const token = Cookies.get('Authorization');
+      const response = await fetch('/api/sales/graphql/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? token : '',
+        },
+        body: JSON.stringify({
+          query: `
+            query DisplayItems {
+              displayItems {
+                id
+                type
+                name
+                dimensions
+                price
+                description
+                thumbnail
+                slider1
+                slider2
+                slider3
+              }
+              ${token ? `
+              userOrders {
+                id
+                dueDate
+                creationDate
+                orderNumber
+                status
+                items {
                   id
                   type
                   name
                   dimensions
                   price
-                  description
-                  thumbnail
-                  slider1
-                  slider2
-                  slider3
+                  quantity
                 }
-              }
-            `,
-          }),
-        });
-        const data = await response.json();
+              }` : ''}
+            }
+          `,
+        }),
+      });
+      const data = await response.json();
 
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-
-        if (data.errors || !data.data.displayItems) {
-          throw new Error(data.errors ? data.errors[0].message : 'No items found');
-        }
-
-        setUserData(data.data.displayItems);
-
-      } catch (error) {
-        console.error(error);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
       }
-    };
 
+      if (data.errors || !data.data.displayItems || (token && !data.data.userOrders)) {
+        throw new Error(data.errors ? data.errors[0].message : 'No items found');
+      }
+
+      setUserData(data.data.displayItems);
+      if (token) setOrderData(data.data.userOrders);
+
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
     fetchUserData();
-  }, []);
+  }, []); // Fetch initial data on mount
 
-  // Filter products based on type
+  useEffect(() => {
+    if (fetchTrigger) {
+      fetchUserData();
+      setFetchTrigger(false);
+    }
+  }, [fetchTrigger]); // Fetch updated data when fetchTrigger is true
+
+  const updateOrderData = (newOrderData: DisplayOrder[]) => {
+    setOrderData(newOrderData);
+    setFetchTrigger(true); // Trigger data re-fetch
+  };
+
   const categorizedProducts = Object.keys(typeNames).reduce((acc, type) => {
     acc[type] = userData.filter(item => item.type === type);
     return acc;
@@ -108,6 +158,8 @@ const Products = () => {
                   price={item.price}
                   productLink={item.id}
                   type={item.type}
+                  orderData={orderData}
+                  onOrderUpdate={updateOrderData}
                 />
               </SwiperSlide>
             ))}

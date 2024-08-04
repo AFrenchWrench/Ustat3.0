@@ -14,14 +14,47 @@ def main():
 
 def resolve_model_with_filters(model_class, filter_input=None):
     queryset = model_class.objects.all()
+
     if filter_input:
         for field, value in filter_input.items():
-            if "__icontains" in field:
-                field_name = field.split("__icontains")[0]
-                print(field_name)
-                queryset = queryset.filter(**{f"{field_name}__icontains": value})
+            if isinstance(value, list):
+                # Handle fields with multiple values
+                if "__in" not in field:
+                    field_name = field
+                    queryset = queryset.filter(**{f"{field_name}__in": value})
+                else:
+                    # Preserve any existing filters for `__in` lookups
+                    queryset = queryset.filter(**{field: value})
             else:
-                queryset = queryset.filter(**{field: value})
+                # Handle relation-based lookups
+                field_parts = field.split("__")
+                if len(field_parts) > 1:
+                    field_name = "__".join(
+                        field_parts[:-1]
+                    )  # All parts except the last
+                    lookup_type = field_parts[-1]  # Last part is the lookup type
+                    if lookup_type == "icontains":
+                        queryset = queryset.filter(
+                            **{f"{field_name}__icontains": value}
+                        )
+                    elif lookup_type == "iexact":
+                        queryset = queryset.filter(**{f"{field_name}__iexact": value})
+                    elif lookup_type == "gt":
+                        queryset = queryset.filter(**{f"{field_name}__gt": value})
+                    elif lookup_type == "lt":
+                        queryset = queryset.filter(**{f"{field_name}__lt": value})
+                    elif lookup_type == "gte":
+                        queryset = queryset.filter(**{f"{field_name}__gte": value})
+                    elif lookup_type == "lte":
+                        queryset = queryset.filter(**{f"{field_name}__lte": value})
+                    # Add other lookups as needed
+                    else:
+                        # Default behavior for unsupported lookups
+                        queryset = queryset.filter(**{field: value})
+                else:
+                    # Handle exact matches by default
+                    queryset = queryset.filter(**{field: value})
+
     return queryset
 
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import styles from '../style/profilePageStyles.module.css';
@@ -12,9 +12,6 @@ import Edit from '@/components/authcomponents/edit';
 import IuserData from '@/types/IuserData';
 import Loading from '@/components/Loading';
 
-import Alert from '@mui/material/Alert';
-
-
 const UserProfile = ({ params }: { params: { username: string } }) => {
   const [userData, setUserData] = useState<IuserData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,8 +19,13 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const { push } = useRouter();
+  const hasFetched = useRef(false); // useRef to keep track of fetch status
 
   useEffect(() => {
+    if (hasFetched.current) return; // Prevent multiple fetches
+
+    hasFetched.current = true; // Set to true to indicate fetch is done
+
     const fetchUserData = async () => {
       const token = Cookies.get('Authorization');
       try {
@@ -66,7 +68,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
           }),
         });
         const data = await response.json();
-        console.log(data);
+        console.log(data.data);
 
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -77,8 +79,6 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
         }
 
         setUserData(data.data.currentUser);
-        <Alert severity="success">خوش آمدید {data.data.username}</Alert>
-
         if (!isRedirecting) {
           setIsRedirecting(true);
           push(`/users/${data.data.currentUser.username}`);
@@ -100,7 +100,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
     };
 
     fetchUserData();
-  }, [params, push, isRedirecting]);
+  }, [params, isRedirecting, push]); // Remove dependencies that can cause re-renders
 
   const convertToJalaali = (gregorianDate: string) => {
     const [year, month, day] = gregorianDate.split('-');

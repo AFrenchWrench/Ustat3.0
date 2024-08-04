@@ -9,15 +9,16 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({ setResendvar, setIsTime
   const [timer, setTimer] = useState(60);
 
   useEffect(() => {
+    setIsTimerRunning(true);
     const countdown = setInterval(() => {
       setTimer((prevTimer) => {
-        if (prevTimer > 0) {
+        if (prevTimer > 1) {
           return prevTimer - 1;
         } else {
           clearInterval(countdown);
-          setIsTimerRunning(false); // تغییر وضعیت تایمر به غیر فعال
-          setResendvar(false); // تغییر وضعیت دکمه ارسال دوباره کد به فعال
-          return prevTimer;
+          setIsTimerRunning(false);
+          setResendvar(true);
+          return 0;
         }
       });
     }, 1000);
@@ -27,7 +28,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({ setResendvar, setIsTime
 
   return (
     <div>
-        <p>{timer} ثانیه دیگر</p>
+      <p>{timer} ثانیه دیگر</p>
     </div>
   );
 };

@@ -1,0 +1,174 @@
+.customInput{
+    color: white;
+    background-color: rgb(36, 36, 36);
+    border-radius: 10px;
+    text-align: center;
+}
+.section{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.Container{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 30px;
+    background-color: rgb(32, 32, 32);
+    box-shadow: 0px 0px 20px rgb(29, 29, 29);
+    border-radius: 15px;
+    padding: 15px 10px;
+}
+
+.name{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.orderNumber{
+    background-color: rgb(25, 25, 25);
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+.itemsContainer{
+    display: flex;
+    flex-direction: column;
+    row-gap: 20px;
+}
+.itemContainer{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgb(25, 25, 25);
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+
+.itemRight{
+    display: flex;
+    flex-direction: column;
+    row-gap: 40px;
+    width: 50%;
+}
+
+.itemRight p{
+    background-color: rgb(36, 36, 36);
+    padding: 5px 10px;
+    border-radius: 10px;
+    width: fit-content;
+}
+
+.increment{
+    background-color: rgb(255, 255, 255);
+    color: black;
+    width: 22px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.quantityControl{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.itemLeft{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    width: 50%;
+}
+.itemLeft p{
+    height: 90px;
+    width: 100%;
+    background-color: rgb(36, 36, 36);
+    border-radius: 10px;
+    padding: 5px;
+    overflow-y: hidden;
+}
+.itemLeft p::-webkit-scrollbar{
+    display: none;
+}
+
+
+.udButtons{
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+.updateButton{
+    background-color: white;
+    color: black;
+    border-radius: 15px;
+    font-size: small;
+    padding: 5px;
+}
+.updateButton:hover{
+    background-color: green;
+    color: white;
+}
+.deleteButton{
+    padding: 5px;
+    border-radius: 20px;
+    background-color: red;
+    margin-top: auto;
+}
+
+.deleteButton:hover{
+    background-color: rgb(255, 57, 57);
+}
+
+
+
+
+
+
+/* confirm alert component  */
+.confirmAlert{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: transparent;
+    backdrop-filter: blur(10px);
+    z-index: 999;
+}
+
+.confirmAlertContainer{
+    display: flex;
+    flex-direction: column;
+    background-color: rgb(36, 36, 36);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0px 0px 30px rgb(29, 29, 29);
+    gap: 10px;
+}
+.confirmButtons{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.confirmAlertContainer button{
+    width: 50%;
+    margin: 2px;
+    border-radius: 15px;
+    border: 2px solid transparent;
+}
+.confirmAlertContainer button:hover{
+    border-color: black;
+}
+
+
+
+
+/* confirm alert component  */

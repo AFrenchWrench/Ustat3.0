@@ -19,19 +19,19 @@ const Nav = () => {
       if (router.startsWith('/products')) {
         return "168px"; // Adjust based on your layout for /products and /products/[type]
       }
-
-      switch (router) {
-        case '/users/username':
-          return "8px"; // Adjust based on your layout
-        case '/':
-          return "88px"; // Adjust based on your layout
-        case '/cart':
-          return "248px"; // Adjust based on your layout
-        case '/support':
-          return "328px"; // Adjust based on your layout
-        default:
-          return "8px";
+      if (router.startsWith('/users')) {
+        return "8px"; // Adjust based on your layout for /products and /products/[type]
       }
+      if (router == "/") {
+        return "88px"
+      }
+      if (router.startsWith('/cart')) {
+        return "248px"; // Adjust based on your layout for /products and /products/[type]
+      }
+      if (router.startsWith('/support')) {
+        return "328px"; // Adjust based on your layout for /products and /products/[type]
+      }
+      return "8px"
     };
 
     setSelectBgTop(determineBgTop());

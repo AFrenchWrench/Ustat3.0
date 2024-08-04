@@ -1,78 +1,71 @@
-"use client"
+"use client";
 
-import React from 'react'
-
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
-
-import Navbar from "@/allStyles/adminNavbar.module.css";
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-
 import { IoMdAddCircle } from "react-icons/io";
-
+import Navbar from "@/allStyles/adminNavbar.module.css";
 
 const AdminNav = () => {
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
+    const router = usePathname();
 
     useEffect(() => {
         const fetchUserData = async () => {
             const token = Cookies.get('Authorization');
+            if (!token) {
+                setIsAdmin(false);
+                return;
+            }
             try {
                 const response = await fetch('/api/users/graphql/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': token ? token : ''
+                        'Authorization': token
                     },
                     body: JSON.stringify({
                         query: `
-             query CurrentUser {
-                   currentUser {
-                           isStaff
-                                    }
+                            query CurrentUser {
+                                currentUser {
+                                    isStaff
                                 }
-            `,
+                            }
+                        `,
                     }),
                 });
                 const data = await response.json();
 
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                if (!response.ok || data.errors || !data.data.currentUser) {
+                    setIsAdmin(false);
+                } else {
+                    setIsAdmin(data.data.currentUser.isStaff);
                 }
-
-                if (data.errors || !data.data.currentUser) {
-                    throw new Error(data.errors ? data.errors[0].message : 'User not logged in');
-                }
-
-                setIsAdmin(data.data.currentUser.isStaff);
-
-
             } catch (error) {
                 console.log(error);
-
-            } finally {
+                setIsAdmin(false);
             }
         };
 
         fetchUserData();
-    }, [])
+    }, [router]);
 
     return (
         <>
-            {
-                isAdmin ?
-                    <nav className={Navbar.adminNavbar}>
-                        <ul>
-                            <li>
-                                <Link href={"/admin/add-item"}><IoMdAddCircle color="black" size="30px" /></Link>
-                            </li>
-                        </ul>
-                    </nav>
-
-                    : ""
-            }
+            {isAdmin && (
+                <nav className={Navbar.adminNavbar}>
+                    <ul>
+                        <li>
+                            <Link href={"/admin/add-item"}>
+                                <IoMdAddCircle color="black" size="30px" />
+                            </Link>
+                        </li>
+                    </ul>
+                </nav>
+            )}
         </>
-    )
-}
+    );
+};
 
-export default AdminNav
+export default AdminNav;
