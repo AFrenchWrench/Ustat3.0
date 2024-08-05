@@ -1,0 +1,97 @@
+.container{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ordersSection{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-self: end;
+    margin-top: 40px;
+    padding: 20px;
+    border: 2px solid white;
+    border-radius: 15px;
+    background-color: rgb(47, 47, 47);
+    box-shadow: 0px 0px 30px rgb(31, 31, 31);
+    width: 90%;
+    max-width: 600px;
+    row-gap: 10px;
+}
+.ordersSection a{
+    color: white;
+    background-color: rgb(31, 31, 31);
+    width: 100%;
+    border-radius: 15px;
+    padding: 5px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    position: relative;
+}
+.orderNumberContainer{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+}
+.orderNumberContainer p{
+    display: flex;
+    align-items: center;
+}
+.orderNumber{
+    background-color: rgb(26, 26, 26);
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+
+
+.itemsContainer{
+    display: flex;
+    flex-wrap: wrap;
+    min-height: 100px;
+    background-color: rgb(25, 25, 25);
+    border-radius: 15px;
+    padding: 10px;
+    gap: 20px;
+}
+.itemsContainer div{
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+.itemsContainer div p{
+    background-color: rgb(35, 35, 35);
+    padding: 5px 10px;
+    border-radius: 10px;
+    font-size: 17px;
+    border: 1px solid white;
+}
+.itemsContainer div span{
+    background-color: rgb(35, 35, 35);
+    padding: 5px;
+    border-radius: 10px;
+    border: 1px solid white;
+    position: relative;
+}
+.itemsContainer div span::before{
+    content: "";
+    position: absolute;
+    right: -2px;
+    top: 0;
+    transform: translateY(30%);
+    width: 3px;
+    height: calc(80% - 5px);
+    background-color: rgb(35, 35, 35);
+}
+
+.deleteButton{
+    margin-right: auto;
+    border-radius: 50%;
+    padding: 5px !important;
+}
+.deleteButton:hover{
+    background-color: rgb(255, 36, 36);
+}

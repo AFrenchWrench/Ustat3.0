@@ -49,16 +49,25 @@ const orderSchema = z.object({
     orderDate: z.string()
 });
 
+type TupdateType = "update" | "delete" | "updateDate" | "changeStatus";
+
 type TorderSchema = z.infer<typeof orderSchema>;
+
+interface ConfirmAlertType {
+    show: boolean;
+    type: TupdateType;
+    itemId: string;
+    status?: string;
+}
 
 const Page = () => {
     const [orderData, setOrderData] = useState<DisplayItem | null>(null);
     const [loading, setLoading] = useState(true);
     const [itemQuantities, setItemQuantities] = useState<{ [key: string]: number }>({});
-    const [confirmAlert, setConfirmAlert] = useState<{ show: boolean; type: 'delete' | 'update'; itemId: string } | null>(null);
+    const [confirmAlert, setConfirmAlert] = useState<ConfirmAlertType | null>(null);
     const { order } = useParams();
     const [update, setUpdate] = useState(false);
-    const { push } = useRouter()
+    const { push } = useRouter();
 
     useEffect(() => {
         if (!order) return;
@@ -97,6 +106,8 @@ const Page = () => {
                 });
                 const data = await response.json();
 
+
+
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -105,11 +116,10 @@ const Page = () => {
                     throw new Error(data.errors ? data.errors[0].message : 'No item found');
                 }
 
-
                 const fetchedOrderData = data.data.userOrders[0];
                 if (!fetchedOrderData) {
-                    push("/cart")
-                    return
+                    push("/cart");
+                    return;
                 }
                 setOrderData(fetchedOrderData);
 
@@ -150,6 +160,7 @@ const Page = () => {
         handleSubmit,
         formState: { errors },
         setValue,
+        getValues,
         control
     } = useForm<TorderSchema>({
         resolver: zodResolver(orderSchema),
@@ -157,10 +168,16 @@ const Page = () => {
     });
 
     const handleDateChange = (date: DateObject | null) => {
-        const gregorianDate = date ? date.convert(gregorian) : null;
-        const formattedDate = gregorianDate ? gregorianDate.toDate().toISOString().split("T")[0] : '';
-        setValue("orderDate", formattedDate);
-        setDateValue(convertToJalaali(formattedDate));
+        if (date) {
+            const gregorianDate = date.convert(gregorian).toDate();
+            const utcDate = new Date(Date.UTC(gregorianDate.getFullYear(), gregorianDate.getMonth(), gregorianDate.getDate()));
+            const formattedDate = utcDate.toISOString().split("T")[0];
+            setValue("orderDate", formattedDate);
+            setDateValue(convertToJalaali(formattedDate));
+        } else {
+            setValue("orderDate", '');
+            setDateValue(undefined);
+        }
     };
 
     const handleQuantityChange = (itemId: string, increment: boolean) => {
@@ -188,15 +205,32 @@ const Page = () => {
             case 'C':
                 return 'لغو شده';
             default:
-                return 'نامشخض';
+                return 'نامشخص';
         }
     };
 
-    const handleConfirmAlert = (type: 'delete' | 'update', itemId: string) => {
-        setConfirmAlert({ show: true, type, itemId });
+    const handleStatusColor = (status: string) => {
+        switch (status) {
+            case 'P':
+                return "yellow";
+            case 'PS':
+                return "white";
+            case 'D':
+                return "red";
+            case 'A':
+                return "green";
+            case 'C':
+                return "red";
+            default:
+                return "white";
+        }
+    }
+
+    const handleConfirmAlert = (type: TupdateType, itemId: string, status?: string) => {
+        setConfirmAlert({ show: true, type, itemId, status });
     };
 
-    const handleConfirm = async (type: 'delete' | 'update', itemId: string) => {
+    const handleConfirm = async (type: TupdateType, itemId: string, status?: string) => {
         const user = Cookies.get("Authorization");
 
         let query: string = '';  // Initialize with an empty string
@@ -222,10 +256,30 @@ const Page = () => {
                 }
             `;
             variables = { itemIdVar: itemId, quantity: itemQuantities[itemId] };
+        } else if (type === "updateDate") {
+            query = `
+                mutation UpdateOrder($itemIdVar: ID!, $dueDate: Date!) {
+                    updateOrder(input: { id: $itemIdVar, dueDate: $dueDate }) {
+                        success
+                    }
+                }
+            `;
+            variables = { itemIdVar: itemId, dueDate: getValues("orderDate") };
+        } else if (type === "changeStatus") {
+            query = `
+                mutation UpdateOrder($itemIdVar: ID!, $status: String!) {
+                    updateOrder(input: { id: $itemIdVar, status: $status }) {
+                        success
+                    }
+                }
+            `;
+            variables = { itemIdVar: itemId, status: status };
         }
+        console.log(status);
+
 
         try {
-            const response = await fetch('http://localhost/api/sales/graphql/', {
+            const response = await fetch('/api/sales/graphql/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -236,7 +290,6 @@ const Page = () => {
                     variables
                 }),
             });
-            console.log(query);
 
             const data = await response.json();
 
@@ -290,39 +343,49 @@ const Page = () => {
                                 <div className={Styles.quantityControl}>
                                     <span className='flex gap-[10px] items-center'>
                                         <p>تعداد :</p>
-                                        <button
-                                            className={Styles.increment}
-                                            disabled={itemQuantities[item.id] < 2}
-                                            onClick={() => handleQuantityChange(item.id, false)}
-                                        >
-                                            -
-                                        </button>
+                                        {orderData.status === "PS" && (
+
+                                            <button
+                                                className={Styles.increment}
+                                                disabled={itemQuantities[item.id] < 2}
+                                                onClick={() => handleQuantityChange(item.id, false)}
+                                            >
+                                                -
+                                            </button>
+
+                                        )}
                                         <span className={Styles.quantity}>{itemQuantities[item.id]}</span>
-                                        <button
-                                            className={Styles.increment}
-                                            onClick={() => handleQuantityChange(item.id, true)}
-                                        >
-                                            +
-                                        </button>
+
+                                        {orderData.status === "PS" && (
+                                            <button
+                                                className={Styles.increment}
+                                                onClick={() => handleQuantityChange(item.id, true)}
+                                            >
+                                                +
+                                            </button>
+
+                                        )}
                                     </span>
                                 </div>
                             </div>
                             <div className={Styles.itemLeft}>
                                 <p>{item.description}</p>
-                                <div className={Styles.udButtons}>
-                                    <button
-                                        className={Styles.updateButton}
-                                        onClick={() => handleConfirmAlert('update', item.id)}
-                                    >
-                                        بروزرسانی
-                                    </button>
-                                    <button
-                                        className={Styles.deleteButton}
-                                        onClick={() => handleConfirmAlert('delete', item.id)}
-                                    >
-                                        <RiDeleteBin6Line color='white' width={35} height={35} />
-                                    </button>
-                                </div>
+                                {orderData.status === "PS" && (
+                                    <div className={Styles.udButtons}>
+                                        <button
+                                            className={Styles.updateButton}
+                                            onClick={() => handleConfirmAlert('update', item.id)}
+                                        >
+                                            بروزرسانی
+                                        </button>
+                                        <button
+                                            className={Styles.deleteButton}
+                                            onClick={() => handleConfirmAlert('delete', item.id)}
+                                        >
+                                            <RiDeleteBin6Line color='white' width={35} height={35} />
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}
@@ -345,31 +408,33 @@ const Page = () => {
                                 className="red bg-dark text-color-white"
                                 inputClass={Styles.customInput}
                                 value={dateValue}
+                                disabled={orderData.status !== "PS"}
                             />
                         )}
                     />
-                    <button className={Styles.updateButton}>بروزرسانی</button>
+                    {orderData.status === "PS" && (
+                        <button onClick={() => handleConfirmAlert('updateDate', orderData.id)} className={Styles.updateButton}>بروزرسانی</button>
+                    )}
                     {errors.orderDate && (
                         <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5 whitespace-nowrap'>
                             {errors.orderDate.message}
                         </p>
                     )}
                 </div>
-                <p className={orderData.status}>{handleStatus()}</p>
+                <p style={{ color: handleStatusColor(orderData.status) }} className={orderData.status}>{handleStatus()}</p>
                 <h3></h3>
-                {
-                    orderData.status === "PS" ?
-                        <div className={Styles.acButtons}>
-                            <button className={Styles.sButton}>ثبت</button>
-                            <button className={Styles.cButton}>لغو</button>
-                        </div>
-                        : ""
-                }
+                {orderData.status === "PS" && (
+                    <div className={Styles.acButtons}>
+                        <button onClick={() => handleConfirmAlert('changeStatus', orderData.id, 'p')} className={Styles.sButton}>ثبت</button>
+                        <button onClick={() => handleConfirmAlert('changeStatus', orderData.id, 'c')} className={Styles.cButton}>لغو</button>
+                    </div>
+                )}
             </div>
 
             {confirmAlert && (
                 <ConfirmAlert
                     type={confirmAlert.type}
+                    status={confirmAlert.status}
                     itemId={confirmAlert.itemId}
                     onConfirm={handleConfirm}
                     onCancel={handleCancel}

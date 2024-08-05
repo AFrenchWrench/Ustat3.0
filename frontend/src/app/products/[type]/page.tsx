@@ -4,6 +4,8 @@ import { ImageList, ImageListItem } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import Article from "../components/Article";
 
+import { useParams } from "next/navigation";
+
 import Cookies from "js-cookie";
 
 
@@ -41,6 +43,8 @@ interface DisplayOrder {
 
 
 const Page = () => {
+    const { type } = useParams()
+
     const [userData, setUserData] = useState<DisplayItem[]>([]);
     const [orderData, setOrderData] = useState<DisplayOrder[]>([]);
     const [fetchTrigger, setFetchTrigger] = useState(false); // Trigger for re-fetching data
@@ -123,11 +127,15 @@ const Page = () => {
         setFetchTrigger(true); // Trigger data re-fetch
     };
 
+    const filteredUserData = type
+        ? userData.filter((item) => item.type === type)
+        : userData;
+
 
     return (
         <section className="flex flex-col gap-5 items-center mt-10">
             <ImageList gap={8} sx={{ width: "80%" }} cols={3}>
-                {userData.map((article, index) => (
+                {filteredUserData.map((article, index) => (
                     <ImageListItem key={index}>
                         <Article
                             imageSrc={`/media/${article.thumbnail}`}

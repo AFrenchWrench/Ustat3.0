@@ -78,7 +78,7 @@ const Products = () => {
                 slider3
               }
               ${token ? `
-              userOrders {
+              userOrders(filter: { status: "ps" }) {
                 id
                 dueDate
                 creationDate

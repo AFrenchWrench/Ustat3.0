@@ -102,7 +102,7 @@ const SelectOrder: React.FC<SelectOrderProps> = ({ id, orderData, onRemove, onOr
                                     </p>
                                 )}
                             </span>
-                            <p className='text-yellow-600'>در انتظار تایید</p>
+                            <p className='text-yellow-600'>در انتظار ثبت</p>
                             <Link href={`/cart/${order.orderNumber}`} onClick={(e) => e.stopPropagation()}>مشاهده</Link>
                         </div>
                     ))}
