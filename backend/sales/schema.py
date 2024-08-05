@@ -1,4 +1,4 @@
-from time import timezone
+from django.utils import timezone
 import graphene
 from django.contrib.auth import (
     get_user_model,
@@ -200,28 +200,28 @@ class UpdateOrder(graphene.Mutation):
     class Arguments:
         input = UpdateOrderInput(required=True)
 
-    order = graphene.Field(lambda: OrderType)
+    order = graphene.Field(OrderType)
     success = graphene.Boolean()
 
     @login_required
     def mutate(self, info, input):
-        try:
-            order = Order.objects.get(pk=input.id)
-        except Order.DoesNotExist:
-            raise UpdateOrder(success=False)
 
-        if order.user != info.context.user or order.status != "ps":
-            raise UpdateOrder(success=False)
+        order = get_object_or_404(Order, pk=input.id)
 
-        if input.due_date and input.due_date > timezone.now():
-            order.due_date = input.due_date
-        else:
-            raise UpdateOrder(success=False)
+        if order.user != info.context.user or (order.status != "ps" and order.status != "p"):
+            return UpdateOrder(success=False)
 
-        if input.status and input.status == "p":
-            order.status = input.status
-        else:
-            raise UpdateOrder(success=False)
+        if input.get("due_date") is not None:
+            if input.get("due_date") > timezone.localdate():
+                order.due_date = input.due_date
+            else:
+                return UpdateOrder(success=False)
+
+        if input.get("status") is not None:
+            if input.get("status") == "p" or input.get("status") == "c":
+                order.status = input.status
+            else:
+                return UpdateOrder(success=False)
 
         order.save()
         return UpdateOrder(order=order, success=True)
