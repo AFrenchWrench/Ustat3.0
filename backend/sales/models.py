@@ -79,10 +79,8 @@ class Order(models.Model):
     def generate_order_number(self):
         year = (timezone.now().strftime("%Y%M%D"))[0:4]
         month = (timezone.now().strftime("%Y%m%D"))[4:6]
-
-        order_no = (
-            Order.objects.filter(order_number__icontains=f"UST{year}").last().id + 1
-        )
+        last_oder = Order.objects.filter(order_number__icontains=f"UST{year}").last()
+        order_no = (last_oder.id + 1) if last_oder is not None else 1
         return f"UST{year}-{month}{order_no:06d}"
 
     def __str__(self):
