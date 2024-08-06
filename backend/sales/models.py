@@ -81,7 +81,7 @@ class Order(models.Model):
         month = (timezone.now().strftime("%Y%m%D"))[4:6]
 
         order_no = (
-            Order.objects.filter(order_number__icontains=f"UST{year}").count() + 1
+            Order.objects.filter(order_number__icontains=f"UST{year}").last().id + 1
         )
         return f"UST{year}-{month}{order_no:06d}"
 

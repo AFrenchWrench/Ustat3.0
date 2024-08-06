@@ -208,7 +208,9 @@ class UpdateOrder(graphene.Mutation):
 
         order = get_object_or_404(Order, pk=input.id)
 
-        if order.user != info.context.user or (order.status != "ps" and order.status != "p"):
+        if order.user != info.context.user or (
+            order.status != "ps" and order.status != "p"
+        ):
             return UpdateOrder(success=False)
 
         if input.get("due_date") is not None:
