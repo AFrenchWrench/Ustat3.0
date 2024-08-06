@@ -337,6 +337,9 @@ class Mutation(graphene.ObjectType):
 
 
 # ========================Queries Start========================
+class DisplayItemFilterInput(graphene.InputObjectType): ...
+
+
 class OrderFilterInput(graphene.InputObjectType):
     status = graphene.List(graphene.String)  # Filter by status
     due_date__gte = graphene.Date()  # Filter by minimum due date
@@ -348,7 +351,7 @@ class OrderFilterInput(graphene.InputObjectType):
 
 class Query(graphene.ObjectType):
     current_user = graphene.Field(UserType)
-    display_items = graphene.List(DisplayItemType)
+    display_items = graphene.List(DisplayItemType, filter=DisplayItemFilterInput())
     display_item = graphene.Field(DisplayItemType, id=graphene.ID(required=True))
     user_orders = graphene.List(OrderType, filter=OrderFilterInput())
 
@@ -357,8 +360,8 @@ class Query(graphene.ObjectType):
         sender = info.context.user
         return sender
 
-    def resolve_display_items(self, info):
-        display_items = DisplayItem.objects.all()
+    def resolve_display_items(self, info, filter=None):
+        display_items = resolve_model_with_filters(DisplayItem, filter)
         return display_items
 
     def resolve_display_item(self, info, id):
@@ -366,7 +369,7 @@ class Query(graphene.ObjectType):
         return display_item
 
     @login_required
-    def resolve_user_orders(self, info, filter=None):
+    def resolve_orders(self, info, filter=None):
         orders = resolve_model_with_filters(Order, filter)
         if info.context.user.is_staff:
             return orders

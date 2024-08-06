@@ -29,6 +29,9 @@ class OrderTransaction(models.Model):
     )
     creation_date = models.DateField(auto_now_add=True)
     due_date = models.DateField(blank=True)
+    transacion_number = models.CharField(
+        max_length=17, unique=True, blank=True, null=True
+    )
 
     def save(self, *args, **kwargs):
         self.price = self.get_total_price()
@@ -48,6 +51,7 @@ class Order(models.Model):
     due_date = models.DateField(blank=True)
     creation_date = models.DateField(auto_now_add=True)
     order_number = models.CharField(max_length=17, unique=True, blank=True)
+    address = models.ForeignKey("users.Address", on_delete=models.PROTECT)
     status = models.CharField(
         max_length=2,
         choices=[
@@ -55,6 +59,7 @@ class Order(models.Model):
             ("ps", "در انتظار ثبت"),
             ("d", "تایید نشده"),
             ("a", "تایید شده"),
+            ("de", "تحویل داده شده"),
             ("c", "لغو شده"),
         ],
         default="ps",
@@ -94,7 +99,17 @@ class OrderItem(models.Model):
     dimensions = models.JSONField()
     price = models.PositiveBigIntegerField()
     description = models.TextField(null=True, blank=True)
+    fabric = models.CharField(max_length=32)
+    color = models.CharField(max_length=32)
+    wood_color = models.CharField(max_length=32)
     quantity = models.PositiveIntegerField()
+    thumbnail = OptimizedImageField(
+        upload_to="display_items/thumbnails/",
+        blank=True,
+        null=True,
+        optimized_image_output_size=(500, 500),
+        optimized_image_resize_method="cover",
+    )
 
     def save(self, *args, **kwargs):
 
@@ -113,7 +128,10 @@ class DisplayItem(models.Model):
     dimensions = models.JSONField()
     price = models.PositiveBigIntegerField()
     description = models.TextField()
-
+    fabric = models.CharField(max_length=32)
+    color = models.CharField(max_length=32)
+    wood_color = models.CharField(max_length=32)
+    show_in_first_page = models.BooleanField(default=False)
     thumbnail = OptimizedImageField(
         upload_to="display_items/thumbnails/",
         blank=True,
