@@ -12,7 +12,7 @@ from graphql import (
     GraphQLError,
 )
 from users.models import Address
-from backend.utils.validation_utils import is_persian_string
+from utils.validation_utils import is_persian_string
 from utils.schema_utils import (
     login_required,
     resolve_model_with_filters,
