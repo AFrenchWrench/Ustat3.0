@@ -3,7 +3,7 @@ from decouple import (
     config,
     Csv,
 )
-from datetime import timedelta
+from django.utils import timezone
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -125,7 +125,7 @@ GRAPHQL_JWT = {
     "JWT_VERIFY_EXPIRATION": True,
     "JWT_LONG_RUNNING_REFRESH_TOKEN": False,
     "JWT_ALLOW_ARGUMENT": True,
-    "JWT_EXPIRATION_DELTA": timedelta(hours=12),
+    "JWT_EXPIRATION_DELTA": timezone.timedelta(hours=12),
     "JWT_SECRET_KEY": SECRET_KEY,
     "JWT_ALGORITHM": "HS256",
 }

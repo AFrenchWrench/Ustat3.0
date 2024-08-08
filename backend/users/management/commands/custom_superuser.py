@@ -28,7 +28,6 @@ class Command(BaseCommand):
                     last_name=config("LAST_NAME"),
                     birthdate=config("BIRTHDATE"),
                     password=config("PASSWORD"),
-                    city=get_object_or_404(Cities, name=config("CITY")),
                 )
                 self.stdout.write(
                     self.style.SUCCESS(

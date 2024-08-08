@@ -1,18 +1,18 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from utils.schema_utils import django_staff_member_required
-from sales.models import DisplayItem
-from sales.forms import DisplayItemImageUploadForm
+from sales.models import ItemVariant
+from sales.forms import ItemVariantImageUploadForm
 from django.views.decorators.csrf import csrf_exempt
 
 
 @csrf_exempt
 @django_staff_member_required
-def upload_display_item_images(request, pk):
-    display_item = get_object_or_404(DisplayItem, pk=pk)
+def upload_display_item_variant_images(request, pk):
+    display_item_variant = get_object_or_404(ItemVariant, pk=pk)
     if request.method == "POST":
-        form = DisplayItemImageUploadForm(
-            request.POST, request.FILES, instance=display_item
+        form = ItemVariantImageUploadForm(
+            request.POST, request.FILES, instance=display_item_variant
         )
         if form.is_valid():
             form.save()
