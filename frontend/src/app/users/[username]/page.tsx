@@ -158,75 +158,79 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
               <>
                 <h1 className={styles.username}>{userData.username}</h1>
 
-                <div className={styles.firsLastName}>
-                  <span>
-                    <strong>نام:</strong><p> {userData.firstName}</p>
-                  </span>
+                <div style={{ width: "100%" }} className={styles.userData}>
+                  <div className={styles.firsLastName}>
+                    <span>
+                      <strong>نام:</strong><p> {userData.firstName}</p>
+                    </span>
 
-                  <span>
-                    <strong>نام خانوادگی:</strong><p> {userData.lastName}</p>
-                  </span>
+                    <span>
+                      <strong>نام خانوادگی:</strong><p> {userData.lastName}</p>
+                    </span>
+                  </div>
+
+                  <div className={styles.firsLastName}>
+                    <span>
+                      <strong>تلفن همراه :</strong><p dir='ltr'> {userData.phoneNumber}</p>
+                    </span>
+                    <span>
+                      <strong>تلفن ثابت :</strong><p dir='ltr'> {userData.landlineNumber}</p>
+                    </span>
+                  </div>
+
+                  <div className={styles.firsLastName}>
+                    <span>
+                      <strong>استان :</strong><p> {userData.city.province.name}</p>
+                    </span>
+                    <span>
+                      <strong>شهر :</strong><p> {userData.city.name}</p>
+                    </span>
+                  </div>
+
+                  <div className={styles.firsLastName}>
+                    <span>
+                      <strong>ایمیل :</strong><p dir='ltr' className='text-xs'> {userData.email}</p>
+                    </span>
+                    <span>
+                      <strong>تاریخ تولد :</strong><p> {convertToJalaali(userData.birthdate)}</p>
+                    </span>
+                  </div>
+
+                  {
+                    userData.business && (
+                      <>
+                        <div className={styles.firsLastName}>
+                          <span>
+                            <strong>نام شرکت :</strong><p className='text-xs'> {userData.business.name}</p>
+                          </span>
+                          <span>
+                            <strong>وضعیت تایید :</strong><p className={userData.business.isConfirmed ? "!text-green-400" : "!text-red-400"}> {userData.business.isConfirmed ? "تایید شده" : "تایید نشده"}</p>
+                          </span>
+                        </div>
+
+                        <div className={styles.firsLastName}>
+                          <span>
+                            <strong>نام صاحب شرکت :</strong><p className='text-xs'> {userData.business.ownerFirstName}</p>
+                          </span>
+                          <span>
+                            <strong>نام خانوادگی صاحب شرکت :</strong><p> {userData.business.ownerLastName}</p>
+                          </span>
+                        </div>
+
+                        <div className={styles.firsLastName}>
+                          <span>
+                            <strong>شماره همراه صاحب شرکت :</strong><p> {userData.business.ownerPhoneNumber}</p>
+                          </span>
+                          <span>
+                            <strong>آدرس :</strong><p style={{ fontSize: "11px" }}> {userData.business.address}</p>
+                          </span>
+                        </div>
+                      </>
+                    )
+                  }
                 </div>
 
-                <div className={styles.firsLastName}>
-                  <span>
-                    <strong>تلفن همراه :</strong><p dir='ltr'> {userData.phoneNumber}</p>
-                  </span>
-                  <span>
-                    <strong>تلفن ثابت :</strong><p dir='ltr'> {userData.landlineNumber}</p>
-                  </span>
-                </div>
 
-                <div className={styles.firsLastName}>
-                  <span>
-                    <strong>استان :</strong><p> {userData.city.province.name}</p>
-                  </span>
-                  <span>
-                    <strong>شهر :</strong><p> {userData.city.name}</p>
-                  </span>
-                </div>
-
-                <div className={styles.firsLastName}>
-                  <span>
-                    <strong>ایمیل :</strong><p dir='ltr' className='text-xs'> {userData.email}</p>
-                  </span>
-                  <span>
-                    <strong>تاریخ تولد :</strong><p> {convertToJalaali(userData.birthdate)}</p>
-                  </span>
-                </div>
-
-                {
-                  userData.business && (
-                    <>
-                      <div className={styles.firsLastName}>
-                        <span>
-                          <strong>نام شرکت :</strong><p className='text-xs'> {userData.business.name}</p>
-                        </span>
-                        <span>
-                          <strong>وضعیت تایید :</strong><p className={userData.business.isConfirmed ? "!text-green-400" : "!text-red-400"}> {userData.business.isConfirmed ? "تایید شده" : "تایید نشده"}</p>
-                        </span>
-                      </div>
-
-                      <div className={styles.firsLastName}>
-                        <span>
-                          <strong>نام صاحب شرکت :</strong><p className='text-xs'> {userData.business.ownerFirstName}</p>
-                        </span>
-                        <span>
-                          <strong>نام خانوادگی صاحب شرکت :</strong><p> {userData.business.ownerLastName}</p>
-                        </span>
-                      </div>
-
-                      <div className={styles.firsLastName}>
-                        <span>
-                          <strong>شماره همراه صاحب شرکت :</strong><p> {userData.business.ownerPhoneNumber}</p>
-                        </span>
-                        <span>
-                          <strong>آدرس :</strong><p style={{ fontSize: "11px" }}> {userData.business.address}</p>
-                        </span>
-                      </div>
-                    </>
-                  )
-                }
               </>
             )
           )

@@ -1,18 +1,13 @@
-'use client'
+"use client"
 
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import { useRouter } from 'next/navigation';
-
 import Styles from "@/allStyles/orderStyles.module.css";
-
 import * as jalaali from 'jalaali-js';
-
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from '@hookform/resolvers/zod';
-
 import DatePicker, { DateObject } from "react-multi-date-picker";
 import persian from 'react-date-object/calendars/persian';
 import persian_fa from "react-date-object/locales/persian_fa";
@@ -20,9 +15,7 @@ import gregorian from "react-date-object/calendars/gregorian";
 import "react-multi-date-picker/styles/colors/red.css";
 import "react-multi-date-picker/styles/backgrounds/bg-dark.css";
 import { FaCalendarAlt } from "react-icons/fa";
-
 import { RiDeleteBin6Line } from "react-icons/ri";
-
 import ConfirmAlert from "../components/ConfirmAlert"; // Import the ConfirmAlert component
 
 interface OrderItems {
@@ -45,8 +38,11 @@ interface DisplayItem {
 }
 
 const orderSchema = z.object({
-    quantity: z.number(),
-    orderDate: z.string()
+    quantity: z.number().optional(),
+    orderDate: z.string().optional(),
+    address: z.string().min(1, "آدرس الزامی است"),
+    postalCode: z.string().min(1, "کد پستی الزامی است").max(10, "Postal Code must be at most 10 characters long"),
+    description: z.string().optional()
 });
 
 type TupdateType = "update" | "delete" | "updateDate" | "changeStatus";
@@ -65,6 +61,7 @@ const Page = () => {
     const [loading, setLoading] = useState(true);
     const [itemQuantities, setItemQuantities] = useState<{ [key: string]: number }>({});
     const [confirmAlert, setConfirmAlert] = useState<ConfirmAlertType | null>(null);
+    const [formData, setFormData] = useState<TorderSchema | null>(null);
     const { order } = useParams();
     const [update, setUpdate] = useState(false);
     const { push } = useRouter();
@@ -105,8 +102,6 @@ const Page = () => {
                     }),
                 });
                 const data = await response.json();
-
-
 
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -275,8 +270,6 @@ const Page = () => {
             `;
             variables = { itemIdVar: itemId, status: status };
         }
-        console.log(status);
-
 
         try {
             const response = await fetch('/api/sales/graphql/', {
@@ -292,8 +285,6 @@ const Page = () => {
             });
 
             const data = await response.json();
-
-            console.log(data);
 
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -320,6 +311,16 @@ const Page = () => {
         setConfirmAlert(null);
     };
 
+    const onSubmit = async (data: TorderSchema) => {
+        // Store form data
+        setFormData(data);
+        console.log("hello");
+
+
+        // Trigger confirmation alert after validation
+        handleConfirmAlert('update', orderData!.id);
+    };
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -344,7 +345,6 @@ const Page = () => {
                                     <span className='flex gap-[10px] items-center'>
                                         <p>تعداد :</p>
                                         {orderData.status === "PS" && (
-
                                             <button
                                                 className={Styles.increment}
                                                 disabled={itemQuantities[item.id] < 2}
@@ -352,10 +352,8 @@ const Page = () => {
                                             >
                                                 -
                                             </button>
-
                                         )}
                                         <span className={Styles.quantity}>{itemQuantities[item.id]}</span>
-
                                         {orderData.status === "PS" && (
                                             <button
                                                 className={Styles.increment}
@@ -363,7 +361,6 @@ const Page = () => {
                                             >
                                                 +
                                             </button>
-
                                         )}
                                     </span>
                                 </div>
@@ -422,13 +419,43 @@ const Page = () => {
                     )}
                 </div>
                 <p style={{ color: handleStatusColor(orderData.status) }} className={orderData.status}>{handleStatus()}</p>
-                <h3></h3>
-                {orderData.status === "PS" && (
-                    <div className={Styles.acButtons}>
-                        <button onClick={() => handleConfirmAlert('changeStatus', orderData.id, 'p')} className={Styles.sButton}>ثبت</button>
-                        <button onClick={() => handleConfirmAlert('changeStatus', orderData.id, 'c')} className={Styles.cButton}>لغو</button>
+
+                <form onSubmit={handleSubmit(onSubmit)} className={Styles.formContainer}>
+                    <div className={Styles.formGroup}>
+                        <label htmlFor="address">آدرس*</label>
+                        <input
+                            id="address"
+                            {...register('address')}
+                            className={Styles.formControl}
+                            style={errors.address ? { borderColor: "red" } : {}}
+                        />
+                        {errors.address && <p className={Styles.error}>{errors.address.message}</p>}
                     </div>
-                )}
+                    <div className={Styles.formGroup}>
+                        <label htmlFor="postalCode">کد پستی*</label>
+                        <input
+                            id="postalCode"
+                            {...register('postalCode')}
+                            className={Styles.formControl}
+                            style={errors.postalCode ? { borderColor: "red" } : {}}
+                        />
+                        {errors.postalCode && <p className={Styles.error}>{errors.postalCode.message}</p>}
+                    </div>
+                    <div className={Styles.formGroup}>
+                        <label htmlFor="description">توضیحات</label>
+                        <textarea
+                            id="description"
+                            {...register('description')}
+                            className={Styles.formControl}
+                        />
+                    </div>
+                    {orderData.status === "PS" && (
+                        <div className={Styles.acButtons}>
+                            <button type='submit' className={Styles.submitButton}>ثبت</button>
+                            <button type='button' onClick={() => handleConfirmAlert('changeStatus', orderData.id, 'c')} className={Styles.cButton}>لغو</button>
+                        </div>
+                    )}
+                </form>
             </div>
 
             {confirmAlert && (
@@ -436,7 +463,15 @@ const Page = () => {
                     type={confirmAlert.type}
                     status={confirmAlert.status}
                     itemId={confirmAlert.itemId}
-                    onConfirm={handleConfirm}
+                    onConfirm={async (type, itemId, status) => {
+                        if (type === 'update') {
+                            await handleConfirm(type, itemId); // Use the stored form data
+                            // Submit the form data here
+                            console.log("Submitting form data:", formData, formData?.quantity);
+                        } else {
+                            await handleConfirm(type, itemId, status);
+                        }
+                    }}
                     onCancel={handleCancel}
                 />
             )}

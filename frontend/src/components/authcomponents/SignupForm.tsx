@@ -219,7 +219,7 @@ const SignupForm = () => {
 
   return (
 
-    <form noValidate onSubmit={handleSubmit(onSubmit)} className='signup_form flex flex-col items-center p-10 '>
+    <form name='sign-up' noValidate onSubmit={handleSubmit(onSubmit)} className='signup_form flex flex-col items-center p-10 '>
 
       <div className='signup_form_container !mt-0'>
         <input
@@ -227,11 +227,11 @@ const SignupForm = () => {
             required: "نام کاربری الزامی است",
           })}
           className="signup_form_input"
-          id='user-name'
+          id='username'
           type='text'
           required
         />
-        <label className="signup_form_label" htmlFor="user-name">نام کاربری :</label>
+        <label className="signup_form_label" htmlFor="username">نام کاربری :</label>
         <div className='line'></div>
         {errors.username && (
           <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5'>
@@ -376,9 +376,9 @@ const SignupForm = () => {
 
 
 
-      <div className='signup_form_container !flex-row !justify-between'>
-        <div className='flex items-center gap-2 relative'>
-          <label htmlFor="States">استان :</label>
+      <div className='signup_form_container location !justify-between'>
+        <div className='location_div flex items-center gap-2 relative'>
+          <p>استان :</p>
 
           <Select
             onChange={handleStateChange}
@@ -425,8 +425,8 @@ const SignupForm = () => {
               ))}
           />
         </div>
-        <div className='flex gap-2 items-center'>
-          <label htmlFor="city">شهر:</label>
+        <div className='location_div flex gap-2 items-center'>
+          <p>شهر:</p>
           <Controller
             control={control}
             name='city'

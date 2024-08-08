@@ -35,7 +35,7 @@ const ConfirmAlert: React.FC<ConfirmAlertProps> = ({ type, itemId, status, onCon
             return "آیا برای بروزرسانی زمان تحویل مطمعن هستید؟"
         }
         else if (type === 'changeStatus') {
-            if (status === "P") {
+            if (status === "p") {
                 return "آیا برای ثبت سفارش مطمعن هستید؟"
             }
             return "آیا برای لغو سفارش مطمعن هستید؟"

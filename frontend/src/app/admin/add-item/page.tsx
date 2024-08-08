@@ -4,12 +4,12 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import AddItem from '@/components/adminComponent/addItem';
-
 import Loading from '@/components/Loading';
 
 const Page = () => {
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null); // Use null to represent loading state
-    const router = useRouter();
+    const { push } = useRouter();
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -23,12 +23,12 @@ const Page = () => {
                     },
                     body: JSON.stringify({
                         query: `
-             query CurrentUser {
-                   currentUser {
-                           isStaff
-                                    }
+                            query CurrentUser {
+                                currentUser {
+                                    isStaff
                                 }
-            `,
+                            }
+                        `,
                     }),
                 });
                 const data = await response.json();
@@ -42,30 +42,33 @@ const Page = () => {
                 }
 
                 setIsAdmin(data.data.currentUser.isStaff);
-
-
             } catch (error) {
-                console.log(error);
-
+                console.error(error);
+                // Handle errors, maybe setIsAdmin to false or handle redirection here if necessary
+                setIsAdmin(false);
             } finally {
+                setLoading(false);
             }
         };
 
         fetchUserData();
-    }, [])
+    }, []);
 
-    // Show loading indicator while checking admin status
-    if (isAdmin === null) {
-        return <>{<Loading />}</>;
-    }
+    useEffect(() => {
+        if (!Cookies.get("Authorization")) {
+            push("/auth");
+        } else if (!loading && isAdmin === false) {
+            push('/');
+        }
+    }, [loading, isAdmin, push]);
+
+    if (loading) return <div><Loading /></div>;
 
     return (
         <>
             {isAdmin ? (
                 <AddItem />
-            ) : (
-                router.push('/')
-            )}
+            ) : null}
         </>
     );
 };

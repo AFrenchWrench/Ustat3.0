@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Navbar from "@/allStyles/navbar.module.css";
 import { HiOutlineHome } from "react-icons/hi";
@@ -11,27 +11,38 @@ import { MdOutlineSupportAgent } from "react-icons/md";
 import { AiOutlineProduct } from "react-icons/ai";
 
 const Nav = () => {
-  const [selectBgTop, setSelectBgTop] = useState("8px");
+  const [selectBgTop, setSelectBgTop] = useState("-25px");
   const router = usePathname();
+
+  const homeRef = useRef<HTMLLIElement>(null);
+  const accountRef = useRef<HTMLLIElement>(null);
+  const productsRef = useRef<HTMLLIElement>(null);
+  const cartRef = useRef<HTMLLIElement>(null);
+  const supportRef = useRef<HTMLLIElement>(null);
 
   useEffect(() => {
     const determineBgTop = () => {
+      let selectedElement = null;
+
       if (router.startsWith('/products')) {
-        return "168px"; // Adjust based on your layout for /products and /products/[type]
+        selectedElement = productsRef.current;
+      } else if (router.startsWith('/users')) {
+        selectedElement = accountRef.current;
+      } else if (router === "/") {
+        selectedElement = homeRef.current;
+      } else if (router.startsWith('/cart')) {
+        selectedElement = cartRef.current;
+      } else if (router.startsWith('/support')) {
+        selectedElement = supportRef.current;
       }
-      if (router.startsWith('/users')) {
-        return "8px"; // Adjust based on your layout for /products and /products/[type]
+
+      if (selectedElement) {
+        const iconHeight = selectedElement.offsetHeight;
+        const iconTop = selectedElement.offsetTop;
+        return `${iconTop + (iconHeight / 2)}px`;
       }
-      if (router == "/") {
-        return "88px"
-      }
-      if (router.startsWith('/cart')) {
-        return "248px"; // Adjust based on your layout for /products and /products/[type]
-      }
-      if (router.startsWith('/support')) {
-        return "328px"; // Adjust based on your layout for /products and /products/[type]
-      }
-      return "8px"
+
+      return "-25px";
     };
 
     setSelectBgTop(determineBgTop());
@@ -40,23 +51,23 @@ const Nav = () => {
   return (
     <nav className={Navbar.navbar}>
       <ul>
-        <li>
-          <Link href={"/users/username"}><MdAccountCircle color="white" size="30px" /></Link>
+        <li ref={accountRef}>
+          <Link href={"/users/username"}><MdAccountCircle color="white" className={Navbar.icons} /></Link>
         </li>
-        <li>
-          <Link href={"/"}><HiOutlineHome color='white' size="30px" /></Link>
+        <li ref={homeRef}>
+          <Link href={"/"}><HiOutlineHome color='white' className={Navbar.icons} /></Link>
         </li>
-        <li>
-          <Link href={"/products"}><AiOutlineProduct color='white' size="30px" /></Link>
+        <li ref={productsRef}>
+          <Link href={"/products"}><AiOutlineProduct color='white' className={Navbar.icons} /></Link>
         </li>
-        <li>
-          <Link href={"/cart"}><PiShoppingCartSimple color='white' size="30px" /></Link>
+        <li ref={cartRef}>
+          <Link href={"/cart"}><PiShoppingCartSimple color='white' className={Navbar.icons} /></Link>
         </li>
-        <li>
-          <Link href={"/support"}><MdOutlineSupportAgent color='white' size="30px" /></Link>
+        <li ref={supportRef}>
+          <Link href={"/support"}><MdOutlineSupportAgent color='white' className={Navbar.icons} /></Link>
         </li>
         <div className={Navbar.holder}>
-          <span className={Navbar.selectedBg} style={{ top: selectBgTop }}></span>
+          <span className={Navbar.selectedBg} style={{ top: selectBgTop, transform: 'translateY(-50%)' }}></span>
         </div>
       </ul>
     </nav>

@@ -10,6 +10,7 @@ import Link from 'next/link';
 import * as jalaali from 'jalaali-js';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import ConfirmAlert from './components/ConfirmAlert';
+import { BsCart4 } from 'react-icons/bs';
 
 interface OrderItems {
   id: string;
@@ -70,7 +71,7 @@ const Cart = () => {
           body: JSON.stringify({
             query: `
               query UserOrders {
-                userOrders {
+                userOrders (filter: { status: ["ps", "p"]}){
                   id
                   dueDate
                   creationDate
@@ -213,7 +214,7 @@ const Cart = () => {
   return (
     <section className={Styles.container}>
       <div className={Styles.ordersSection}>
-        {orders.map((order) => (
+        {orders.length > 0 ? orders.map((order) => (
           <Link key={order.id} href={`/cart/${order.orderNumber}`}>
             <div >
               <div className={Styles.orderNumberContainer}>
@@ -247,7 +248,13 @@ const Cart = () => {
               <RiDeleteBin6Line color='white' width={35} height={35} />
             </button>
           </Link>
-        ))}
+        ))
+          :
+          <div className={Styles.emptyContainer}>
+            <BsCart4 className={Styles.cartIcon} />
+            <p>سبدخرید شما خالی است</p>
+          </div>
+        }
       </div>
       {confirmAlert && (
         <ConfirmAlert

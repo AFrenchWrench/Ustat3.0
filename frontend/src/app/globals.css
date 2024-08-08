@@ -118,10 +118,11 @@ input:-webkit-autofill:active{
 .signup_form_container {
   position: relative;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   margin-top: 30px;
   width: 100%;
 }
+
 
 .signup_form_label {
   position: absolute;
@@ -137,6 +138,7 @@ input:-webkit-autofill:active{
   color: white;
   border-bottom: 1px solid var(--grey);
   padding: 1%;
+  width: 100%;
 }
 
 .signup_form_input:focus ~ label,
@@ -217,13 +219,27 @@ input[type=number] {
 
 
 /* datePicker styles */
-/* customDatePicker.css */
 
-/* Background color of the date picker */
 .custom-input{
   background-color: #1f1f1f;
   border-radius: 5px;
 }
 
 /* datePicker styles */
+
+
+@media only screen and (max-width:600px) {
+  .location{
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    width: 60%;
+    row-gap: 5px;
+  }
+  .location_div{
+    display: flex;
+    justify-content: space-between;
+    width: 200px;
+  }
+}
 

@@ -153,7 +153,7 @@ const SigninForm = () => {
         </div>
 
         <button className="w-1/8 py-2 mt-4 bg-red-600 text-[#212121] rounded hover:bg-red-700 focus:outline-none disabled:bg-red-300" type="submit" disabled={isSubmitting}>ورود</button>
-        <Link className='text-gray-300 text-sm absolute left-5 bottom-5' href={"/auth/otp-login-request"}>ورود با رمز یکبار مصرف</Link>
+        <Link className='text-gray-300 text-sm mt-[10px] w-full left-5 bottom-5' href={"/auth/otp-login-request"}>ورود با رمز یکبار مصرف</Link>
       </form>
 
 

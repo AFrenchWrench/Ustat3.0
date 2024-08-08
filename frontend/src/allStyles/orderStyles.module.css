@@ -140,7 +140,8 @@
     top: 0;
     left: 0;
     width: 100vw;
-    height: 100vh;
+    height: 100%;
+    min-height: 100vh;
     background-color: transparent;
     backdrop-filter: blur(10px);
     z-index: 999;
@@ -174,3 +175,50 @@
 
 
 /* confirm alert component  */
+
+
+.formContainer {
+    margin-top: 20px;
+}
+
+.formGroup {
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: 5px;
+}
+.formGroup input{
+    background-color: rgb(36, 36, 36);
+}
+
+.formControl {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    background-color: rgb(36, 36, 36);
+    border: 1px solid #ccc;
+}
+
+.error {
+    color: red;
+    font-size: 0.875rem;
+    position: absolute;
+    bottom: -30px;
+    left: 0;
+}
+
+.submitButton {
+    padding: 10px 20px;
+    background-color: rgb(255, 53, 53);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.submitButton:hover {
+    background-color: rgb(255, 60, 60);
+}

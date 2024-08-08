@@ -145,8 +145,22 @@ const Products = () => {
             <Link href={`/products/${type}`}>مشاهده همه <MdKeyboardDoubleArrowLeft /></Link>
           </div>
           <Swiper
-            slidesPerView={3}
+            slidesPerView={2}
             spaceBetween={10}
+            breakpoints={{
+              640: {
+                slidesPerView: 2,
+                spaceBetween: 6,
+              },
+              768: {
+                slidesPerView: 3,
+                spaceBetween: 10,
+              },
+              1124: {
+                slidesPerView: 4,
+                spaceBetween: 10,
+              },
+            }}
             className="mySwiper"
           >
             {items.map((item) => (
