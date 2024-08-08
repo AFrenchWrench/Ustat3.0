@@ -27,7 +27,7 @@ from users.schema import UserType, AddressType
 
 User = get_user_model()
 
-
+ITEM_TYPE_CHOICES = ["s", "b", "m", "j", "c"]
 # ========================Mutations Start========================
 
 
@@ -72,6 +72,7 @@ class CreateDisplayItemInput(graphene.InputObjectType):
 
 class CreateItemVariantInput(graphene.InputObjectType):
     display_item = graphene.ID(required=True)
+    name = graphene.String(required=True)
     dimensions = graphene.JSONString(required=True)
     price = graphene.BigInt(required=True)
     description = graphene.String(required=True)
@@ -100,7 +101,7 @@ class CreateOrderItem(graphene.Mutation):
 
         description = input.get("description")
         if description:
-            if not not re.fullmatch(r"^[\u0600-\u06FF0-9\s,]+$", description):
+            if not re.fullmatch(r"^[\u0600-\u06FF0-9\s,]+$", description):
                 errors["description"] = (
                     "در توضیحات تنها از حروف فارسی، اعداد انگلیسی، ویرگول و یا قاصله استفاده کنید"
                 )
@@ -185,7 +186,7 @@ class CreateDisplayItem(graphene.Mutation):
         errors = {}
 
         type = input.get("type")
-        if type not in DisplayItem.TYPE_CHOICES:
+        if type not in ITEM_TYPE_CHOICES:
             errors["type"] = "نوع آیتم نمایشی نامعتبر است"
 
         name = input.get("name")
@@ -235,83 +236,85 @@ class CreateItemVariant(graphene.Mutation):
 
         dimensions = input.get("dimensions")
 
-        if {"طول", "عرض", "ارتفاع"} not in set(dimensions.keys()):
+        if {"length", "width", "height"} != set(dimensions.keys()):
             errors["dimensions"] = "طول، عرض و ارتفاع باید وارد شود"
         elif not all(
             isinstance(dimensions.get(key), int) and dimensions.get(key) > 0
-            for key in {"طول", "عرض", "ارتفاع"}
+            for key in {"length", "width", "height"}
         ):
             errors["dimensions"] = "طول، عرض و ارتفاع باید عدد طبیعی باشند"
 
-        if display_item.type == "b" and "میز آرایش" in dimensions.keys():
-            if {"طول", "عرض", "ارتفاع"} not in set(dimensions.get("میز آرایش").keys()):
+        if display_item.type == "b" and "makeup table" in dimensions.keys():
+            if {"length", "width", "height"} != set(
+                dimensions.get("makeup table").keys()
+            ):
                 errors["dimensions"] = "طول، عرض و ارتفاع میز آرایش باید وارد شود"
             elif not all(
-                isinstance(dimensions.get("میز آرایش").get(key), int)
+                isinstance(dimensions.get("makeup table").get(key), int)
                 and dimensions.get(key) > 0
-                for key in {"طول", "عرض", "ارتفاع"}
+                for key in {"length", "width", "height"}
             ):
                 errors["dimensions"] = (
                     "طول، عرض و ارتفاع میز آرایش باید عدد طبیعی باشند"
                 )
-        if display_item.type == "b" and "پا تختی" in dimensions.keys():
-            if {"تعداد", "طول", "عرض", "ارتفاع"} not in set(
-                dimensions.get("پا تختی").keys()
+        if display_item.type == "b" and "night stand" in dimensions.keys():
+            if {"quantity", "length", "width", "height"} != set(
+                dimensions.get("night stand").keys()
             ):
                 errors["dimensions"] = "طول، عرض، ارتفاع و تعداد پا تختی باید وارد شود"
             elif not all(
-                isinstance(dimensions.get("پا تختی").get(key), int)
+                isinstance(dimensions.get("night stand").get(key), int)
                 and dimensions.get(key) > 0
-                for key in {"تعداد", "طول", "عرض", "ارتفاع"}
+                for key in {"quantity", "length", "width", "height"}
             ):
                 errors["dimensions"] = (
                     "طول، عرض، ارتفاع و تعداد پا تختی باید عدد طبیعی باشند"
                 )
-        if display_item.type == "b" and "آینه" in dimensions.keys():
-            if {"طول", "عرض", "ارتفاع"} not in dimensions.get("آینه").keys():
+        if display_item.type == "b" and "mirror" in dimensions.keys():
+            if {"length", "width", "height"} not in dimensions.get("mirror").keys():
                 errors["dimensions"] = "طول، عرض و ارتفاع آینه باید وارد شود"
 
         if display_item.type == "m":
-            if "صندلی" not in dimensions.keys():
+            if "chair" not in dimensions.keys():
                 errors["dimensions"] = " اطلاعات صندلی باید وارد شود"
-            elif {"تعداد", "طول", "عرض", "ارتفاع"} not in set(
-                dimensions.get("صندلی").keys()
+            elif {"quantity", "length", "width", "height"} != set(
+                dimensions.get("chair").keys()
             ):
                 errors["dimensions"] = "طول، عرض، ارتفاع و تعداد صندلی باید وارد شود"
             elif not all(
-                isinstance(dimensions.get("صندلی").get(key), int)
+                isinstance(dimensions.get("chair").get(key), int)
                 and dimensions.get(key) > 0
-                for key in {"تعداد", "طول", "عرض", "ارتفاع"}
+                for key in {"quantity", "length", "width", "height"}
             ):
                 errors["dimensions"] = (
                     "طول، عرض، ارتفاع و تعداد صندلی باید عدد طبیعی باشند"
                 )
 
         if display_item.type == "j":
-            if "عسلی" not in dimensions.keys():
+            if "side table" not in dimensions.keys():
                 errors["dimensions"] = " اطلاعات عسلی باید وارد شود"
-            elif {"تعداد", "طول", "عرض", "ارتفاع"} not in set(
-                dimensions.get("عسلی").keys()
+            elif {"quantity", "length", "width", "height"} != set(
+                dimensions.get("side table").keys()
             ):
                 errors["dimensions"] = "طول، عرض، ارتفاع و تعداد عسلی باید وارد شود"
             elif not all(
-                isinstance(dimensions.get("عسلی").get(key), int)
+                isinstance(dimensions.get("side table").get(key), int)
                 and dimensions.get(key) > 0
-                for key in {"تعداد", "طول", "عرض", "ارتفاع"}
+                for key in {"quantity", "length", "width", "height"}
             ):
                 errors["dimensions"] = (
                     "طول، عرض، ارتفاع و تعداد عسلی باید عدد طبیعی باشند"
                 )
 
         if display_item.type == "c":
-            if "آینه" not in dimensions.keys():
+            if "mirror" not in dimensions.keys():
                 errors["dimensions"] = " اطلاعات آینه باید وارد شود"
-            elif {"طول", "عرض", "ارتفاع"} not in dimensions.get("آینه").keys():
+            elif {"length", "width", "height"} not in dimensions.get("mirror").keys():
                 errors["dimensions"] = "طول، عرض و ارتفاع آینه باید وارد شود"
             elif not all(
-                isinstance(dimensions.get("آینه").get(key), int)
+                isinstance(dimensions.get("mirror").get(key), int)
                 and dimensions.get(key) > 0
-                for key in {"طول", "عرض", "ارتفاع"}
+                for key in {"length", "width", "height"}
             ):
                 errors["dimensions"] = "طول، عرض و ارتفاع آینه باید عدد طبیعی باشند"
 
@@ -321,7 +324,7 @@ class CreateItemVariant(graphene.Mutation):
 
         description = input.get("description")
         if description:
-            if not not re.fullmatch(r"^[\u0600-\u06FF0-9\s,]+$", description):
+            if not re.fullmatch(r"^[\u0600-\u06FF0-9\s,]+$", description):
                 errors["description"] = (
                     "در توضیحات تنها از حروف فارسی، اعداد انگلیسی، ویرگول و یا قاصله استفاده کنید"
                 )
@@ -409,7 +412,7 @@ class UpdateOrderItem(graphene.Mutation):
 
         description = input.get("description")
         if description:
-            if not not re.fullmatch(r"^[\u0600-\u06FF0-9\s,]+$", description):
+            if not re.fullmatch(r"^[\u0600-\u06FF0-9\s,]+$", description):
                 errors["description"] = (
                     "در توضیحات تنها از حروف فارسی، اعداد انگلیسی، ویرگول و یا قاصله استفاده کنید"
                 )
@@ -494,7 +497,7 @@ class UpdateDisplayItem(graphene.Mutation):
 
         type = input.get("type")
         if type:
-            if type not in DisplayItem.TYPE_CHOICES:
+            if type not in ITEM_TYPE_CHOICES:
                 errors["type"] = "نوع آیتم نمایشی نامعتبر است"
             else:
                 dispaly_item.type = type
@@ -627,89 +630,91 @@ class UpdateItemVariant(graphene.Mutation):
         dimensions = input.get("dimensions")
 
         if dimensions:
-            if {"طول", "عرض", "ارتفاع"} not in set(dimensions.keys()):
+            if {"length", "width", "height"} != set(dimensions.keys()):
                 errors["dimensions"] = "طول، عرض و ارتفاع باید وارد شود"
             elif not all(
                 isinstance(dimensions.get(key), int) and dimensions.get(key) > 0
-                for key in {"طول", "عرض", "ارتفاع"}
+                for key in {"length", "width", "height"}
             ):
                 errors["dimensions"] = "طول، عرض و ارتفاع باید عدد طبیعی باشند"
 
-            if display_item.type == "b" and "میز آرایش" in dimensions.keys():
-                if {"طول", "عرض", "ارتفاع"} not in set(
-                    dimensions.get("میز آرایش").keys()
+            if display_item.type == "b" and "makeup table" in dimensions.keys():
+                if {"length", "width", "height"} != set(
+                    dimensions.get("makeup table").keys()
                 ):
                     errors["dimensions"] = "طول، عرض و ارتفاع میز آرایش باید وارد شود"
                 elif not all(
-                    isinstance(dimensions.get("میز آرایش").get(key), int)
+                    isinstance(dimensions.get("makeup table").get(key), int)
                     and dimensions.get(key) > 0
-                    for key in {"طول", "عرض", "ارتفاع"}
+                    for key in {"length", "width", "height"}
                 ):
                     errors["dimensions"] = (
                         "طول، عرض و ارتفاع میز آرایش باید عدد طبیعی باشند"
                     )
-            if display_item.type == "b" and "پا تختی" in dimensions.keys():
-                if {"تعداد", "طول", "عرض", "ارتفاع"} not in set(
-                    dimensions.get("پا تختی").keys()
+            if display_item.type == "b" and "night stand" in dimensions.keys():
+                if {"quantity", "length", "width", "height"} != set(
+                    dimensions.get("night stand").keys()
                 ):
                     errors["dimensions"] = (
                         "طول، عرض، ارتفاع و تعداد پا تختی باید وارد شود"
                     )
                 elif not all(
-                    isinstance(dimensions.get("پا تختی").get(key), int)
+                    isinstance(dimensions.get("night stand").get(key), int)
                     and dimensions.get(key) > 0
-                    for key in {"تعداد", "طول", "عرض", "ارتفاع"}
+                    for key in {"quantity", "length", "width", "height"}
                 ):
                     errors["dimensions"] = (
                         "طول، عرض، ارتفاع و تعداد پا تختی باید عدد طبیعی باشند"
                     )
-            if display_item.type == "b" and "آینه" in dimensions.keys():
-                if {"طول", "عرض", "ارتفاع"} not in dimensions.get("آینه").keys():
+            if display_item.type == "b" and "mirror" in dimensions.keys():
+                if {"length", "width", "height"} not in dimensions.get("mirror").keys():
                     errors["dimensions"] = "طول، عرض و ارتفاع آینه باید وارد شود"
 
             if display_item.type == "m":
-                if "صندلی" not in dimensions.keys():
+                if "chair" not in dimensions.keys():
                     errors["dimensions"] = " اطلاعات صندلی باید وارد شود"
-                elif {"تعداد", "طول", "عرض", "ارتفاع"} not in set(
-                    dimensions.get("صندلی").keys()
+                elif {"quantity", "length", "width", "height"} != set(
+                    dimensions.get("chair").keys()
                 ):
                     errors["dimensions"] = (
                         "طول، عرض، ارتفاع و تعداد صندلی باید وارد شود"
                     )
                 elif not all(
-                    isinstance(dimensions.get("صندلی").get(key), int)
+                    isinstance(dimensions.get("chair").get(key), int)
                     and dimensions.get(key) > 0
-                    for key in {"تعداد", "طول", "عرض", "ارتفاع"}
+                    for key in {"quantity", "length", "width", "height"}
                 ):
                     errors["dimensions"] = (
                         "طول، عرض، ارتفاع و تعداد صندلی باید عدد طبیعی باشند"
                     )
 
             if display_item.type == "j":
-                if "عسلی" not in dimensions.keys():
+                if "side table" not in dimensions.keys():
                     errors["dimensions"] = " اطلاعات عسلی باید وارد شود"
-                elif {"تعداد", "طول", "عرض", "ارتفاع"} not in set(
-                    dimensions.get("عسلی").keys()
+                elif {"quantity", "length", "width", "height"} != set(
+                    dimensions.get("side table").keys()
                 ):
                     errors["dimensions"] = "طول، عرض، ارتفاع و تعداد عسلی باید وارد شود"
                 elif not all(
-                    isinstance(dimensions.get("عسلی").get(key), int)
+                    isinstance(dimensions.get("side table").get(key), int)
                     and dimensions.get(key) > 0
-                    for key in {"تعداد", "طول", "عرض", "ارتفاع"}
+                    for key in {"quantity", "length", "width", "height"}
                 ):
                     errors["dimensions"] = (
                         "طول، عرض، ارتفاع و تعداد عسلی باید عدد طبیعی باشند"
                     )
 
             if display_item.type == "c":
-                if "آینه" not in dimensions.keys():
+                if "mirror" not in dimensions.keys():
                     errors["dimensions"] = " اطلاعات آینه باید وارد شود"
-                elif {"طول", "عرض", "ارتفاع"} not in dimensions.get("آینه").keys():
+                elif {"length", "width", "height"} not in dimensions.get(
+                    "mirror"
+                ).keys():
                     errors["dimensions"] = "طول، عرض و ارتفاع آینه باید وارد شود"
                 elif not all(
-                    isinstance(dimensions.get("آینه").get(key), int)
+                    isinstance(dimensions.get("mirror").get(key), int)
                     and dimensions.get(key) > 0
-                    for key in {"طول", "عرض", "ارتفاع"}
+                    for key in {"length", "width", "height"}
                 ):
                     errors["dimensions"] = "طول، عرض و ارتفاع آینه باید عدد طبیعی باشند"
 
@@ -725,7 +730,7 @@ class UpdateItemVariant(graphene.Mutation):
 
         description = input.get("description")
         if description:
-            if not not re.fullmatch(r"^[\u0600-\u06FF0-9\s,]+$", description):
+            if not re.fullmatch(r"^[\u0600-\u06FF0-9\s,]+$", description):
                 errors["description"] = (
                     "در توضیحات تنها از حروف فارسی، اعداد انگلیسی، ویرگول و یا قاصله استفاده کنید"
                 )
@@ -1029,7 +1034,7 @@ class Query(graphene.ObjectType):
 
     @login_required
     def resolve_order(self, info, id):
-        return Order.objects.filter(user=info.context.user).get(pk=id)
+        return get_object_or_404(Order, pk=id, user=info.context.user)
 
     @login_required
     def resolve_transactions(self, info, filter=None):
@@ -1038,7 +1043,7 @@ class Query(graphene.ObjectType):
 
     @login_required
     def resolve_transaction(self, info, id):
-        return OrderTransaction.objects.filter(order__user=info.context.user).get(pk=id)
+        return get_object_or_404(OrderTransaction, pk=id, order__user=info.context.user)
 
     def resolve_item_variants(self, info, filter=None):
         item_variants = resolve_model_with_filters(ItemVariant, filter)
@@ -1048,12 +1053,13 @@ class Query(graphene.ObjectType):
         return get_object_or_404(ItemVariant, pk=id)
 
     def resolve_showcase(self, info):
-        showcases = {}
-        for type in DisplayItem.TYPE_CHOICES:
+        showcases = []
+        for type in ITEM_TYPE_CHOICES:
             item_variant = ItemVariant.objects.filter(
                 display_item__type=type[0], show_in_first_page=True
             ).order_by("-id")[:5]
-            showcases[type] = item_variant
+            for item in item_variant:
+                showcases.append(item)
         return showcases
 
 

@@ -15,7 +15,7 @@ ITEM_TYPE_CHOICES = [
 
 class OrderTransaction(models.Model):
     title = models.CharField(max_length=128)
-    order = models.ForeignKey(
+    order = models.OneToOneField(
         "Order", on_delete=models.CASCADE, related_name="transaction"
     )
     total_price = models.PositiveBigIntegerField()

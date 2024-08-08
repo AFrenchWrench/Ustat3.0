@@ -91,8 +91,8 @@ class BusinessInput(graphene.InputObjectType):
 
 class AddressInput(graphene.InputObjectType):
     title = graphene.String(required=True)
-    province = graphene.ID(required=True)
-    city = graphene.ID(required=True)
+    province = graphene.String(required=True)
+    city = graphene.String(required=True)
     address = graphene.String(required=True)
     postal_code = graphene.String(required=True)
 
@@ -169,6 +169,9 @@ class CreateUser(graphene.Mutation):
             if errors:
                 return CreateUser(success=False, errors=errors, redirect_url="/auth/")
             else:
+                user_data["password"] = user_data["password1"]
+                user_data.pop("password1")
+                user_data.pop("password2")
                 user = User.objects.create_user(**user_data)
                 if business_data:
                     business_errors = CreateBusiness.validate_input(business_data)
@@ -308,6 +311,7 @@ class CreateAddress(graphene.Mutation):
                 return CreateAddress(success=False, errors=errors)
 
             address = Address.objects.create(
+                user=info.context.user,
                 title=input.title,
                 province=Provinces.objects.get(name=input.province),
                 city=Cities.objects.get(name=input.city),
@@ -352,8 +356,8 @@ class UpdateBusinessInput(graphene.InputObjectType):
 class UpdateAddressInput(graphene.InputObjectType):
     id = graphene.ID(Required=True)
     title = graphene.String()
-    province = graphene.ID()
-    city = graphene.ID()
+    province = graphene.String()
+    city = graphene.String()
     address = graphene.String()
     postal_code = graphene.String()
 
@@ -1035,13 +1039,22 @@ class Mutation(graphene.ObjectType):
 
 class Query(graphene.ObjectType):
     current_user = graphene.Field(UserType)
+    addresses = graphene.List(AddressType)
+    address = graphene.Field(AddressType, id=graphene.String())
 
-    @staticmethod
     @login_required
     def resolve_current_user(self, info):
         sender = info.context.user
         return sender
 
+    @login_required
+    def resolve_addresses(self, info):
+        sender = info.context.user
+        return Address.objects.filter(user=sender)
+    
+    @login_required
+    def resolve_address(self, info, id):
+        return get_object_or_404(Address, id=id, user=info.context.user)
 
 # ========================Queries End========================
 
