@@ -1,4 +1,3 @@
-from datetime import datetime
 from hmac import compare_digest
 from typing import Required
 from django.utils import timezone
@@ -157,11 +156,9 @@ class CreateUser(graphene.Mutation):
             errors["last_name"] = "نام خانوادگی شما باید فارسی باشد"
 
         birthdate = user_data.get("birthdate")
-        if birthdate >= timezone.localdate.today():
+        if birthdate >= timezone.localdate():
             errors["birthdate"] = "تاریخ تولد باید گذشته باشد"
-        elif birthdate > (
-            timezone.localdate.today() - datetime.timedelta(days=(365.25 * 18))
-        ):
+        elif birthdate > (timezone.localdate() - timezone.timedelta(days=(365.25 * 18))):
             errors["birthdate"] = "شما حداقل باید 18 سال سن داشته باشید"
 
         return errors
@@ -294,7 +291,7 @@ class CreateAddress(graphene.Mutation):
         address = input.get("address")
         if not re.fullmatch(r"^[\u0600-\u06FF0-9\s,]+$", address):
             errors["address"] = (
-                "در آدرس تنها از حروف فارسی، اغداد انگلیسی، و ویرگول و یا قاصله استفاده کنید"
+                "در آدرس تنها از حروف فارسی، اعداد انگلیسی، ویرگول و یا قاصله استفاده کنید"
             )
 
         postal_code = input.get("postal_code")
@@ -459,10 +456,10 @@ class UpdateUser(graphene.Mutation):
 
         birthdate = user_data.get("birthdate")
         if birthdate:
-            if birthdate >= timezone.localdate.today():
+            if birthdate >= timezone.localdate():
                 errors["birthdate"] = "تاریخ تولد باید گذشته باشد"
             elif birthdate > (
-                timezone.localdate.today() - datetime.timedelta(days=(365.25 * 18))
+                timezone.localdate() - timezone.timedelta(days=(365.25 * 18))
             ):
                 errors["birthdate"] = "شما حداقل باید 18 سال سن داشته باشید"
             else:

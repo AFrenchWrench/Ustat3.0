@@ -1,13 +1,13 @@
 from django import forms
-from sales.models import DisplayItem
+from sales.models import ItemVariant
 from utils.validation_utils import validate_image_file_type
 
 MAX_FILE_SIZE = 3 * 1024 * 1024  # 3 megabytes in bytes
 
 
-class DisplayItemImageUploadForm(forms.ModelForm):
+class ItemVariantImageUploadForm(forms.ModelForm):
     class Meta:
-        model = DisplayItem
+        model = ItemVariant
         fields = ["thumbnail", "slider1", "slider2", "slider3"]
         widgets = {
             "thumbnail": forms.ClearableFileInput(attrs={"accept": "image/*"}),
