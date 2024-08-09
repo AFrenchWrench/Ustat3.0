@@ -21,7 +21,7 @@ const fileSchema = z.instanceof(File).refine(file => file.size <= maxFileSize, {
 
 const schema = z.object({
     isForBusiness: z.boolean(),
-    showInFirstPage: z.boolean().optional(),
+    showInFirstPage: z.boolean(),
     name: z.string().min(1, 'Name is required'),
     dimensions: z.object({
         height: z.string().min(1, "Height is required"),
@@ -45,9 +45,10 @@ type FormValues = z.infer<typeof schema>;
 type AddDisplayItemProps = {
     onClose: () => void;
     id: string;
+    type: string
 };
 
-const CreateDisplayItem: React.FC<AddDisplayItemProps> = ({ onClose, id }) => {
+const CreateDisplayItem: React.FC<AddDisplayItemProps> = ({ onClose, id, type }) => {
     const [message, setMessage] = useState('');
     const [previews, setPreviews] = useState<{ [key in FieldNames]: string | null }>({
         thumbnail: null,
@@ -64,6 +65,10 @@ const CreateDisplayItem: React.FC<AddDisplayItemProps> = ({ onClose, id }) => {
         reset
     } = useForm<FormValues>({
         resolver: zodResolver(schema),
+        defaultValues: {
+            isForBusiness: false,
+            showInFirstPage: false
+        },
     });
 
     const onSubmit: SubmitHandler<FormValues> = async (data) => {
@@ -87,11 +92,11 @@ const CreateDisplayItem: React.FC<AddDisplayItemProps> = ({ onClose, id }) => {
                                 dimensions: "${escapeString(dimensionsString)}"
                                 price: ${data.price}
                                 description: "${data.description}"
-                                fabric: "ثیقب"
-                                color: "ُلسلب"
-                                woodColor: "شصبشب"
-                                showInFirstPage: ${true}
-                                isForBusiness: ${false}
+                                fabric: "${data.fabric}"
+                                color: "${data.color}"
+                                woodColor: "${data.woodColor}"
+                                showInFirstPage: ${data.showInFirstPage}
+                                isForBusiness: ${data.isForBusiness}
                             }
                         ) {
                             success
@@ -218,11 +223,9 @@ const CreateDisplayItem: React.FC<AddDisplayItemProps> = ({ onClose, id }) => {
                     </span>
 
                     <span>
-                        <label htmlFor="isForBusiness">نوع محصول :</label>
-                        <input className={styles.isForBusiness} id='isForBusiness' type="checkbox" {...register("isForBusiness")} />
-
-
-                        {errors.isForBusiness && (<p className={styles.errorMessage}>{errors.isForBusiness.message}</p>)}
+                        <label htmlFor="fabric">پارچه :</label>
+                        <input type="text" id='fabric' {...register("fabric")} />
+                        {errors.fabric && (<p className={styles.errorMessage}>{errors.fabric.message}</p>)}
                     </span>
                 </div>
 
@@ -253,6 +256,50 @@ const CreateDisplayItem: React.FC<AddDisplayItemProps> = ({ onClose, id }) => {
                         {errors.price && (<p className={styles.errorMessage}>{errors.price.message}</p>)}
                     </span>
                 </div>
+
+
+
+                <div className={styles.twoContainer}>
+
+                    <span>
+                        <label htmlFor="color">رنگ :</label>
+                        <input type="text" id='color' {...register("color")} />
+                        {errors.color && (<p className={styles.errorMessage}>{errors.color.message}</p>)}
+                    </span>
+
+                    <span>
+                        <label htmlFor="woodColor">رنگ چوب :</label>
+                        <input type="text" id='woodColor' {...register("woodColor")} />
+                        {errors.woodColor && (<p className={styles.errorMessage}>{errors.woodColor.message}</p>)}
+                    </span>
+                </div>
+
+
+
+
+                <div className={styles.twoContainer}>
+                    <span>
+                        <label htmlFor="isForBusiness">برای بیزنس ؟</label>
+                        <input className={styles.isForBusiness} id='isForBusiness' type="checkbox" {...register("isForBusiness")} />
+
+
+                        {errors.isForBusiness && (<p className={styles.errorMessage}>{errors.isForBusiness.message}</p>)}
+                    </span>
+
+                    <span>
+                        <label htmlFor="showInFirstPage">نمایش در صفحه محصولات ؟</label>
+                        <input className={styles.isForBusiness} id='showInFirstPage' type="checkbox" {...register("showInFirstPage")} />
+
+
+                        {errors.showInFirstPage && (<p className={styles.errorMessage}>{errors.showInFirstPage.message}</p>)}
+                    </span>
+
+                </div>
+
+
+
+
+
 
                 <div className={styles.formDetails}>
                     <label htmlFor="description">توضیحات :</label>

@@ -26,6 +26,7 @@ const AddItemTable: React.FC = () => {
     const [displayItems, setDisplayItems] = useState<DisplayItem[]>([]);
     const [displayVariations, setDisplayVariations] = useState<Ivariations[]>([]);
     const [activeId, setActiveId] = useState<string>("");
+    const [itemType, setType] = useState<string>("");
     const [activeItemId, setActiveItemId] = useState<string | null>(null);
 
     const handleOpenPopup = () => {
@@ -80,8 +81,9 @@ const AddItemTable: React.FC = () => {
         fetchData();
     }, [handleClosePopup]);
 
-    const handleVariations = async (id: string) => {
+    const handleVariations = async (id: string, type: string) => {
         setActiveId(id);
+        setType(type)
         setActiveItemId(id); // Set the active item id
         const query = `
                 query DisplayItem {
@@ -156,7 +158,7 @@ const AddItemTable: React.FC = () => {
                     <div className={styles.tableQueryDisplayItems}>
                         {displayItems.map((item) => (
                             <div
-                                onClick={() => handleVariations(item.id)}
+                                onClick={() => handleVariations(item.id, item.type)}
                                 key={item.id}
                                 className={`${styles.item} ${activeItemId === item.id ? styles.activeItem : ''}`} // Conditionally add the active class
                                 style={{
@@ -205,7 +207,7 @@ const AddItemTable: React.FC = () => {
             )}
             {showPopupV && (
                 <div className={styles.popupOverlay}>
-                    <CreateDisplayItem onClose={handleClosePopupV} id={activeId} />
+                    <CreateDisplayItem onClose={handleClosePopupV} id={activeId} type={itemType} />
                 </div>
             )}
         </section>

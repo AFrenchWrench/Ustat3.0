@@ -64,19 +64,24 @@ const Products = () => {
         },
         body: JSON.stringify({
           query: `
-            query DisplayItems {
-              displayItems {
-                id
-                type
-                name
-                dimensions
-                price
-                description
-                thumbnail
-                slider1
-                slider2
-                slider3
-              }
+                  query Showcase {
+                      showcase {
+                          id
+                          name
+                          dimensions
+                          price
+                          description
+                          fabric
+                          color
+                          woodColor
+                          showInFirstPage
+                          isForBusiness
+                          thumbnail
+                          slider1
+                          slider2
+                          slider3
+                      }
+                  }
               ${token ? `
               userOrders(filter: { status: "ps" }) {
                 id
