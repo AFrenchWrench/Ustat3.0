@@ -83,7 +83,6 @@ class CreateItemVariantInput(graphene.InputObjectType):
     is_for_business = graphene.Boolean(required=False)
 
 
-
 class CreateOrderItem(graphene.Mutation):
     class Arguments:
         input = CreateOrderItemInput(required=True)
@@ -430,12 +429,14 @@ class UpdateOrderItem(graphene.Mutation):
     @login_required
     def mutate(self, info, input):
         try:
-            try:
-                item_variant = ItemVariant.objects.get(pk=input.get("item_variant"))
-            except ItemVariant.DoesNotExist:
-                return UpdateOrderItem(
-                    success=False, errors="مورد نمایشی مورد نظر یافت نشد"
-                )
+            item_variant = input.get("item_variant")
+            if item_variant:
+                try:
+                    item_variant = ItemVariant.objects.get(pk=item_variant)
+                except ItemVariant.DoesNotExist:
+                    return UpdateOrderItem(
+                        success=False, errors="مورد نمایشی مورد نظر یافت نشد"
+                    )
 
             try:
                 order_item = OrderItem.objects.get(pk=input.get("id"))
@@ -452,12 +453,16 @@ class UpdateOrderItem(graphene.Mutation):
                     success=False, errors="سفارش مورد نظر در حال پردازش است"
                 )
 
-            if order_item.item_variant.id == item_variant.id:
+            if item_variant and order_item.item_variant.id == item_variant.id:
                 return UpdateOrderItem(
                     success=False, errors="مورد نمایشی مورد نظر یکسان است"
                 )
 
-            if order_item.item_variant.type != item_variant.type:
+            if (
+                item_variant
+                and order_item.item_variant.display_item.type
+                != item_variant.display_item.type
+            ):
                 return UpdateOrderItem(
                     success=False, errors="نوع محصول مورد نظر تغییر کرده است"
                 )
@@ -466,24 +471,26 @@ class UpdateOrderItem(graphene.Mutation):
             if errors:
                 return UpdateOrderItem(success=False, errors=errors)
 
-            order_item.item_variant = item_variant
             if input.get("description"):
                 order_item.description = input.get("description")
             if input.get("quantity"):
                 order_item.quantity = input.get("quantity")
-            order_item.name = item_variant.name
-            order_item.dimensions = item_variant.dimensions
-            order_item.price = item_variant.price
-            order_item.fabric = item_variant.fabric
-            order_item.color = item_variant.color
-            order_item.wood_color = item_variant.wood_color
-            order_item.thumbnail = item_variant.thumbnail
+
+            if item_variant:
+                order_item.item_variant = item_variant
+                order_item.name = item_variant.name
+                order_item.dimensions = item_variant.dimensions
+                order_item.price = item_variant.price
+                order_item.fabric = item_variant.fabric
+                order_item.color = item_variant.color
+                order_item.wood_color = item_variant.wood_color
+                order_item.thumbnail = item_variant.thumbnail
 
             order_item.save()
             return UpdateOrderItem(order_item=order_item, success=True)
         except Exception as e:
             print(e)
-            return UpdateOrderItem(success=False)
+            return UpdateOrderItem(success=False, errors="خطایی رخ داده است")
 
 
 class UpdateDisplayItem(graphene.Mutation):
