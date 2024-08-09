@@ -79,7 +79,7 @@ const AddItemTable: React.FC = () => {
         };
 
         fetchData();
-    }, [handleClosePopup]);
+    }, [showPopup]);
 
     const handleVariations = async (id: string, type: string) => {
         setActiveId(id);
