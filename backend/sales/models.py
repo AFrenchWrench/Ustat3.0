@@ -151,6 +151,7 @@ class ItemVariant(models.Model):
     color = models.CharField(max_length=32)
     wood_color = models.CharField(max_length=32)
     show_in_first_page = models.BooleanField(default=False)
+    is_for_business = models.BooleanField(default=False)
 
     thumbnail = OptimizedImageField(
         upload_to="display_items_variant/thumbnails/",

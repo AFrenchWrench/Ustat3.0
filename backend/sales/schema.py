@@ -80,6 +80,8 @@ class CreateItemVariantInput(graphene.InputObjectType):
     color = graphene.String(required=True)
     wood_color = graphene.String(required=True)
     show_in_first_page = graphene.Boolean(required=False)
+    is_for_business = graphene.Boolean(required=False)
+
 
 
 class CreateOrderItem(graphene.Mutation):
@@ -396,6 +398,7 @@ class UpdateItemVariantInput(graphene.InputObjectType):
     color = graphene.String(required=False)
     wood_color = graphene.String(required=False)
     show_in_first_page = graphene.Boolean(required=False)
+    is_for_business = graphene.Boolean(required=False)
 
 
 class UpdateOrderItem(graphene.Mutation):
@@ -761,6 +764,9 @@ class UpdateItemVariant(graphene.Mutation):
         if input.get("show_in_first_page"):
             item_variant.show_in_first_page = input.get("show_in_first_page")
 
+        if input.get("is_for_business"):
+            item_variant.is_for_business = input.get("is_for_business")
+
         if not errors:
             item_variant.save()
 
@@ -1006,6 +1012,7 @@ class ItemVariantFilterInput(graphene.InputObjectType):
     fabric__icontains = graphene.String()
     color = graphene.String()
     wood_color = graphene.String()
+    is_for_business = graphene.Boolean()
 
 
 class Query(graphene.ObjectType):
