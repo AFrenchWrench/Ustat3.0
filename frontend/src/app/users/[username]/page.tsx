@@ -46,20 +46,13 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
                   landlineNumber
                   email
                   birthdate
-                  city {
-                        id
-                        name
-                        province {
-                            id
-                            name
-                        }
-                  }
+
                   business {
                     name
                     ownerFirstName
                     ownerLastName
                     ownerPhoneNumber
-                    address
+
                     isConfirmed
                   }
                 }
@@ -67,8 +60,21 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
             `,
           }),
         });
+
+        //     city {
+        //       id
+        //       name
+        //       province {
+        //           id
+        //           name
+        //       }
+        // }
+
+        // address
+
+
         const data = await response.json();
-        console.log(data.data);
+        console.log(data);
 
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -134,7 +140,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
 
       if (data.data.logout.success) {
         Cookies.remove("Authorization");
-        push(data.data.logout.redirectUrl);
+        push(data.logout.redirectUrl);
       } else {
         setError("از حساب کاربری خارج هستید");
       }
@@ -178,14 +184,14 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
                     </span>
                   </div>
 
-                  <div className={styles.firsLastName}>
+                  {/* <div className={styles.firsLastName}>
                     <span>
                       <strong>استان :</strong><p> {userData.city.province.name}</p>
                     </span>
                     <span>
                       <strong>شهر :</strong><p> {userData.city.name}</p>
                     </span>
-                  </div>
+                  </div> */}
 
                   <div className={styles.firsLastName}>
                     <span>

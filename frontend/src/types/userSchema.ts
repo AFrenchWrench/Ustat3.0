@@ -52,7 +52,7 @@ const UserSchema = z.object({
       .min(1,"شماره ثابت نمی‌تواند خالی باشد")
       .min(12,"شماره تلفن ثابت باید 12 رقم باشد"),
   
-    city: z.string({required_error: "شهر نمی‌تواند خالی باشد"}),
+    // city: z.string({required_error: "شهر نمی‌تواند خالی باشد"}),
     birthDate: z.string({required_error:"تاریخ تولد الزامی است"}),
   
     isBusinessSigninInput: z.boolean(),

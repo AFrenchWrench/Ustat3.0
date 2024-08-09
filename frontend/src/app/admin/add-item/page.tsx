@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import AddItem from '@/components/adminComponent/addItem';
 import Loading from '@/components/Loading';
+import AddItemTable from '@/components/adminComponent/addItemTable';
 
 const Page = () => {
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null); // Use null to represent loading state
@@ -67,7 +68,7 @@ const Page = () => {
     return (
         <>
             {isAdmin ? (
-                <AddItem />
+                <AddItemTable />
             ) : null}
         </>
     );

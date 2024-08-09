@@ -20,13 +20,17 @@ const fileSchema = z.instanceof(File).refine(file => file.size <= maxFileSize, {
 });
 
 const schema = z.object({
-    type: z.string().min(1, 'Type is required'),
+    isForBusiness: z.boolean(),
+    showInFirstPage: z.boolean().optional(),
     name: z.string().min(1, 'Name is required'),
     dimensions: z.object({
         height: z.string().min(1, "Height is required"),
         width: z.string().min(1, "Width is required"),
         depth: z.string().min(1, "Depth is required")
     }),
+    fabric: z.string().optional(),
+    color: z.string().optional(),
+    woodColor: z.string().optional(),
     price: z.number().min(0, 'Price must be a positive number').or(z.string().min(1, 'Price is required')),
     description: z.string().min(1, 'Description is required'),
     thumbnail: fileSchema,
@@ -38,7 +42,12 @@ const schema = z.object({
 type FieldNames = 'thumbnail' | 'slider1' | 'slider2' | 'slider3';
 type FormValues = z.infer<typeof schema>;
 
-const CreateDisplayItem = () => {
+type AddDisplayItemProps = {
+    onClose: () => void;
+    id: string;
+};
+
+const CreateDisplayItem: React.FC<AddDisplayItemProps> = ({ onClose, id }) => {
     const [message, setMessage] = useState('');
     const [previews, setPreviews] = useState<{ [key in FieldNames]: string | null }>({
         thumbnail: null,
@@ -62,31 +71,36 @@ const CreateDisplayItem = () => {
 
         // Prepare dimensions
         const dimensions = {
-            height: data.dimensions.height,
-            width: data.dimensions.width,
-            depth: data.dimensions.depth,
+            height: Number(data.dimensions.height),
+            width: Number(data.dimensions.width),
+            length: Number(data.dimensions.depth),
         };
         const dimensionsString = JSON.stringify(dimensions);
 
-        // Escape strings
         const escapeString = (str: string) => str.replace(/"/g, '\\"');
         const query = `
-          mutation CreateDisplayItem {
-            createDisplayItem(
-              input: { 
-                type: "${escapeString(data.type)}", 
-                name: "${escapeString(data.name)}", 
-                dimensions: "${escapeString(dimensionsString)}", 
-                price: ${data.price}, 
-                description: "${escapeString(data.description)}"
-              }
-            ) {
-              success
-              displayItem {
-                id
-              }
-            }
-          }
+                    mutation CreateItemVariant {
+                        createItemVariant(
+                            input: {
+                                displayItem: "${id}"
+                                name: "${data.name}"
+                                dimensions: "${escapeString(dimensionsString)}"
+                                price: ${data.price}
+                                description: "${data.description}"
+                                fabric: "ثیقب"
+                                color: "ُلسلب"
+                                woodColor: "شصبشب"
+                                showInFirstPage: ${true}
+                                isForBusiness: ${false}
+                            }
+                        ) {
+                            success
+                            errors
+                            itemVariant {
+                                        id
+                                    }
+                        }
+                    }
         `;
 
         try {
@@ -103,9 +117,9 @@ const CreateDisplayItem = () => {
             console.log(query);
             console.log(result);
 
-            if (result.data.createDisplayItem.success) {
+            if (result.data.createItemVariant.success) {
                 setMessage('Item created successfully!');
-                const itemId = result.data.createDisplayItem.displayItem.id;
+                const itemId = result.data.createItemVariant.itemVariant.id;
 
                 // Prepare images for upload
                 const formData = new FormData();
@@ -125,7 +139,7 @@ const CreateDisplayItem = () => {
                 });
 
                 // Second request: Upload images
-                const uploadResponse = await fetch(`http://localhost/api/sales/display-item/${itemId}/upload-images/`, {
+                const uploadResponse = await fetch(`http://localhost/api/sales/display-item-variant/${itemId}/upload-images/`, {
                     method: 'POST',
                     headers: {
                         'Authorization': Authorization ? Authorization : '',
@@ -176,7 +190,7 @@ const CreateDisplayItem = () => {
     };
 
     return (
-        <section className={styles.profileContainer}>
+        <section className={styles.addDisplayItemFormSection + " !items-start"}>
             <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
 
                 <div className={styles.formDetails}>
@@ -204,37 +218,30 @@ const CreateDisplayItem = () => {
                     </span>
 
                     <span>
-                        <label htmlFor="type">نوع محصول :</label>
-
-                        <select id='type' {...register("type")}>
-                            <option value="s">مبل</option>
-                            <option value="b">سرویس خواب</option>
-                            <option value="m">میز و صندلی</option>
-                            <option value="j">جلومبلی و عسلی</option>
-                            <option value="c">آینه کنسول</option>
-                        </select>
+                        <label htmlFor="isForBusiness">نوع محصول :</label>
+                        <input className={styles.isForBusiness} id='isForBusiness' type="checkbox" {...register("isForBusiness")} />
 
 
-                        {errors.type && (<p className={styles.errorMessage}>{errors.type.message}</p>)}
+                        {errors.isForBusiness && (<p className={styles.errorMessage}>{errors.isForBusiness.message}</p>)}
                     </span>
                 </div>
 
                 <div className={styles.twoContainer}>
                     <span>
                         <label htmlFor="width">طول :</label>
-                        <input dir='ltr' type="text" id='width' {...register("dimensions.width")} />
+                        <input dir='ltr' type="number" id='width' {...register("dimensions.width")} />
                         {errors.dimensions?.width && (<p className={styles.errorMessage}>{errors.dimensions.width.message}</p>)}
                     </span>
 
                     <span>
                         <label htmlFor="height">عرض :</label>
-                        <input dir='ltr' type="text" id='height' {...register("dimensions.height")} />
+                        <input dir='ltr' type="number" id='height' {...register("dimensions.height")} />
                         {errors.dimensions?.height && (<p className={styles.errorMessage}>{errors.dimensions.height.message}</p>)}
                     </span>
 
                     <span>
                         <label htmlFor="depth">ارتفاع :</label>
-                        <input dir='ltr' type="text" id='depth' {...register("dimensions.depth")} />
+                        <input dir='ltr' type="number" id='depth' {...register("dimensions.depth")} />
                         {errors.dimensions?.depth && (<p className={styles.errorMessage}>{errors.dimensions.depth.message}</p>)}
                     </span>
                 </div>
@@ -276,8 +283,10 @@ const CreateDisplayItem = () => {
                         {errors.slider3 && (<p className={styles.errorMessage}>{errors.slider3.message as string}</p>)}
                     </span>
                 </div>
-
-                <button type="submit" className={styles.submitButton}>ارسال</button>
+                <div>
+                    <button type="submit" className={styles.submitButton}>ارسال</button>
+                    <button type='button' onClick={onClose}>بستن</button>
+                </div>
                 {message && <p className={styles.message}>{message}</p>}
             </form>
         </section>

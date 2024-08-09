@@ -30,7 +30,7 @@ const Page = () => {
       mutation ResendEmail {
         resendEmail(emailType: "verification") {
           success
-          error
+          errors
         }
       }
     `;
@@ -46,6 +46,8 @@ const Page = () => {
       });
 
       const data = await response.json();
+      console.log(data);
+
       if (data.data.resendEmail.success) {
         setIsTimerRunning(true);
         setResendvar(false);

@@ -53,7 +53,7 @@ type FieldNames =
   | "email"
   | "phoneNumber"
   | "landlineNumber"
-  | "city"
+
   | "birthDate"
   | "businessName"
   | "ownerFirstName"
@@ -61,6 +61,8 @@ type FieldNames =
   | "ownerPhoneNumber"
   | "address";
 
+
+// | "city"
 interface ErrorMapping {
   [key: string]: FieldNames;
 }
@@ -113,10 +115,12 @@ const SignupForm = () => {
           phoneNumber: "+${userInfo.phoneNumber}",
           landlineNumber: "+${userInfo.landlineNumber}",
           email: "${userInfo.email}",
-          city: "${userInfo.city}",
+
           birthdate: "${userInfo.birthDate}"
         }
       `;
+
+      // city: "${userInfo.city}",
 
       const businessData = userInfo.isBusinessSigninInput ? `
         businessData: {
@@ -168,7 +172,7 @@ const SignupForm = () => {
           email: "email",
           phone_number: "phoneNumber",
           landline_number: "landlineNumber",
-          city: "city",
+          // city: "city",
           birthdate: "birthDate",
           name: "businessName",
           owner_first_name: "ownerFirstName",
@@ -376,7 +380,7 @@ const SignupForm = () => {
 
 
 
-      <div className='signup_form_container location !justify-between'>
+      {/* <div className='signup_form_container location !justify-between'>
         <div className='location_div flex items-center gap-2 relative'>
           <p>استان :</p>
 
@@ -475,7 +479,7 @@ const SignupForm = () => {
             <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5 whitespace-nowrap'>{`${errors.city.message}`}</p>
           )}
         </div>
-      </div>
+      </div> */}
 
 
       <div className=' flex justify-center mt-[30px] gap-2 w-[100%] relative'>

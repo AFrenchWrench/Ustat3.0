@@ -124,12 +124,12 @@ const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
   const [dateValue, setDateValue] = useState(convertToJalaali(userData?.birthdate));
   const [showPassword, setShowPassword] = useState(false);
   const { push } = useRouter();
-  useEffect(() => {
-    if (userData) {
-      const filterCity = citys.filter(city => city.province_id.toString() === userData.city.province?.id.toString());
-      setFilteredCities(filterCity);
-    }
-  }, [userData]);
+  // useEffect(() => {
+  //   if (userData) {
+  //     const filterCity = citys.filter(city => city.province_id.toString() === userData.city.province?.id.toString());
+  //     setFilteredCities(filterCity);
+  //   }
+  // }, [userData]);
 
   const handleStateChange = (selectedOption: SingleValue<StateOption>) => {
     if (selectedOption) {
@@ -147,15 +147,15 @@ const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
     }
   };
 
-  const handleDefaultValueState = (): StateOption | undefined => {
-    if (userData?.city?.province) {
-      return {
-        value: userData.city.province.id.toString(),
-        label: userData.city.province.name
-      };
-    }
-    return undefined;
-  };
+  // const handleDefaultValueState = (): StateOption | undefined => {
+  //   if (userData?.city?.province) {
+  //     return {
+  //       value: userData.city.province.id.toString(),
+  //       label: userData.city.province.name
+  //     };
+  //   }
+  //   return undefined;
+  // };
 
   const handleDateChange = (date: DateObject | null) => {
     const gregorianDate = date ? date.convert(gregorian) : null;
@@ -187,7 +187,7 @@ const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
       landlineNumber: userData.landlineNumber,
       email: userData.email,
       birthdate: userData.birthdate,
-      city: userData.city.name,
+      // city: userData.city.name,
       isBusinessSigninInput: userData.business !== undefined,
       business: {
         name: userData.business?.name,
@@ -373,7 +373,7 @@ const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
 
 
 
-      <div className={styles.twoHolder}>
+      {/* <div className={styles.twoHolder}>
         <span>
           <label htmlFor="state-select">استان :</label>
           <Select
@@ -412,7 +412,7 @@ const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
           {errors.city && (<p className={styles.errorMessage}>{errors.city.message}</p>)}
 
         </span>
-      </div>
+      </div> */}
 
 
 
