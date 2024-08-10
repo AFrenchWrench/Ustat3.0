@@ -1026,6 +1026,17 @@ class PaginatedDisplayItem(graphene.ObjectType):
     total_items = graphene.Int()
 
 
+class PaginatedOrder(graphene.ObjectType):
+    items = graphene.List(OrderType)
+    total_pages = graphene.Int()
+    total_items = graphene.Int()
+
+class PaginatedTransaction(graphene.ObjectType):
+    items = graphene.List(OrderTransactionType)
+    total_pages = graphene.Int()
+    total_items = graphene.Int()
+
+
 class Query(graphene.ObjectType):
     display_items = graphene.Field(
         PaginatedDisplayItem,
@@ -1034,9 +1045,19 @@ class Query(graphene.ObjectType):
         filter=DisplayItemFilterInput(),
     )
     display_item = graphene.Field(DisplayItemType, id=graphene.ID(required=True))
-    orders = graphene.List(OrderType, filter=OrderFilterInput())
+    orders = graphene.Field(
+        PaginatedOrder,
+        page=graphene.Int(),
+        per_page=graphene.Int(),
+        filter=OrderFilterInput(),
+    )
     order = graphene.Field(OrderType, id=graphene.ID(required=True))
-    transactions = graphene.List(OrderTransactionType, filter=TranscationFilterInput())
+    transactions = graphene.Field(
+        PaginatedTransaction,
+        page=graphene.Int(),
+        per_page=graphene.Int(),
+        filter=TranscationFilterInput(),
+    )
     transaction = graphene.Field(OrderTransactionType, id=graphene.ID(required=True))
     item_variants = graphene.List(ItemVariantType, filter=ItemVariantFilterInput())
     item_variant = graphene.Field(ItemVariantType, id=graphene.ID(required=True))
@@ -1057,19 +1078,32 @@ class Query(graphene.ObjectType):
         return display_item
 
     @login_required
-    def resolve_orders(self, info, filter=None):
+    def resolve_orders(self, info, page=1, per_page=10, filter=None):
         orders = resolve_model_with_filters(Order, filter)
-        return orders.filter(user=info.context.user)
+        orders.filter(user=info.context.user)
+        paginator = Paginator(orders, per_page)
+        paginated_qs = paginator.page(page)
+        return PaginatedOrder(
+            items=paginated_qs.object_list,
+            total_pages=paginator.num_pages,
+            total_items=paginator.count,
+        )
 
     @login_required
     def resolve_order(self, info, id):
         return get_object_or_404(Order, pk=id, user=info.context.user)
 
     @login_required
-    def resolve_transactions(self, info, filter=None):
+    def resolve_transactions(self, info, page=1, per_page=10, filter=None):
         transactions = resolve_model_with_filters(OrderTransaction, filter)
-        return transactions.filter(order__user=info.context.user)
-
+        transactions.filter(order__user=info.context.user)
+        paginator = Paginator(transactions, per_page)
+        paginated_qs = paginator.page(page)
+        return PaginatedTransaction(
+            items=paginated_qs.object_list,
+            total_pages=paginator.num_pages,
+            total_items=paginator.count,
+        )
     @login_required
     def resolve_transaction(self, info, id):
         return get_object_or_404(OrderTransaction, pk=id, order__user=info.context.user)
