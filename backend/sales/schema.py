@@ -6,9 +6,7 @@ from django.contrib.auth import (
 )
 from django.shortcuts import get_object_or_404
 from graphene_django import DjangoObjectType
-from graphql import (
-    GraphQLError,
-)
+from django.core.paginator import Paginator
 from users.models import Address
 from utils.validation_utils import is_persian_string
 from utils.schema_utils import (
@@ -1022,8 +1020,19 @@ class ItemVariantFilterInput(graphene.InputObjectType):
     is_for_business = graphene.Boolean()
 
 
+class PaginatedDisplayItem(graphene.ObjectType):
+    items = graphene.List(DisplayItemType)
+    total_pages = graphene.Int()
+    total_items = graphene.Int()
+
+
 class Query(graphene.ObjectType):
-    display_items = graphene.List(DisplayItemType, filter=DisplayItemFilterInput())
+    display_items = graphene.Field(
+        PaginatedDisplayItem,
+        page=graphene.Int(),
+        per_page=graphene.Int(),
+        filter=DisplayItemFilterInput(),
+    )
     display_item = graphene.Field(DisplayItemType, id=graphene.ID(required=True))
     orders = graphene.List(OrderType, filter=OrderFilterInput())
     order = graphene.Field(OrderType, id=graphene.ID(required=True))
@@ -1033,9 +1042,15 @@ class Query(graphene.ObjectType):
     item_variant = graphene.Field(ItemVariantType, id=graphene.ID(required=True))
     showcase = graphene.List(ItemVariantType)
 
-    def resolve_display_items(self, info, filter=None):
+    def resolve_display_items(self, info, page=1, per_page=12, filter=None):
         display_items = resolve_model_with_filters(DisplayItem, filter)
-        return display_items
+        paginator = Paginator(display_items, per_page)
+        paginated_qs = paginator.page(page)
+        return PaginatedDisplayItem(
+            items=paginated_qs.object_list,
+            total_pages=paginator.num_pages,
+            total_items=paginator.count,
+        )
 
     def resolve_display_item(self, info, id):
         display_item = get_object_or_404(DisplayItem, pk=id)
