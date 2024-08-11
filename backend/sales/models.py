@@ -15,10 +15,9 @@ ITEM_TYPE_CHOICES = [
 
 class OrderTransaction(models.Model):
     title = models.CharField(max_length=128)
-    order = models.OneToOneField(
-        "Order", on_delete=models.CASCADE, related_name="transaction"
+    order = models.ForeignKey(
+        "Order", on_delete=models.CASCADE, related_name="transactions"
     )
-    total_price = models.PositiveBigIntegerField()
     status = models.CharField(
         max_length=1,
         choices=[
@@ -28,23 +27,20 @@ class OrderTransaction(models.Model):
         ],
         default="p",
     )
+    amount = models.PositiveBigIntegerField()
     creation_date = models.DateField(auto_now_add=True)
     due_date = models.DateField(blank=True)
     transacion_number = models.CharField(
         max_length=17, unique=True, blank=True, null=True
     )
+    description = models.TextField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        self.total_price = self.get_total_price()
 
         if not self.pk and not self.due_date:
-            self.due_date = timezone.localdate() + timezone.timedelta(days=25)
+            self.due_date = timezone.localdate() + timezone.timedelta(days=7)
 
         super().save(*args, **kwargs)
-
-    def get_total_price(self):
-        total_price = sum(item.total_price for item in self.order.items.all())
-        return total_price
 
 
 class Order(models.Model):
@@ -52,6 +48,7 @@ class Order(models.Model):
     due_date = models.DateField(blank=True)
     creation_date = models.DateField(auto_now_add=True)
     order_number = models.CharField(max_length=17, unique=True, blank=True)
+    total_price = models.PositiveBigIntegerField()
     address = models.ForeignKey(
         "users.Address", on_delete=models.PROTECT, null=True, blank=True
     )
@@ -73,18 +70,24 @@ class Order(models.Model):
     )
 
     def save(self, *args, **kwargs):
+
+        self.total_price = self.get_total_price()
+
         if not self.order_number:
             self.order_number = self.generate_order_number()
 
         if not self.pk and not self.due_date:
             self.due_date = timezone.localdate() + timezone.timedelta(days=25)
 
-        if self.status == "a" and not hasattr(self, "transaction"):
-            transaction = OrderTransaction.objects.create(order=self)
-        elif self.status == "c" and hasattr(self, "transaction"):
-            transaction = self.transaction
-            transaction.status = "c"
-            transaction.save()
+        if self.status == "a" and not hasattr(self, "transactions"):
+            transaction = OrderTransaction.objects.create(
+                order=self, amount=(self.total_price * 0.3)
+            )
+        elif self.status == "c" and hasattr(self, "transactions"):
+            transactions = self.transactions
+            for transaction in transactions:
+                transaction.status = "c"
+                transaction.save()
 
         super().save(*args, **kwargs)
 
@@ -94,6 +97,10 @@ class Order(models.Model):
         last_oder = Order.objects.filter(order_number__icontains=f"UST{year}").last()
         order_no = (last_oder.id + 1) if last_oder is not None else 1
         return f"UST{year}-{month}{order_no:06d}"
+
+    def get_total_price(self):
+        total_price = sum(item.total_price for item in self.order.items.all())
+        return total_price
 
     def __str__(self):
         return self.order_number

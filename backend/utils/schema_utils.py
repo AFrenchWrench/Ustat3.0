@@ -70,7 +70,7 @@ def login_required(func):
         if user.is_authenticated and token:
             return func(root, info, *args, **kwargs)
         else:
-            raise GraphQLError("Your are not logged in")
+            raise GraphQLError("شما وارد حساب کاربری خود نشده اید")
 
     return wrapper
 
@@ -88,7 +88,7 @@ def staff_member_required(func):
         if user.is_authenticated and user.is_staff and token:
             return func(root, info, *args, **kwargs)
         else:
-            raise GraphQLError("You do not have permission to perform this action.")
+            raise GraphQLError("شما دسترسی انجام این عملیات را ندارید")
 
     return wrapper
 
