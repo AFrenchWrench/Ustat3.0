@@ -144,7 +144,7 @@ const Page = () => {
         };
 
         fetchProductData();
-    }, [order, update]);
+    }, [order, update, push]);
 
 
 

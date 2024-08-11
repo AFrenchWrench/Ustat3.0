@@ -95,4 +95,6 @@ const CustomReactCodeInput = forwardRef<HTMLDivElement, CustomCodeInputProps>((p
   );
 });
 
+CustomReactCodeInput.displayName = 'CustomReactCodeInput'; // Add display name here
+
 export default CustomReactCodeInput;
