@@ -10,17 +10,20 @@ import Cookies from "js-cookie";
 
 
 
+
+interface Ivariants {
+    id: string,
+    name: string;
+    price: string;
+    thumbnail: string;
+}
+
+
 interface DisplayItem {
     id: string;
-    type: string;
     name: string;
-    dimensions: string;
-    price: string;
-    description: string;
-    thumbnail: string;
-    slider1: string;
-    slider2: string;
-    slider3: string;
+    type: string;
+    variants: Ivariants[];
 }
 
 interface OrderItems {
@@ -45,7 +48,7 @@ interface DisplayOrder {
 const Page = () => {
     const { type } = useParams()
 
-    const [userData, setUserData] = useState<DisplayItem[]>([]);
+    const [displayData, setDisplayData] = useState<DisplayItem[]>([]);
     const [orderData, setOrderData] = useState<DisplayOrder[]>([]);
     const [fetchTrigger, setFetchTrigger] = useState(false); // Trigger for re-fetching data
 
@@ -60,51 +63,58 @@ const Page = () => {
                 },
                 body: JSON.stringify({
                     query: `
-              query DisplayItems {
-                displayItems {
-                  id
-                  type
-                  name
-                  dimensions
-                  price
-                  description
-                  thumbnail
-                  slider1
-                  slider2
-                  slider3
-                }
-                ${token ? `
-                userOrders {
-                  id
-                  dueDate
-                  creationDate
-                  orderNumber
-                  status
-                  items {
-                    id
-                    type
-                    name
-                    dimensions
-                    price
-                    quantity
-                  }
-                }` : ''}
-              }
+                            query DisplayItems {
+                                displayItems(page: 1, perPage: 12, filter: { type: "${type.toString().toLowerCase()}" }) {
+                                    totalPages
+                                    totalItems
+                                    items {
+                                        id
+                                        type
+                                        name
+                                        variants {
+                                            id
+                                            name
+                                            price
+                                            thumbnail
+                                        }
+                                    }
+                                }
+                            ${token ? `
+                                orders(filter: { status: "ps" }) {
+                                    id
+                                    dueDate
+                                    creationDate
+                                    orderNumber
+                                    status
+                                    items {
+                                        id
+                                        type
+                                        name
+                                        quantity
+                                    }
+                                }
+                            }
+                            `: ""}
+
             `,
                 }),
             });
             const data = await response.json();
+            console.log(data);
+
 
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
 
-            if (data.errors || !data.data.displayItems || (token && !data.data.userOrders)) {
+            if (data.errors || !data.data.displayItems || (token && !data.data.orders)) {
                 throw new Error(data.errors ? data.errors[0].message : 'No items found');
             }
 
-            setUserData(data.data.displayItems);
-            if (token) setOrderData(data.data.userOrders);
+            setDisplayData(data.data.displayItems.items);
+            console.log(displayData);
+
+            if (token) setOrderData(data.data.orders);
 
         } catch (error) {
             console.error(error);
@@ -127,22 +137,18 @@ const Page = () => {
         setFetchTrigger(true); // Trigger data re-fetch
     };
 
-    const filteredUserData = type
-        ? userData.filter((item) => item.type === type)
-        : userData;
 
 
     return (
         <section className="flex flex-col gap-5 items-center mt-10">
             <ImageList gap={8} sx={{ width: "80%" }} cols={3}>
-                {filteredUserData.map((article, index) => (
+                {displayData && displayData.map((article, index) => (
                     <ImageListItem key={index}>
                         <Article
-                            imageSrc={`/media/${article.thumbnail}`}
-                            productName={article.name}
-                            description={article.description}
-                            price={article.price}
-                            productLink={article.id}
+                            imageSrc={`/media/${article.variants[0].thumbnail}`}
+                            productName={article.variants[0].name}
+                            price={article.variants[0].price}
+                            productLink={article.variants[0].id}
                             type={article.type}
                             orderData={orderData}
                             onOrderUpdate={updateOrderData}

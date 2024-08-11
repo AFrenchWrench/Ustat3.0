@@ -17,21 +17,23 @@ import "react-multi-date-picker/styles/backgrounds/bg-dark.css";
 import { FaCalendarAlt } from "react-icons/fa";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import ConfirmAlert from "../components/ConfirmAlert"; // Import the ConfirmAlert component
+import SelectAddress from '../components/selectAddress';
 
 interface OrderItems {
     id: string;
     type: string;
     name: string;
-    dimensions: object;
-    price: number;
+    thumbnail: string;
     quantity: number;
-    description: string;
+    fabric: string;
+    color: string;
+    woodColor: string;
+    dimensions: string;
 }
 
 interface DisplayItem {
     id: string;
     dueDate: string;
-    creationDate: string;
     orderNumber: string;
     status: string;
     items: OrderItems[];
@@ -54,6 +56,7 @@ interface ConfirmAlertType {
     type: TupdateType;
     itemId: string;
     status?: string;
+    addressId?: string
 }
 
 const Page = () => {
@@ -65,6 +68,10 @@ const Page = () => {
     const { order } = useParams();
     const [update, setUpdate] = useState(false);
     const { push } = useRouter();
+
+    const [addressId, setAddressId] = useState<string>("")
+    const [address, setAddress] = useState<string>("")
+    const [showSelectAddress, setShowSelectAddress] = useState<boolean>(false)
 
     useEffect(() => {
         if (!order) return;
@@ -80,52 +87,57 @@ const Page = () => {
                     },
                     body: JSON.stringify({
                         query: `
-                            query UserOrders {
-                                userOrders(filter: { orderNumber_Icontains: "${order}" }) {
-                                    id
-                                    dueDate
-                                    creationDate
-                                    orderNumber
-                                    status
-                                    items {
+                                query Order {
+                                    order(id: ${order}) {
                                         id
-                                        type
-                                        name
-                                        dimensions
-                                        price
-                                        description
-                                        quantity
+                                        dueDate
+                                        orderNumber
+                                        status
+                                        items {
+                                            id
+                                            type
+                                            name
+                                            quantity
+                                            thumbnail
+                                            fabric
+                                            color
+                                            woodColor
+                                            dimensions
+                                        }
                                     }
                                 }
-                            }
                         `,
                     }),
                 });
                 const data = await response.json();
 
+                console.log('Fetched Data:', data); // Check fetched data
+
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
 
-                if (data.errors || !data.data.userOrders) {
+                if (data.errors || !data.data.order) {
                     throw new Error(data.errors ? data.errors[0].message : 'No item found');
                 }
 
-                const fetchedOrderData = data.data.userOrders[0];
+                const fetchedOrderData = data.data.order;
+                console.log('Fetched Order Data:', fetchedOrderData); // Log order data before setting state
+
                 if (!fetchedOrderData) {
                     push("/cart");
                     return;
                 }
-                setOrderData(fetchedOrderData);
 
-                // Initialize item quantities
+                setOrderData(fetchedOrderData); // Update state here
+
                 const initialQuantities = fetchedOrderData.items.reduce((acc: { [key: string]: number }, item: OrderItems) => {
                     acc[item.id] = item.quantity;
                     return acc;
                 }, {});
                 setItemQuantities(initialQuantities);
             } catch (error) {
-                console.error(error);
+                console.error('Error fetching data:', error);
             } finally {
                 setLoading(false);
             }
@@ -133,6 +145,8 @@ const Page = () => {
 
         fetchProductData();
     }, [order, update]);
+
+
 
     const convertToJalaali = (gregorianDate: string | undefined) => {
         if (gregorianDate) {
@@ -186,6 +200,16 @@ const Page = () => {
         });
     };
 
+    const handleAddressId = (id: string) => {
+        setAddressId(id)
+    }
+    const handleAddress = (address: string) => {
+        setAddress(address)
+    }
+    const handleShowSelectAddress = () => {
+        setShowSelectAddress(false)
+    }
+
     const handleStatus = () => {
         const status = orderData?.status;
         switch (status) {
@@ -221,23 +245,26 @@ const Page = () => {
         }
     }
 
-    const handleConfirmAlert = (type: TupdateType, itemId: string, status?: string) => {
-        setConfirmAlert({ show: true, type, itemId, status });
+    const handleConfirmAlert = (type: TupdateType, itemId: string, status?: string, addressId?: string) => {
+        setConfirmAlert({ show: true, type, itemId, status, addressId });
     };
 
-    const handleConfirm = async (type: TupdateType, itemId: string, status?: string) => {
+    const handleConfirm = async (type: TupdateType, itemId: string, status?: string, addressId?: string) => {
         const user = Cookies.get("Authorization");
 
         let query: string = '';  // Initialize with an empty string
         let variables: any = {}; // Initialize with an empty object
 
         // Set query and variables based on the type
+        console.log(addressId);
+
+
         if (type === "delete") {
             query = `
                 mutation DeleteOrderItem($id: ID!) {
                     deleteOrderItem(input: { id: $id }) {
                         success
-                        message
+                        messages
                     }
                 }
             `;
@@ -256,19 +283,21 @@ const Page = () => {
                 mutation UpdateOrder($itemIdVar: ID!, $dueDate: Date!) {
                     updateOrder(input: { id: $itemIdVar, dueDate: $dueDate }) {
                         success
+                        errors
                     }
                 }
             `;
             variables = { itemIdVar: itemId, dueDate: getValues("orderDate") };
         } else if (type === "changeStatus") {
             query = `
-                mutation UpdateOrder($itemIdVar: ID!, $status: String!) {
-                    updateOrder(input: { id: $itemIdVar, status: $status }) {
+                mutation UpdateOrder($itemIdVar: ID!, $status: String! , $address: ID!) {
+                    updateOrder(input: { id: $itemIdVar, status: $status, address: $address }) {
                         success
+                        errors
                     }
                 }
             `;
-            variables = { itemIdVar: itemId, status: status };
+            variables = { itemIdVar: itemId, status: status, address: addressId };
         }
 
         try {
@@ -285,17 +314,19 @@ const Page = () => {
             });
 
             const data = await response.json();
+            console.log(data);
+
 
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
 
             if (data.errors || !data.data) {
-                throw new Error(data.errors ? data.errors[0].message : 'Something went wrong');
+                throw new Error(data.errors ? data.errors[0].messages : 'Something went wrong');
             }
 
             if (type === "delete") {
-                console.log(`Delete response: ${data.data.deleteOrderItem.message}`);
+                console.log(`Delete response: ${data.data.deleteOrderItem.messages}`);
             } else if (type === "update") {
                 console.log(`Update response: ${data.data.updateOrderItem.success}`);
             }
@@ -341,6 +372,22 @@ const Page = () => {
                         <div className={Styles.itemContainer} key={item.id}>
                             <div className={Styles.itemRight}>
                                 <p>{item.name}</p>
+                                <div className={Styles.infoContainer}>
+                                    <div className={Styles.dimensionsContainer}>
+                                        <div>
+                                            <p>{JSON.parse(item.dimensions).length ? `طول: ${JSON.parse(item.dimensions).length}` : 'N/A'}</p>
+                                            <p>{JSON.parse(item.dimensions).width ? `عرض: ${JSON.parse(item.dimensions).width}` : 'N/A'} x</p>
+                                            <p>{JSON.parse(item.dimensions).height ? `ارتفاع: ${JSON.parse(item.dimensions).height}` : 'N/A'} x</p>
+                                        </div>
+                                    </div>
+                                    <div className={Styles.colorSection}>
+                                        <p>رنگ : <span>{item.color || 'N/A'}</span></p>
+                                        <p>رنگ چوب : <span>{item.woodColor || 'N/A'}</span></p>
+                                    </div>
+                                    <div className={Styles.colorSection}>
+                                        <p className='fabric_title'>پارچه : <span>{item.fabric || 'N/A'}</span></p>
+                                    </div>
+                                </div>
                                 <div className={Styles.quantityControl}>
                                     <span className='flex gap-[10px] items-center'>
                                         <p>تعداد :</p>
@@ -366,7 +413,8 @@ const Page = () => {
                                 </div>
                             </div>
                             <div className={Styles.itemLeft}>
-                                <p>{item.description}</p>
+                                <picture><img src={`/media/${item.thumbnail}`} alt="thumbnail" /></picture>
+
                                 {orderData.status === "PS" && (
                                     <div className={Styles.udButtons}>
                                         <button
@@ -420,61 +468,52 @@ const Page = () => {
                 </div>
                 <p style={{ color: handleStatusColor(orderData.status) }} className={orderData.status}>{handleStatus()}</p>
 
-                <form onSubmit={handleSubmit(onSubmit)} className={Styles.formContainer}>
-                    <div className={Styles.formGroup}>
-                        <label htmlFor="address">آدرس*</label>
-                        <input
-                            id="address"
-                            {...register('address')}
-                            className={Styles.formControl}
-                            style={errors.address ? { borderColor: "red" } : {}}
-                        />
-                        {errors.address && <p className={Styles.error}>{errors.address.message}</p>}
-                    </div>
-                    <div className={Styles.formGroup}>
-                        <label htmlFor="postalCode">کد پستی*</label>
-                        <input
-                            id="postalCode"
-                            {...register('postalCode')}
-                            className={Styles.formControl}
-                            style={errors.postalCode ? { borderColor: "red" } : {}}
-                        />
-                        {errors.postalCode && <p className={Styles.error}>{errors.postalCode.message}</p>}
-                    </div>
-                    <div className={Styles.formGroup}>
-                        <label htmlFor="description">توضیحات</label>
-                        <textarea
-                            id="description"
-                            {...register('description')}
-                            className={Styles.formControl}
-                        />
-                    </div>
-                    {orderData.status === "PS" && (
+                {orderData.status === "PS" && (
+                    <>
+
+                        <div className={Styles.formGroup}>
+                            <button type='button' onClick={() => setShowSelectAddress(true)} disabled={showSelectAddress}>انتخاب آدرس</button>
+                            {
+                                address && (
+                                    <p>{address}</p>
+                                )
+                            }
+                        </div>
+
                         <div className={Styles.acButtons}>
-                            <button type='submit' className={Styles.submitButton}>ثبت</button>
+                            <button type='button' onClick={() => handleConfirmAlert('changeStatus', orderData.id, 'p', addressId)} className={Styles.submitButton}>ثبت</button>
                             <button type='button' onClick={() => handleConfirmAlert('changeStatus', orderData.id, 'c')} className={Styles.cButton}>لغو</button>
                         </div>
-                    )}
-                </form>
+                    </>
+                )}
             </div>
 
             {confirmAlert && (
                 <ConfirmAlert
                     type={confirmAlert.type}
                     status={confirmAlert.status}
+                    addressId={confirmAlert.addressId}
                     itemId={confirmAlert.itemId}
-                    onConfirm={async (type, itemId, status) => {
+                    onConfirm={async (type, itemId, status, addressId) => {
                         if (type === 'update') {
                             await handleConfirm(type, itemId); // Use the stored form data
                             // Submit the form data here
                             console.log("Submitting form data:", formData, formData?.quantity);
                         } else {
-                            await handleConfirm(type, itemId, status);
+                            await handleConfirm(type, itemId, status, addressId);
                         }
                     }}
                     onCancel={handleCancel}
                 />
             )}
+            {
+                showSelectAddress && (
+                    <SelectAddress
+                        onClose={handleShowSelectAddress}
+                        selectedAddressId={handleAddressId}
+                        selectedAddress={handleAddress}
+                    />
+                )}
         </section>
     );
 }

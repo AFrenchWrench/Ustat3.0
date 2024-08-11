@@ -13,19 +13,6 @@ import AddToCartButton from '../../components/addToCartButton';
 import Loading from '@/components/Loading';
 import SelectOrder from '../../components/SelectOrder';
 
-interface DisplayItem {
-    id: string;
-    type: string;
-    name: string;
-    dimensions: string;
-    price: string;
-    description: string;
-    thumbnail: string;
-    slider1: string;
-    slider2: string;
-    slider3: string;
-}
-
 interface OrderItems {
     id: string;
     type: string;
@@ -42,6 +29,22 @@ interface DisplayOrder {
     orderNumber: string;
     status: string;
     items: OrderItems[];
+}
+
+interface DisplayItem {
+    id: string;
+    type: string;
+    name: string;
+    dimensions: string; // This is a JSON string
+    price: string;
+    description: string;
+    fabric: string;
+    color: string;
+    woodColor: string;
+    thumbnail: string;
+    slider1: string;
+    slider2: string;
+    slider3: string;
 }
 
 const Page = () => {
@@ -63,12 +66,14 @@ const Page = () => {
                 },
                 body: JSON.stringify({
                     query: `
-                        query DisplayItem {
-                            displayItem(id: ${id}) {
+                        query ItemVariant {
+                            itemVariant(id: ${id}) {
                                 id
-                                type
                                 name
                                 dimensions
+                                fabric
+                                color
+                                woodColor
                                 price
                                 description
                                 thumbnail
@@ -77,7 +82,7 @@ const Page = () => {
                                 slider3
                             }
                             ${token ? `
-                            userOrders {
+                            orders {
                                 id
                                 dueDate
                                 creationDate
@@ -99,10 +104,10 @@ const Page = () => {
 
             const data = await response.json();
             if (!response.ok) throw new Error('Network response was not ok');
-            if (data.errors || !data.data.displayItem) throw new Error(data.errors ? data.errors[0].message : 'No item found');
+            if (data.errors || !data.data.itemVariant) throw new Error(data.errors ? data.errors[0].message : 'No item found');
 
-            setProduct(data.data.displayItem);
-            if (data.data.userOrders && token) setUserOrders(data.data.userOrders);
+            setProduct(data.data.itemVariant);
+            if (data.data.orders && token) setUserOrders(data.data.orders);
         } catch (error) {
             console.error(error);
         } finally {
@@ -143,6 +148,14 @@ const Page = () => {
     if (loading) return <><Loading /></>;
     if (!product) return <p>Product not found</p>;
 
+    // Parse dimensions from JSON string
+    let dimensions: { width?: number; height?: number; length?: number } = {};
+    try {
+        dimensions = JSON.parse(product.dimensions);
+    } catch (e) {
+        console.error('Error parsing dimensions JSON:', e);
+    }
+
     return (
         <section className='sectionId'>
             <div className='container'>
@@ -152,13 +165,34 @@ const Page = () => {
                     <SwiperSlide><img className='slider_image' src={`/media/${product.slider3}`} alt={product.name} /></SwiperSlide>
                 </Swiper>
                 <div className='name_price'>
-                    <h2 className='product_name'>{product.name}</h2>
-                    <p className='price'>{product.price} تومان</p>
+                    <h2 className='item_product_name'>{product.name}</h2>
+                    <p className='item_price'>{Number(product.price).toLocaleString('en-US')} تومان</p>
                 </div>
+
+                <div className='info_container'>
+                    <p className='info_title'>مشخصات :</p>
+                    <div className='dimensions_container'>
+                        <p>ابعاد :</p>
+                        <div>
+                            <p>{dimensions.width ? `عرض: ${dimensions.width}` : 'N/A'} x</p>
+                            <p>{dimensions.height ? `ارتفاع: ${dimensions.height}` : 'N/A'} x</p>
+                            <p>{dimensions.length ? `طول: ${dimensions.length}` : 'N/A'}</p>
+                        </div>
+                    </div>
+                    <div className='color_section'>
+                        <p>رنگ : <span>{product.color || 'N/A'}</span></p>
+                        <p>رنگ چوب : <span>{product.woodColor || 'N/A'}</span></p>
+                    </div>
+                    <div className='color_section'>
+                        <p className='fabric_title'>پارچه : <span>{product.fabric || 'N/A'}</span></p>
+                    </div>
+                </div>
+
                 <p className='caption'>{product.description}</p>
                 <AddToCartButton
                     id={product.id}
                     onAddToCart={handleAddToCart}
+                    className={"item_add_button"}
                 />
             </div>
             {showSelectOrder && <SelectOrder id={product.id} orderData={userOrders} onRemove={handleRemoveOrder} onOrderUpdate={updateOrderData} />}

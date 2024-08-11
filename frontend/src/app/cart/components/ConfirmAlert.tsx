@@ -8,16 +8,19 @@ type TupdateType = "update" | "delete" | "updateDate" | "changeStatus";
 
 interface ConfirmAlertProps {
     type: TupdateType;
+    addressId?: string;
     itemId: string;
     status?: string;
-    onConfirm: (type: TupdateType, itemId: string, status?: string) => void;
+    onConfirm: (type: TupdateType, itemId: string, status?: string, addressId?: string) => void;
     onCancel: () => void;
 }
 
 
-const ConfirmAlert: React.FC<ConfirmAlertProps> = ({ type, itemId, status, onConfirm, onCancel }) => {
+const ConfirmAlert: React.FC<ConfirmAlertProps> = ({ type, itemId, status, onConfirm, onCancel, addressId }) => {
+    console.log(addressId);
+
     const handleConfirm = () => {
-        onConfirm(type, itemId, status);
+        onConfirm(type, itemId, status, addressId);
     };
 
     const handleCancel = () => {

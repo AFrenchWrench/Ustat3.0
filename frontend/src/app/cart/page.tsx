@@ -70,8 +70,8 @@ const Cart = () => {
           },
           body: JSON.stringify({
             query: `
-              query UserOrders {
-                userOrders (filter: { status: ["ps", "p"]}){
+              query Orders {
+                orders (filter: { status: ["ps", "p"]}){
                   id
                   dueDate
                   creationDate
@@ -103,7 +103,7 @@ const Cart = () => {
           throw new Error(data.errors[0].message);
         }
 
-        setOrders(data.data.userOrders);
+        setOrders(data.data.orders);
       } catch (error) {
         console.log(error);
       }
@@ -165,7 +165,7 @@ const Cart = () => {
             mutation DeleteOrder ($orderId:ID!) {
                 deleteOrder(input: { id: $orderId }) {
                     success
-                    message
+                    messages
                 }
             }
         `;
@@ -214,8 +214,8 @@ const Cart = () => {
   return (
     <section className={Styles.container}>
       <div className={Styles.ordersSection}>
-        {orders.length > 0 ? orders.map((order) => (
-          <Link key={order.id} href={`/cart/${order.orderNumber}`}>
+        {orders && orders.length > 0 ? orders.map((order) => (
+          <Link key={order.id} href={`/cart/${order.id}`}>
             <div >
               <div className={Styles.orderNumberContainer}>
                 <p>شماره سفارش :</p>

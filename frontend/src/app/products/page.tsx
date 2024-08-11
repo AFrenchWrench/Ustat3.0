@@ -9,17 +9,18 @@ import Link from 'next/link';
 import { MdKeyboardDoubleArrowLeft } from "react-icons/md";
 import Cookies from 'js-cookie';
 
+interface IdisplayItem {
+  id: string,
+  type: string
+}
+
+
 interface DisplayItem {
   id: string;
-  type: string;
   name: string;
-  dimensions: string;
   price: string;
-  description: string;
   thumbnail: string;
-  slider1: string;
-  slider2: string;
-  slider3: string;
+  displayItem: IdisplayItem;
 }
 
 interface OrderItems {
@@ -64,41 +65,35 @@ const Products = () => {
         },
         body: JSON.stringify({
           query: `
-                  query Showcase {
-                      showcase {
-                          id
-                          name
-                          dimensions
-                          price
-                          description
-                          fabric
-                          color
-                          woodColor
-                          showInFirstPage
-                          isForBusiness
-                          thumbnail
-                          slider1
-                          slider2
-                          slider3
-                      }
-                  }
-              ${token ? `
-              userOrders(filter: { status: "ps" }) {
-                id
-                dueDate
-                creationDate
-                orderNumber
-                status
-                items {
+          query Showcase {
+              showcase {
                   id
-                  type
                   name
-                  dimensions
                   price
-                  quantity
-                }
-              }` : ''}
-            }
+                  thumbnail
+                  displayItem {
+                      id
+                      type
+                      name
+                  }
+              }
+  ${token ? `
+          orders(filter: { status: "ps" }) {
+          id
+          dueDate
+          creationDate
+          orderNumber
+          status
+          items {
+              id
+              type
+              name
+              dimensions
+              price
+              quantity
+          }
+          }` : ''}
+}
           `,
         }),
       });
@@ -108,12 +103,12 @@ const Products = () => {
         throw new Error('Network response was not ok');
       }
 
-      if (data.errors || !data.data.displayItems || (token && !data.data.userOrders)) {
+      if (data.errors || !data.data.showcase || (token && !data.data.showcase)) {
         throw new Error(data.errors ? data.errors[0].message : 'No items found');
       }
 
-      setUserData(data.data.displayItems);
-      if (token) setOrderData(data.data.userOrders);
+      setUserData(data.data.showcase);
+      if (token) setOrderData(data.data.orders);
 
     } catch (error) {
       console.error(error);
@@ -137,7 +132,7 @@ const Products = () => {
   };
 
   const categorizedProducts = Object.keys(typeNames).reduce((acc, type) => {
-    acc[type] = userData.filter(item => item.type === type);
+    acc[type] = userData.filter(item => item.displayItem.type === type);
     return acc;
   }, {} as Record<string, DisplayItem[]>);
 
@@ -173,10 +168,9 @@ const Products = () => {
                 <Article
                   imageSrc={`/media/${item.thumbnail}`}
                   productName={item.name}
-                  description={item.description}
                   price={item.price}
                   productLink={item.id}
-                  type={item.type}
+                  type={item.displayItem.type}
                   orderData={orderData}
                   onOrderUpdate={updateOrderData}
                 />

@@ -29,7 +29,6 @@ interface DisplayItem {
 interface ArticleProps {
   imageSrc: string;
   productName: string;
-  description: string;
   price: string;
   productLink: string;
   type: string;
@@ -37,7 +36,7 @@ interface ArticleProps {
   onOrderUpdate: (newOrderData: DisplayItem[]) => void;
 }
 
-const Article: React.FC<ArticleProps> = ({ imageSrc, productName, description, price, productLink, type, orderData, onOrderUpdate }) => {
+const Article: React.FC<ArticleProps> = ({ imageSrc, productName, price, productLink, type, orderData, onOrderUpdate }) => {
   const [showSelectOrder, setShowSelectOrder] = useState(false);
 
   const handleAddToCart = (id: string) => {
@@ -61,7 +60,7 @@ const Article: React.FC<ArticleProps> = ({ imageSrc, productName, description, p
         </picture>
         <div className='top_right_section'>
           <p className='product_name'><strong>{productName}</strong></p>
-          <p dir='ltr' className='price'>{price}</p>
+          <p dir='ltr' className='price'>{Number(price).toLocaleString('en-US')} تومان</p>
         </div>
       </div>
       <div className='buttons_section'>

@@ -41,14 +41,15 @@
 .itemContainer{
     display: flex;
     justify-content: space-between;
-    align-items: center;
     background-color: rgb(25, 25, 25);
     padding: 5px 10px;
     border-radius: 10px;
+    height: 300px;
 }
 
 .itemRight{
     display: flex;
+    justify-content: space-evenly;
     flex-direction: column;
     row-gap: 40px;
     width: 50%;
@@ -84,18 +85,17 @@
     align-items: flex-end;
     width: 50%;
 }
-.itemLeft p{
-    width: 100%;
+.itemLeft picture{
+    width: 90%;
     aspect-ratio: 1;
     background-color: rgb(36, 36, 36);
     border-radius: 10px;
-    padding: 5px;
-    overflow-y: hidden;
 }
-.itemLeft p::-webkit-scrollbar{
-    display: none;
+.itemLeft picture img{
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
 }
-
 
 .udButtons{
     display: flex;
@@ -200,6 +200,7 @@
     border-radius: 4px;
     background-color: rgb(36, 36, 36);
     border: 1px solid #ccc;
+    resize: none;
 }
 
 .error {
@@ -212,6 +213,7 @@
 
 .submitButton {
     padding: 10px 20px;
+    width: 50%;
     background-color: rgb(255, 53, 53);
     color: white;
     border: none;
@@ -219,6 +221,174 @@
     cursor: pointer;
 }
 
+.cButton{
+    padding: 10px 20px;
+    width: 50%;
+    background-color: transparent;
+    border: 3px solid white;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
 .submitButton:hover {
     background-color: rgb(255, 60, 60);
+}
+.cButton:hover{
+    background-color: white;
+    color: black;
+}
+.acButtons{
+    display: flex;
+    column-gap: 10px;
+}
+
+
+
+
+
+.infoContainer{
+    width: 100%;
+    border-radius: 15px;
+    padding:5px 15px;
+    background-color: rgb(40, 40, 40);
+    display: flex;
+    flex-direction: column;
+    row-gap: 5px;
+    font-size: x-small;
+}
+
+.dimensionsContainer{
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    column-gap: 5px;
+}
+.dimensionsContainer div{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    column-gap: 10px;
+}
+.dimensionsContainer div p{
+    background-color: rgb(27, 27, 27);
+    padding: 2px 5px;
+    border-radius: 10px;
+    font-size: x-small;
+}
+
+
+.colorSection{
+    display: flex;
+    column-gap: 10px;
+    align-items: center;
+}
+.colorSection p{
+    display: flex;
+    align-items: center;
+    column-gap: 5px;
+}
+.colorSection p span{
+    background-color: rgb(27, 27, 27);
+    padding: 2px 5px;
+    border-radius: 10px;
+}
+
+
+.addressesSection{
+    position: absolute;
+    z-index: 910;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.addressesContainer{
+    width: clamp(250px,90%,500px);
+    display: flex;
+    flex-direction: column;
+    row-gap: 8px;
+    justify-content: center;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: rgb(36, 36, 36);
+}
+
+.addressesContainer h2{
+    color: white;
+}
+
+.addressesContainer ul{
+    display: flex;
+    flex-direction: column;
+    row-gap: 5px;
+    width: 100%;
+    padding: 5px;
+    height: 400px;
+    overflow-y: scroll;
+}
+
+.addressesContainer ul::-webkit-scrollbar{
+    scrollbar-width: thin;
+    scrollbar-color: #ffffff #262626;
+    width: 10px;
+    background: #262626;
+}
+.addressesContainer ul::-webkit-scrollbar-thumb{
+    background-color: #ffffff;
+    border-radius: 26px;
+    border: 3px none #ffffff;
+}
+
+.addressesContainer ul li{
+    display: flex;
+    padding: 10px 20px;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 20px;
+    background-color: rgb(29, 29, 29);
+    color: white;
+    cursor: pointer;
+}
+.addressesContainer ul li h3{
+    color: white;
+    padding: 5px 15px;
+    background-color: rgb(25, 25, 25);
+    border-radius: 15px;
+}
+.addressesContainer ul li p{
+    display: flex;
+    align-items: center;
+}
+
+.selectAddressButtons{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.selectAddressButtons button{
+    width: 49%;
+    background-color: transparent;
+    border: 3px solid white;
+    border-radius: 10px;
+}
+.newAddressButton{
+    background-color: white !important;
+    color: rgb(36, 36, 36);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    column-gap: 5px;
+}
+.addAddressButtonIcon{
+    font-size: 20px;
+}
+
+.newAddressButton:hover{
+    filter: brightness(80%);
 }

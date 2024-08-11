@@ -52,11 +52,15 @@ const AddItemTable: React.FC = () => {
         const fetchData = async () => {
             const query = `
                 query DisplayItems {
-                    displayItems {
-                        id
-                        type
-                        name
-                    }
+                        displayItems {
+                            totalPages
+                            totalItems
+                            items {
+                                id
+                                type
+                                name
+                            }
+                        }
                 }
             `;
             try {
@@ -69,8 +73,10 @@ const AddItemTable: React.FC = () => {
                 });
 
                 const result = await response.json();
-                if (result.data && result.data.displayItems) {
-                    setDisplayItems(result.data.displayItems);
+                console.log(result);
+
+                if (result.data && result.data.displayItems.items) {
+                    setDisplayItems(result.data.displayItems.items);
                 }
 
             } catch (error) {

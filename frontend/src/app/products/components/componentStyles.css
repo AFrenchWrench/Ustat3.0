@@ -31,6 +31,7 @@
 }
 .top_right_section{
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
     align-items: center;
 }
@@ -48,13 +49,15 @@
 .product_name{
     background-color: rgb(33, 33, 33);
     padding: 5px;
-    margin-left:10px;
+    margin-left:auto;
     border-radius: 5px;
 }
 
 .price{
-    margin-left: 10px;
+    margin-right: auto;
+    width: 100%;
     margin-top: 10px;
+    text-align: start;
     font-size: clamp(12px,1.5rem,16px);
 }
 .picture{
@@ -251,4 +254,10 @@ padding: 5px;
     justify-content: center;
 }
   /* select order item  */
+
+
+/* single Item section */
+
+
+/* single Item section */
   

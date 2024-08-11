@@ -50,7 +50,7 @@ const SelectOrder: React.FC<SelectOrderProps> = ({ id, orderData, onRemove, onOr
       createOrderItem(
         input: { 
           ${order ? `order:"${order}",` : ""}
-          displayItem: "${id}",
+          itemVariant: "${id}",
           quantity: ${quantities}
         }
       ) {
@@ -103,7 +103,7 @@ const SelectOrder: React.FC<SelectOrderProps> = ({ id, orderData, onRemove, onOr
                                 )}
                             </span>
                             <p className='text-yellow-600'>در انتظار ثبت</p>
-                            <Link href={`/cart/${order.orderNumber}`} onClick={(e) => e.stopPropagation()}>مشاهده</Link>
+                            <Link href={`/cart/${order.id}`} onClick={(e) => e.stopPropagation()}>مشاهده</Link>
                         </div>
                     ))}
                 </div>

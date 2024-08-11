@@ -9,11 +9,12 @@
     width: 60%;
     display: flex;
     flex-direction: column;
-    align-items: start;
+    align-items: center;
     margin-right: 4%;
     background-color: rgb(27, 27, 27);
     padding: 1%;
     border-radius: 15px;
+    row-gap: 10px;
 }
 .Swiper_item{
     width: 100% !important;
@@ -31,7 +32,7 @@
 
 }
 .product_name{
-    font-size: x-large;
+    font-size: large;
     background-color: rgb(32, 32, 32);
     padding: 5px;
     border-radius: 5px;
@@ -49,6 +50,7 @@
 .caption{
     background-color: rgb(32, 32, 32);
     padding: 10px;
+    width: 100%;
     font-size: small;
     color: grey;
     border-radius: 5px;
@@ -59,7 +61,62 @@
     border-radius: 10px;
 }
 
+.item_add_button{
+    width: unset !important;
+    margin-right: auto !important;
+  }
+.info_container{
+    width: 90%;
+    border-radius: 15px;
+    padding:5px 15px;
+    background-color: rgb(40, 40, 40);
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+}
 
+.dimensions_container{
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    column-gap: 5px;
+}
+.dimensions_container div{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    column-gap: 10px;
+}
+.dimensions_container div p{
+    background-color: rgb(27, 27, 27);
+    padding: 2px 5px;
+    border-radius: 10px;
+}
+
+
+.color_section{
+    display: flex;
+    column-gap: 10px;
+    align-items: center;
+}
+.color_section p{
+    display: flex;
+    align-items: center;
+    column-gap: 5px;
+}
+.color_section p span{
+    background-color: rgb(27, 27, 27);
+    padding: 2px 5px;
+    border-radius: 10px;
+}
+
+.item_product_name{
+    color: white;
+    font-size: larger;
+    background-color: rgb(17, 17, 17);
+    padding: 2px 15px;
+    border-radius: 20px;
+}
 
 /* Styles for Swiper pagination bullets */
 .swiper-pagination-bullet {
