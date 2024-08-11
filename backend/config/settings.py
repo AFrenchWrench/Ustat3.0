@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "main",
     "sales",
     "users",
+    "admin_dash",
 ]
 
 MIDDLEWARE = [

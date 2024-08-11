@@ -8,11 +8,9 @@ from django.shortcuts import get_object_or_404
 from graphene_django import DjangoObjectType
 from django.core.paginator import Paginator
 from users.models import Address
-from utils.validation_utils import is_persian_string
 from utils.schema_utils import (
     login_required,
     resolve_model_with_filters,
-    staff_member_required,
 )
 from sales.models import (
     ItemVariant,
@@ -21,7 +19,14 @@ from sales.models import (
     DisplayItem,
     OrderTransaction,
 )
-from users.schema import UserType, AddressType
+from users.schema import (
+    UserType,
+    BusinessType,
+    AddressType,
+    ProvinceType,
+    CityType,
+)
+from django.db.models import Count
 
 User = get_user_model()
 
@@ -61,24 +66,6 @@ class CreateOrderItemInput(graphene.InputObjectType):
     due_date = graphene.Date(required=False)
     description = graphene.String(required=False)
     quantity = graphene.Int(required=True)
-
-
-class CreateDisplayItemInput(graphene.InputObjectType):
-    type = graphene.String(required=True)
-    name = graphene.String(required=True)
-
-
-class CreateItemVariantInput(graphene.InputObjectType):
-    display_item = graphene.ID(required=True)
-    name = graphene.String(required=True)
-    dimensions = graphene.JSONString(required=True)
-    price = graphene.BigInt(required=True)
-    description = graphene.String(required=True)
-    fabric = graphene.String(required=True)
-    color = graphene.String(required=True)
-    wood_color = graphene.String(required=True)
-    show_in_first_page = graphene.Boolean(required=False)
-    is_for_business = graphene.Boolean(required=False)
 
 
 class CreateOrderItem(graphene.Mutation):
@@ -162,201 +149,12 @@ class CreateOrderItem(graphene.Mutation):
                 order_item.quantity = input.get("quantity", 1)
 
             order_item.save()
-
-            if order_item.order and hasattr(order_item.order, "transaction"):
-                order_item.order.transacrtion.save()
+            order_item.order.save()
 
             return CreateOrderItem(order_item=order_item, success=True)
         except Exception as e:
             print(e)
             return CreateOrderItem(success=False, errors="خطایی رخ داده است")
-
-
-class CreateDisplayItem(graphene.Mutation):
-    class Arguments:
-        input = CreateDisplayItemInput(required=True)
-
-    display_item = graphene.Field(DisplayItemType)
-    success = graphene.Boolean()
-    errors = graphene.JSONString()
-
-    @staticmethod
-    def validate_input(input):
-        errors = {}
-
-        type = input.get("type")
-        if type not in ITEM_TYPE_CHOICES:
-            errors["type"] = "نوع آیتم نمایشی نامعتبر است"
-
-        name = input.get("name")
-        if not is_persian_string(name):
-            errors["name"] = "نام نمایشی باید فارسی باشد"
-
-        return errors
-
-    @staff_member_required
-    def mutate(self, info, input):
-        try:
-            errors = CreateDisplayItem.validate_input(input)
-            if errors:
-                return CreateDisplayItem(success=False, errors=errors)
-
-            display_item = DisplayItem.objects.create(
-                **input,
-            )
-            return CreateDisplayItem(display_item=display_item, success=True)
-        except Exception as e:
-            print(e)
-            return CreateDisplayItem(success=False, errors="خطایی رخ داده است")
-
-
-class CreateItemVariant(graphene.Mutation):
-    class Arguments:
-        input = CreateItemVariantInput(required=True)
-
-    item_variant = graphene.Field(ItemVariantType)
-    success = graphene.Boolean()
-    errors = graphene.JSONString()
-
-    @staticmethod
-    def validate_input(input):
-        errors = {}
-
-        display_item = input.get("display_item")
-        try:
-            display_item = DisplayItem.objects.get(pk=display_item)
-        except DisplayItem.DoesNotExist:
-            errors["display_item"] = "آیتم نمایشی یافت نشد"
-            return errors
-
-        name = input.get("name")
-        if not is_persian_string(name):
-            errors["name"] = "نام نمایشی باید فارسی باشد"
-
-        dimensions = input.get("dimensions")
-
-        if {"length", "width", "height"} != set(dimensions.keys()):
-            errors["dimensions"] = "طول، عرض و ارتفاع باید وارد شود"
-        elif not all(
-            isinstance(dimensions.get(key), int) and dimensions.get(key) > 0
-            for key in {"length", "width", "height"}
-        ):
-            errors["dimensions"] = "طول، عرض و ارتفاع باید عدد طبیعی باشند"
-
-        if display_item.type == "b" and "makeup table" in dimensions.keys():
-            if {"length", "width", "height"} != set(
-                dimensions.get("makeup table").keys()
-            ):
-                errors["dimensions"] = "طول، عرض و ارتفاع میز آرایش باید وارد شود"
-            elif not all(
-                isinstance(dimensions.get("makeup table").get(key), int)
-                and dimensions.get(key) > 0
-                for key in {"length", "width", "height"}
-            ):
-                errors["dimensions"] = (
-                    "طول، عرض و ارتفاع میز آرایش باید عدد طبیعی باشند"
-                )
-        if display_item.type == "b" and "night stand" in dimensions.keys():
-            if {"quantity", "length", "width", "height"} != set(
-                dimensions.get("night stand").keys()
-            ):
-                errors["dimensions"] = "طول، عرض، ارتفاع و تعداد پا تختی باید وارد شود"
-            elif not all(
-                isinstance(dimensions.get("night stand").get(key), int)
-                and dimensions.get(key) > 0
-                for key in {"quantity", "length", "width", "height"}
-            ):
-                errors["dimensions"] = (
-                    "طول، عرض، ارتفاع و تعداد پا تختی باید عدد طبیعی باشند"
-                )
-        if display_item.type == "b" and "mirror" in dimensions.keys():
-            if {"length", "width", "height"} not in dimensions.get("mirror").keys():
-                errors["dimensions"] = "طول، عرض و ارتفاع آینه باید وارد شود"
-
-        if display_item.type == "m":
-            if "chair" not in dimensions.keys():
-                errors["dimensions"] = " اطلاعات صندلی باید وارد شود"
-            elif {"quantity", "length", "width", "height"} != set(
-                dimensions.get("chair").keys()
-            ):
-                errors["dimensions"] = "طول، عرض، ارتفاع و تعداد صندلی باید وارد شود"
-            elif not all(
-                isinstance(dimensions.get("chair").get(key), int)
-                and dimensions.get(key) > 0
-                for key in {"quantity", "length", "width", "height"}
-            ):
-                errors["dimensions"] = (
-                    "طول، عرض، ارتفاع و تعداد صندلی باید عدد طبیعی باشند"
-                )
-
-        if display_item.type == "j":
-            if "side table" not in dimensions.keys():
-                errors["dimensions"] = " اطلاعات عسلی باید وارد شود"
-            elif {"quantity", "length", "width", "height"} != set(
-                dimensions.get("side table").keys()
-            ):
-                errors["dimensions"] = "طول، عرض، ارتفاع و تعداد عسلی باید وارد شود"
-            elif not all(
-                isinstance(dimensions.get("side table").get(key), int)
-                and dimensions.get(key) > 0
-                for key in {"quantity", "length", "width", "height"}
-            ):
-                errors["dimensions"] = (
-                    "طول، عرض، ارتفاع و تعداد عسلی باید عدد طبیعی باشند"
-                )
-
-        if display_item.type == "c":
-            if "mirror" not in dimensions.keys():
-                errors["dimensions"] = " اطلاعات آینه باید وارد شود"
-            elif {"length", "width", "height"} not in dimensions.get("mirror").keys():
-                errors["dimensions"] = "طول، عرض و ارتفاع آینه باید وارد شود"
-            elif not all(
-                isinstance(dimensions.get("mirror").get(key), int)
-                and dimensions.get(key) > 0
-                for key in {"length", "width", "height"}
-            ):
-                errors["dimensions"] = "طول، عرض و ارتفاع آینه باید عدد طبیعی باشند"
-
-        price = input.get("price")
-        if price < 1:
-            errors["price"] = "قیمت نمایشی باید بیشتر از صفر باشد"
-
-        description = input.get("description")
-        if description:
-            if not re.fullmatch(r"^[\u0600-\u06FF0-9\s,]+$", description):
-                errors["description"] = (
-                    "در توضیحات تنها از حروف فارسی، اعداد انگلیسی، ویرگول و یا قاصله استفاده کنید"
-                )
-
-        fabric = input.get("fabric")
-        if not is_persian_string(fabric):
-            errors["fabric"] = "نام پارچه باید فارسی باشد"
-
-        color = input.get("color")
-        if not is_persian_string(color):
-            errors["color"] = "نام رنگ باید فارسی باشد"
-
-        wood_color = input.get("wood_color")
-        if not is_persian_string(wood_color):
-            errors["wood_color"] = "نام رنگ چوب باید فارسی باشد"
-
-        return errors
-
-    @staff_member_required
-    def mutate(self, info, input):
-        try:
-            errors = CreateItemVariant.validate_input(input)
-            if errors:
-                return CreateItemVariant(success=False, errors=errors)
-
-            input["display_item"] = DisplayItem.objects.get(id=input["display_item"])
-            item_variant = ItemVariant.objects.create(
-                **input,
-            )
-            return CreateItemVariant(item_variant=item_variant, success=True)
-        except Exception as e:
-            print(e)
-            return CreateItemVariant(success=False, errors="خطایی رخ داده است")
 
 
 # ========================Create End========================
@@ -372,30 +170,11 @@ class UpdateOrderItemInput(graphene.InputObjectType):
     quantity = graphene.Int(required=False)
 
 
-class UpdateDisplayItemInput(graphene.InputObjectType):
-    id = graphene.ID(required=True)
-    type = graphene.String(required=False)
-    name = graphene.String(required=False)
-
-
 class UpdateOrderInput(graphene.InputObjectType):
     id = graphene.ID(required=True)
     address = graphene.ID(required=False)
     due_date = graphene.Date(required=False)
     status = graphene.String(required=False)
-
-
-class UpdateItemVariantInput(graphene.InputObjectType):
-    id = graphene.ID(required=True)
-    name = graphene.String(required=False)
-    dimensions = graphene.JSONString(required=False)
-    price = graphene.Float(required=False)
-    description = graphene.String(required=False)
-    fabric = graphene.String(required=False)
-    color = graphene.String(required=False)
-    wood_color = graphene.String(required=False)
-    show_in_first_page = graphene.Boolean(required=False)
-    is_for_business = graphene.Boolean(required=False)
 
 
 class UpdateOrderItem(graphene.Mutation):
@@ -491,55 +270,6 @@ class UpdateOrderItem(graphene.Mutation):
             return UpdateOrderItem(success=False, errors="خطایی رخ داده است")
 
 
-class UpdateDisplayItem(graphene.Mutation):
-    class Arguments:
-        input = UpdateDisplayItemInput(required=True)
-
-    display_item = graphene.Field(DisplayItemType)
-    success = graphene.Boolean()
-    errors = graphene.JSONString()
-
-    @staticmethod
-    def validate_input(dispaly_item, input):
-        errors = {}
-
-        type = input.get("type")
-        if type:
-            if type not in ITEM_TYPE_CHOICES:
-                errors["type"] = "نوع آیتم نمایشی نامعتبر است"
-            else:
-                dispaly_item.type = type
-
-        name = input.get("name")
-        if name:
-            if not is_persian_string(name):
-                errors["name"] = "نام نمایشی باید فارسی باشد"
-            else:
-                dispaly_item.name = name
-
-        if not errors:
-            dispaly_item.save()
-
-        return dispaly_item, errors
-
-    @staff_member_required
-    def mutate(self, info, input):
-        try:
-            try:
-                display_item = DisplayItem.objects.get(pk=input.get("id"))
-            except DisplayItem.DoesNotExist:
-                return UpdateDisplayItem(success=False, errors="عنوان نمایشی یافت نشد")
-
-            display_item, errors = UpdateDisplayItem.validate_input(display_item, input)
-            if errors:
-                return UpdateDisplayItem(success=False, errors=errors)
-
-            return UpdateDisplayItem(display_item=display_item, success=True)
-        except Exception as e:
-            print(e)
-            return UpdateDisplayItem(success=False, errors="خطایی رخ داده است")
-
-
 class UpdateOrder(graphene.Mutation):
     class Arguments:
         input = UpdateOrderInput(required=True)
@@ -614,189 +344,6 @@ class UpdateOrder(graphene.Mutation):
             return UpdateOrder(success=False, errors="خطایی رخ داده است")
 
 
-class UpdateItemVariant(graphene.Mutation):
-    class Arguments:
-        input = UpdateItemVariantInput(required=True)
-
-    item_variant = graphene.Field(ItemVariantType)
-    success = graphene.Boolean()
-    errors = graphene.JSONString()
-
-    @staticmethod
-    def validate_input(item_variant, input):
-        errors = {}
-
-        display_item = item_variant.display_item
-
-        name = input.get("name")
-        if name:
-            if not is_persian_string(name):
-                errors["name"] = "نام نمایشی باید فارسی باشد"
-            else:
-                item_variant.name = name
-
-        dimensions = input.get("dimensions")
-
-        if dimensions:
-            if {"length", "width", "height"} != set(dimensions.keys()):
-                errors["dimensions"] = "طول، عرض و ارتفاع باید وارد شود"
-            elif not all(
-                isinstance(dimensions.get(key), int) and dimensions.get(key) > 0
-                for key in {"length", "width", "height"}
-            ):
-                errors["dimensions"] = "طول، عرض و ارتفاع باید عدد طبیعی باشند"
-
-            if display_item.type == "b" and "makeup table" in dimensions.keys():
-                if {"length", "width", "height"} != set(
-                    dimensions.get("makeup table").keys()
-                ):
-                    errors["dimensions"] = "طول، عرض و ارتفاع میز آرایش باید وارد شود"
-                elif not all(
-                    isinstance(dimensions.get("makeup table").get(key), int)
-                    and dimensions.get(key) > 0
-                    for key in {"length", "width", "height"}
-                ):
-                    errors["dimensions"] = (
-                        "طول، عرض و ارتفاع میز آرایش باید عدد طبیعی باشند"
-                    )
-            if display_item.type == "b" and "night stand" in dimensions.keys():
-                if {"quantity", "length", "width", "height"} != set(
-                    dimensions.get("night stand").keys()
-                ):
-                    errors["dimensions"] = (
-                        "طول، عرض، ارتفاع و تعداد پا تختی باید وارد شود"
-                    )
-                elif not all(
-                    isinstance(dimensions.get("night stand").get(key), int)
-                    and dimensions.get(key) > 0
-                    for key in {"quantity", "length", "width", "height"}
-                ):
-                    errors["dimensions"] = (
-                        "طول، عرض، ارتفاع و تعداد پا تختی باید عدد طبیعی باشند"
-                    )
-            if display_item.type == "b" and "mirror" in dimensions.keys():
-                if {"length", "width", "height"} not in dimensions.get("mirror").keys():
-                    errors["dimensions"] = "طول، عرض و ارتفاع آینه باید وارد شود"
-
-            if display_item.type == "m":
-                if "chair" not in dimensions.keys():
-                    errors["dimensions"] = " اطلاعات صندلی باید وارد شود"
-                elif {"quantity", "length", "width", "height"} != set(
-                    dimensions.get("chair").keys()
-                ):
-                    errors["dimensions"] = (
-                        "طول، عرض، ارتفاع و تعداد صندلی باید وارد شود"
-                    )
-                elif not all(
-                    isinstance(dimensions.get("chair").get(key), int)
-                    and dimensions.get(key) > 0
-                    for key in {"quantity", "length", "width", "height"}
-                ):
-                    errors["dimensions"] = (
-                        "طول، عرض، ارتفاع و تعداد صندلی باید عدد طبیعی باشند"
-                    )
-
-            if display_item.type == "j":
-                if "side table" not in dimensions.keys():
-                    errors["dimensions"] = " اطلاعات عسلی باید وارد شود"
-                elif {"quantity", "length", "width", "height"} != set(
-                    dimensions.get("side table").keys()
-                ):
-                    errors["dimensions"] = "طول، عرض، ارتفاع و تعداد عسلی باید وارد شود"
-                elif not all(
-                    isinstance(dimensions.get("side table").get(key), int)
-                    and dimensions.get(key) > 0
-                    for key in {"quantity", "length", "width", "height"}
-                ):
-                    errors["dimensions"] = (
-                        "طول، عرض، ارتفاع و تعداد عسلی باید عدد طبیعی باشند"
-                    )
-
-            if display_item.type == "c":
-                if "mirror" not in dimensions.keys():
-                    errors["dimensions"] = " اطلاعات آینه باید وارد شود"
-                elif {"length", "width", "height"} not in dimensions.get(
-                    "mirror"
-                ).keys():
-                    errors["dimensions"] = "طول، عرض و ارتفاع آینه باید وارد شود"
-                elif not all(
-                    isinstance(dimensions.get("mirror").get(key), int)
-                    and dimensions.get(key) > 0
-                    for key in {"length", "width", "height"}
-                ):
-                    errors["dimensions"] = "طول، عرض و ارتفاع آینه باید عدد طبیعی باشند"
-
-            if not errors.get("dimensions"):
-                item_variant.dimensions = dimensions
-
-        price = input.get("price")
-        if price:
-            if price < 1:
-                errors["price"] = "قیمت نمایشی باید بیشتر از صفر باشد"
-            else:
-                item_variant.price = price
-
-        description = input.get("description")
-        if description:
-            if not re.fullmatch(r"^[\u0600-\u06FF0-9\s,]+$", description):
-                errors["description"] = (
-                    "در توضیحات تنها از حروف فارسی، اعداد انگلیسی، ویرگول و یا قاصله استفاده کنید"
-                )
-            else:
-                item_variant.description = description
-
-        fabric = input.get("fabric")
-        if fabric:
-            if not is_persian_string(fabric):
-                errors["fabric"] = "نام پارچه باید فارسی باشد"
-            else:
-                item_variant.fabric = fabric
-
-        color = input.get("color")
-        if color:
-            if not is_persian_string(color):
-                errors["color"] = "نام رنگ باید فارسی باشد"
-            else:
-                item_variant.color = color
-
-        wood_color = input.get("wood_color")
-        if wood_color:
-            if not is_persian_string(wood_color):
-                errors["wood_color"] = "نام رنگ چوب باید فارسی باشد"
-            else:
-                item_variant.wood_color = wood_color
-
-        if input.get("show_in_first_page"):
-            item_variant.show_in_first_page = input.get("show_in_first_page")
-
-        if input.get("is_for_business"):
-            item_variant.is_for_business = input.get("is_for_business")
-
-        if not errors:
-            item_variant.save()
-
-        return item_variant, errors
-
-    @staff_member_required
-    def mutate(self, info, input):
-        try:
-            try:
-                item_variant = ItemVariant.objects.get(pk=input.get("id"))
-            except ItemVariant.DoesNotExist:
-                return UpdateItemVariant(
-                    success=False, errors="نوع نمایشی مورد نظر یافت نشد"
-                )
-
-            errors = UpdateItemVariant.validate_input(item_variant, input)
-            if errors:
-                return UpdateItemVariant(success=False, errors=errors)
-
-            return UpdateItemVariant(success=True, item_variant=item_variant)
-        except Exception as e:
-            print(e)
-            return UpdateItemVariant(success=False, errors="خطایی رخ داده است")
-
-
 # ========================Update End========================
 
 # ========================Delete Start========================
@@ -807,14 +354,6 @@ class DeleteOrderItemInput(graphene.InputObjectType):
 
 
 class DeleteOrderInput(graphene.InputObjectType):
-    id = graphene.ID(required=True)
-
-
-class DeleteDisplayItemInput(graphene.InputObjectType):
-    id = graphene.ID(required=True)
-
-
-class DeleteItemVariantInput(graphene.InputObjectType):
     id = graphene.ID(required=True)
 
 
@@ -896,90 +435,15 @@ class DeleteOrder(graphene.Mutation):
             )
 
 
-class DeleteDisplayItem(graphene.Mutation):
-    class Arguments:
-        input = DeleteDisplayItemInput(required=True)
-
-    success = graphene.Boolean()
-    errors = graphene.String()
-    messages = graphene.String()
-
-    @staff_member_required
-    def mutate(self, info, input):
-        try:
-
-            try:
-                display_item = DisplayItem.objects.get(pk=input.id)
-            except DisplayItem.DoesNotExist:
-                return DeleteDisplayItem(success=False, errors="آیتم مورد نظر پیدا نشد")
-
-            # Delete the Order
-            display_item.delete()
-
-            return DeleteDisplayItem(
-                success=True, messages="آیتم مورد نظر با موفقیت حذف شد"
-            )
-
-        except Exception as e:
-            print(e)
-            return DeleteDisplayItem(
-                success=False, errors="خطایی رخ داده است. لطفا دوباره تلاش کنید"
-            )
-
-
-class DeleteItemVariant(graphene.Mutation):
-    class Arguments:
-        input = DeleteItemVariantInput(required=True)
-
-    success = graphene.Boolean()
-    errors = graphene.String()
-    messages = graphene.String()
-
-    @staff_member_required
-    def mutate(self, info, input):
-        try:
-
-            try:
-                item_variant = ItemVariant.objects.get(pk=input.id)
-            except ItemVariant.DoesNotExist:
-                return DeleteItemVariant(
-                    success=False, errors="نوع آیتم مورد نظر پیدا نشد"
-                )
-
-            display_item = item_variant.display_item
-
-            # Delete the Order
-            item_variant.delete()
-
-            if not display_item.variants.exists():
-                display_item.delete()
-
-            return DeleteItemVariant(
-                success=True, messages="نوع آیتم مورد نظر با موفقیت حذف شد"
-            )
-
-        except Exception as e:
-            print(e)
-            return DeleteItemVariant(
-                success=False, errors="خطایی رخ داده است. لطفا دوباره تلاش کنید"
-            )
-
-
 # ========================Delete End========================
 
 
 class Mutation(graphene.ObjectType):
     create_order_item = CreateOrderItem.Field()
-    create_display_item = CreateDisplayItem.Field()
-    create_item_variant = CreateItemVariant.Field()
     update_order_item = UpdateOrderItem.Field()
-    update_display_item = UpdateDisplayItem.Field()
     update_order = UpdateOrder.Field()
-    update_item_variant = UpdateItemVariant.Field()
     delete_order_item = DeleteOrderItem.Field()
     delete_order = DeleteOrder.Field()
-    delete_display_item = DeleteDisplayItem.Field()
-    delete_item_variant = DeleteItemVariant.Field()
 
 
 # ========================Mutations End========================
@@ -1002,6 +466,7 @@ class OrderFilterInput(graphene.InputObjectType):
 
 
 class TranscationFilterInput(graphene.InputObjectType):
+    order__id = graphene.ID()
     title__icontains = graphene.String()
     total_price__lte = graphene.BigInt()
     total_price__gte = graphene.BigInt()
@@ -1011,6 +476,7 @@ class TranscationFilterInput(graphene.InputObjectType):
 
 
 class ItemVariantFilterInput(graphene.InputObjectType):
+    display_item__id = graphene.ID()
     name__icontains = graphene.String()
     price__lte = graphene.BigInt()
     price__gte = graphene.BigInt()
@@ -1026,6 +492,18 @@ class PaginatedDisplayItem(graphene.ObjectType):
     total_items = graphene.Int()
 
 
+class PaginatedOrder(graphene.ObjectType):
+    items = graphene.List(OrderType)
+    total_pages = graphene.Int()
+    total_items = graphene.Int()
+
+
+class PaginatedTransaction(graphene.ObjectType):
+    items = graphene.List(OrderTransactionType)
+    total_pages = graphene.Int()
+    total_items = graphene.Int()
+
+
 class Query(graphene.ObjectType):
     display_items = graphene.Field(
         PaginatedDisplayItem,
@@ -1034,9 +512,19 @@ class Query(graphene.ObjectType):
         filter=DisplayItemFilterInput(),
     )
     display_item = graphene.Field(DisplayItemType, id=graphene.ID(required=True))
-    orders = graphene.List(OrderType, filter=OrderFilterInput())
+    orders = graphene.Field(
+        PaginatedOrder,
+        page=graphene.Int(),
+        per_page=graphene.Int(),
+        filter=OrderFilterInput(),
+    )
     order = graphene.Field(OrderType, id=graphene.ID(required=True))
-    transactions = graphene.List(OrderTransactionType, filter=TranscationFilterInput())
+    transactions = graphene.Field(
+        PaginatedTransaction,
+        page=graphene.Int(),
+        per_page=graphene.Int(),
+        filter=TranscationFilterInput(),
+    )
     transaction = graphene.Field(OrderTransactionType, id=graphene.ID(required=True))
     item_variants = graphene.List(ItemVariantType, filter=ItemVariantFilterInput())
     item_variant = graphene.Field(ItemVariantType, id=graphene.ID(required=True))
@@ -1044,6 +532,9 @@ class Query(graphene.ObjectType):
 
     def resolve_display_items(self, info, page=1, per_page=12, filter=None):
         display_items = resolve_model_with_filters(DisplayItem, filter)
+        display_items = display_items.annotate(variants_count=Count("variants")).filter(
+            variants_count__gte=1
+        )
         paginator = Paginator(display_items, per_page)
         paginated_qs = paginator.page(page)
         return PaginatedDisplayItem(
@@ -1057,18 +548,32 @@ class Query(graphene.ObjectType):
         return display_item
 
     @login_required
-    def resolve_orders(self, info, filter=None):
+    def resolve_orders(self, info, page=1, per_page=10, filter=None):
         orders = resolve_model_with_filters(Order, filter)
-        return orders.filter(user=info.context.user)
+        orders.filter(user=info.context.user)
+        paginator = Paginator(orders, per_page)
+        paginated_qs = paginator.page(page)
+        return PaginatedOrder(
+            items=paginated_qs.object_list,
+            total_pages=paginator.num_pages,
+            total_items=paginator.count,
+        )
 
     @login_required
     def resolve_order(self, info, id):
         return get_object_or_404(Order, pk=id, user=info.context.user)
 
     @login_required
-    def resolve_transactions(self, info, filter=None):
+    def resolve_transactions(self, info, page=1, per_page=10, filter=None):
         transactions = resolve_model_with_filters(OrderTransaction, filter)
-        return transactions.filter(order__user=info.context.user)
+        transactions.filter(order__user=info.context.user)
+        paginator = Paginator(transactions, per_page)
+        paginated_qs = paginator.page(page)
+        return PaginatedTransaction(
+            items=paginated_qs.object_list,
+            total_pages=paginator.num_pages,
+            total_items=paginator.count,
+        )
 
     @login_required
     def resolve_transaction(self, info, id):
