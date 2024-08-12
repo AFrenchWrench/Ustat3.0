@@ -152,6 +152,7 @@
       justify-content: center;
       align-items: center;
       margin: 30px 0;
+      column-gap: 10px;
     }
 
     .table{
@@ -165,7 +166,7 @@
     }
 
     .tableDisplayItems{
-      width: 30%;
+      width: 35%;
       border-left: 4px solid white;
       display: flex;
       flex-direction: column;
@@ -183,7 +184,7 @@
     }
 
     .tableItems{
-      width: 70%;
+      width: 65%;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -237,9 +238,31 @@
     .item{
       cursor: pointer;
       width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       padding: 10px;
       border-radius: 15px;
       background-color: rgb(32, 32, 32);
+    }
+    .editDeleteButtons{
+      display: flex;
+      align-items: center;
+      column-gap: 20px;
+    }
+    .editDeleteButtons button{
+      padding: unset !important;
+      width: unset !important;
+      background-color: transparent !important;
+    }
+    .edtiIcon{
+      font-size: 25px;
+    }
+    .editIconD{
+      font-size: 25px;
+      background-color: red;
+      border-radius: 50%;
+      padding: 5px;
     }
     .item p{
       border-bottom: unset;
@@ -300,7 +323,31 @@
     }
 
 
-
-
+    .filterForm{
+      display: flex;
+      flex-direction: column;
+      row-gap: 10px;
+      background-color: rgb(32, 32, 32);
+      padding: 10px;
+      border-radius: 15px;
+    }
+    .filterForm h3{
+      color: white;
+    }
+    .filterForm button{
+      background-color: white;
+      color: rgb(32, 32, 32);
+    }
+    .filterRow{
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      row-gap: 10px;
+    }
+    .filterRow input,
+    .filterRow select
+    {
+      background-color: rgb(29, 29, 29);
+    }
 
     /* addDisplayItemFormSection */

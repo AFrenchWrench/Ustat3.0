@@ -109,7 +109,7 @@ const CreateDisplayItem: React.FC<AddDisplayItemProps> = ({ onClose, id, type })
         `;
 
         try {
-            const response = await fetch('/api/sales/graphql/', {
+            const response = await fetch('/api/admin_dash/graphql/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

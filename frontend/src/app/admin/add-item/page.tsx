@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import AddItem from '@/components/adminComponent/addItem';
+import AddItem from '@/components/adminComponent/items/addItem';
 import Loading from '@/components/Loading';
-import AddItemTable from '@/components/adminComponent/addItemTable';
+import AddItemTable from '@/components/adminComponent/items/addItemTable';
 
 const Page = () => {
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null); // Use null to represent loading state

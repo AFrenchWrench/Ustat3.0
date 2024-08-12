@@ -67,7 +67,7 @@ const Page = () => {
                 body: JSON.stringify({
                     query: `
                         query DisplayItems($page: Int!, $filter: DisplayItemFilterInput!) {
-                          displayItems(page: $page, perPage: 3, filter: $filter) {
+                          displayItems(page: $page, perPage: 6, filter: $filter) {
                             totalPages
                             totalItems
                             items {
@@ -150,7 +150,7 @@ const Page = () => {
                     setPage((prevPage) => prevPage + 1); // Increment the page number to fetch the next set of data
                 }
             }, {
-                rootMargin: '50px', // Trigger fetch a bit before reaching the end
+                rootMargin: '10px', // Trigger fetch a bit before reaching the end
             });
 
             if (node) observer.current.observe(node);

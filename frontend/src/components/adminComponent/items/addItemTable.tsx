@@ -5,6 +5,13 @@ import styles from "@/allStyles/addItemStyles.module.css";
 import AddDisplayItem from './addDisplayItem';
 import CreateDisplayItem from './addItem';
 import { Pagination } from '@mui/material';
+import EditDisplayItem from './editDisplayItem';
+
+import { TiEdit } from "react-icons/ti";
+import { MdDelete } from 'react-icons/md';
+import DeleteDisplayItem from './deleteDisplayItem';
+import EditVariation from './editVariation';
+import DeleteVariation from './deleteVariation';
 
 interface DisplayItem {
     id: string;
@@ -15,22 +22,42 @@ interface DisplayItem {
 interface Ivariations {
     id: string,
     name: string,
+    dimensions: string,
+    description: string,
     price: number,
     fabric: string,
     color: string,
     woodColor: string,
-    showInFirstPage: string,
-    isForBusiness: string,
+    showInFirstPage: boolean,
+    isForBusiness: boolean,
+    thumbnail: string,
+    slider1: string,
+    slider2: string,
+    slider3: string,
 }
 
 const AddItemTable: React.FC = () => {
     const [showPopup, setShowPopup] = useState(false);
     const [showPopupV, setShowPopupV] = useState(false);
+
+    const [showEdit, setShowEdit] = useState(false);
+    const [showEditV, setShowEditV] = useState(false);
+
+    const [showDelete, setShowDelete] = useState(false)
+    const [showDeleteV, setShowDeleteV] = useState(false)
+
     const [displayItems, setDisplayItems] = useState<DisplayItem[]>([]);
+
     const [displayVariations, setDisplayVariations] = useState<Ivariations[]>([]);
+
     const [activeId, setActiveId] = useState<string>("");
     const [itemType, setType] = useState<string>("");
+    const [itemName, setItemName] = useState<string>("")
+    const [itemVariationData, setItemVariationData] = useState<Ivariations | null>(null)
+    const [itemVariationId, setItemVariationId] = useState<string>("")
+
     const [activeItemId, setActiveItemId] = useState<string | null>(null);
+
     const [totalPages, setTotalPages] = useState<number | undefined>(undefined)
     const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -66,6 +93,18 @@ const AddItemTable: React.FC = () => {
     const handleClosePopup = () => {
         setShowPopup(false);
     };
+    const handleCloseEdit = () => {
+        setShowEdit(false)
+    }
+    const handleCloseDelete = () => {
+        setShowDelete(false)
+    }
+    const handleCloseEditV = () => {
+        setShowEditV(false)
+    }
+    const handleCloseDeleteV = () => {
+        setShowDeleteV(false)
+    }
 
     // Handlers for filters
     const handleFilterTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -125,7 +164,7 @@ const AddItemTable: React.FC = () => {
         const query = `
             query DisplayItems {
                 displayItems (
-                    page: ${currentPage},
+                    page: ${page},
                     perPage: 8 ,
                     filter: {
                         ${filterType ? `type: "${filterType}"` : ""},
@@ -168,13 +207,14 @@ const AddItemTable: React.FC = () => {
             query ItemVariants {
                 itemVariants(
                     filter: {
+                        displayItem_Id: ${id},
                         ${filterVariantName ? `name_Icontains: "${filterVariantName}"` : ""},
                         ${filterPriceLte !== null ? `price_Lte: ${filterPriceLte}` : ""},
                         ${filterPriceGte !== null ? `price_Gte: ${filterPriceGte}` : ""},
                         ${filterFabric ? `fabric_Icontains: "${filterFabric}"` : ""},
                         ${filterColor ? `color: "${filterColor}"` : ""},
                         ${filterWoodColor ? `woodColor: "${filterWoodColor}"` : ""},
-                        ${filterIsForBusiness ? `isForBusiness: "${filterIsForBusiness}"` : ""}
+                        ${filterIsForBusiness ? `isForBusiness: ${filterIsForBusiness}` : ""}
                     }
                 ) {
                     id
@@ -187,6 +227,10 @@ const AddItemTable: React.FC = () => {
                     woodColor
                     showInFirstPage
                     isForBusiness
+                    thumbnail
+                    slider1
+                    slider2
+                    slider3
                 }
             }
         `;
@@ -212,7 +256,7 @@ const AddItemTable: React.FC = () => {
 
     useEffect(() => {
         fetchData(currentPage);
-    }, [showPopup, currentPage]);
+    }, [showPopup, currentPage, showEdit]);
 
     const handleVariations = (id: string, type: string) => {
         setActiveId(id);
@@ -220,6 +264,23 @@ const AddItemTable: React.FC = () => {
         setActiveItemId(id);
         fetchVariations(id);
     };
+    const handleDisplayItemEdit = (id: string, name: string) => {
+        setActiveId(id);
+        setItemName(name);
+        setShowEdit(true);
+    }
+    const handleDisplayItemDelete = (id: string) => {
+        setActiveId(id)
+        setShowDelete(true)
+    }
+    const handleVariationEdit = (item: Ivariations) => {
+        setItemVariationData(item)
+        setShowEditV(true)
+    }
+    const handleVariationDelete = (id: string) => {
+        setItemVariationId(id)
+        setShowDeleteV(true)
+    }
 
     const handleType = (type: string) => {
         switch (type) {
@@ -281,6 +342,10 @@ const AddItemTable: React.FC = () => {
                                 }}
                             >
                                 <p>{item.name} - {handleType(item.type)}</p>
+                                <div className={styles.editDeleteButtons}>
+                                    <button onClick={() => handleDisplayItemEdit(item.id, item.name)}><TiEdit className={styles.editIcon} /></button>
+                                    <button onClick={() => handleDisplayItemDelete(item.id)}><MdDelete color='white' className={styles.editIconD} /></button>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -324,8 +389,13 @@ const AddItemTable: React.FC = () => {
                                 <p>{item.name}</p>
                                 <p>{item.price}</p>
                                 <p>{item.color}</p>
+                                <div className={styles.editDeleteButtons}>
+                                    <button onClick={() => handleVariationEdit(item)}><TiEdit className={styles.editIcon} /></button>
+                                    <button onClick={() => handleVariationDelete(item.id)}><MdDelete color='white' className={styles.editIconD} /></button>
+                                </div>
                             </div>
                         ))}
+
                     </div>
                     <button
                         onClick={handleOpenPopupV}
@@ -337,9 +407,9 @@ const AddItemTable: React.FC = () => {
 
             {/* Form for filtering item variations */}
             <form onSubmit={handleVariationsFilterSubmit} className={styles.filterForm}>
-                <h3>فیلتر تغییرات محصول</h3>
+                <h3>فیلتر انواع محصول</h3>
                 <div className={styles.filterRow}>
-                    <label htmlFor="variantNameFilter">نام تغییرات:</label>
+                    <label htmlFor="variantNameFilter">نام :</label>
                     <input
                         id="variantNameFilter"
                         type="text"
@@ -411,6 +481,26 @@ const AddItemTable: React.FC = () => {
             {showPopupV && (
                 <div className={styles.popupOverlay}>
                     <CreateDisplayItem onClose={handleClosePopupV} id={activeId} type={itemType} />
+                </div>
+            )}
+            {showEdit && (
+                <div className={styles.popupOverlay}>
+                    <EditDisplayItem onClose={handleCloseEdit} id={activeId} type={itemType} name={itemName} />
+                </div>
+            )}
+            {showEditV && (
+                <div className={styles.popupOverlay}>
+                    <EditVariation onClose={handleCloseEditV} data={itemVariationData} />
+                </div>
+            )}
+            {showDelete && (
+                <div className={styles.popupOverlay}>
+                    <DeleteDisplayItem onClose={handleCloseDelete} id={activeId} />
+                </div>
+            )}
+            {showDeleteV && (
+                <div className={styles.popupOverlay}>
+                    <DeleteVariation onClose={handleCloseDeleteV} id={itemVariationId} />
                 </div>
             )}
         </section>

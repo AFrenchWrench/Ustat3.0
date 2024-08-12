@@ -131,21 +131,21 @@ const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
   //   }
   // }, [userData]);
 
-  const handleStateChange = (selectedOption: SingleValue<StateOption>) => {
-    if (selectedOption) {
-      const filterCity = citys.filter(city => city.province_id.toString() === selectedOption.value);
-      setFilteredCities(filterCity);
-      setValue("city", undefined);
-    }
-  };
-  const handleCityChange = (selectedOption: SingleValue<{ value: string; label: string }>) => {
-    if (selectedOption) {
-      const selectedCity = citys.find(city => city.name === selectedOption.label);
-      if (selectedCity) {
-        setValue("city", selectedCity.name);
-      }
-    }
-  };
+  // const handleStateChange = (selectedOption: SingleValue<StateOption>) => {
+  //   if (selectedOption) {
+  //     const filterCity = citys.filter(city => city.province_id.toString() === selectedOption.value);
+  //     setFilteredCities(filterCity);
+  //     setValue("city", undefined);
+  //   }
+  // };
+  // const handleCityChange = (selectedOption: SingleValue<{ value: string; label: string }>) => {
+  //   if (selectedOption) {
+  //     const selectedCity = citys.find(city => city.name === selectedOption.label);
+  //     if (selectedCity) {
+  //       setValue("city", selectedCity.name);
+  //     }
+  //   }
+  // };
 
   // const handleDefaultValueState = (): StateOption | undefined => {
   //   if (userData?.city?.province) {

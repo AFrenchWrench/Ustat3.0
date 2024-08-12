@@ -7,8 +7,8 @@ import Cookies from 'js-cookie';
 
 import { Controller, useForm } from "react-hook-form"
 
-import citys from "../../../public/c.json"
-import States from "../../../public/p.json"
+// import citys from "../../../public/c.json"
+// import States from "../../../public/p.json"
 
 import { z } from "zod"
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -73,27 +73,27 @@ interface ErrorMapping {
 const SignupForm = () => {
 
 
-  const [filteredCities, setFilteredCities] = useState<IfilterCitys[]>([]);
+  // const [filteredCities, setFilteredCities] = useState<IfilterCitys[]>([]);
   const [isBusinessSigninInput, setIsBusinessSigninInput] = useState(false)
 
   const { push } = useRouter();
 
-  const handleStateChange = (selectedOption: SingleValue<StateOption>,
-    actionMeta: ActionMeta<StateOption>) => {
-    if (selectedOption) {
-      const stateId = selectedOption.value;
+  // const handleStateChange = (selectedOption: SingleValue<StateOption>,
+  //   actionMeta: ActionMeta<StateOption>) => {
+  //   if (selectedOption) {
+  //     const stateId = selectedOption.value;
 
 
-      const filterCity = citys.filter(city => city.province_id.toString() === stateId);
-      setFilteredCities(filterCity);
-    }
+  //     const filterCity = citys.filter(city => city.province_id.toString() === stateId);
+  //     setFilteredCities(filterCity);
+  //   }
 
-  };
+  // };
 
-  const cityOptions = filteredCities.map(city => ({
-    value: city.name,
-    label: city.name
-  }));
+  // const cityOptions = filteredCities.map(city => ({
+  //   value: city.name,
+  //   label: city.name
+  // }));
 
 
   const handleDateChange = (date: DateObject | null) => {
