@@ -1,19 +1,18 @@
-"use client"
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css/bundle';
-import './components/componentStyles.css';
-import Article from './components/Article';
-import Link from 'next/link';
+import React, { useEffect, useState } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css/bundle";
+import "./components/componentStyles.css";
+import Article from "./components/Article";
+import Link from "next/link";
 import { MdKeyboardDoubleArrowLeft } from "react-icons/md";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
 
 interface IdisplayItem {
-  id: string,
-  type: string
+  id: string;
+  type: string;
 }
-
 
 interface DisplayItem {
   id: string;
@@ -46,7 +45,7 @@ const typeNames: Record<string, string> = {
   B: "سرویس خواب",
   M: "میز و صندلی",
   J: "جلومبلی و عسلی",
-  C: "آینه کنسول"
+  C: "آینه کنسول",
 };
 
 const Products = () => {
@@ -56,12 +55,12 @@ const Products = () => {
 
   const fetchUserData = async () => {
     try {
-      const token = Cookies.get('Authorization');
-      const response = await fetch('/api/sales/graphql/', {
-        method: 'POST',
+      const token = Cookies.get("Authorization");
+      const response = await fetch("/api/sales/graphql/", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? token : '',
+          "Content-Type": "application/json",
+          Authorization: token ? token : "",
         },
         body: JSON.stringify({
           query: `
@@ -77,7 +76,9 @@ const Products = () => {
                       name
                   }
               }
-  ${token ? `
+  ${
+    token
+      ? `
           orders(filter: { status: "ps" }) {
           id
           dueDate
@@ -92,7 +93,9 @@ const Products = () => {
               price
               quantity
           }
-          }` : ''}
+          }`
+      : ""
+  }
 }
           `,
         }),
@@ -100,16 +103,21 @@ const Products = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
       }
 
-      if (data.errors || !data.data.showcase || (token && !data.data.showcase)) {
-        throw new Error(data.errors ? data.errors[0].message : 'No items found');
+      if (
+        data.errors ||
+        !data.data.showcase ||
+        (token && !data.data.showcase)
+      ) {
+        throw new Error(
+          data.errors ? data.errors[0].message : "No items found"
+        );
       }
 
       setUserData(data.data.showcase);
       if (token) setOrderData(data.data.orders);
-
     } catch (error) {
       console.error(error);
     }
@@ -132,17 +140,19 @@ const Products = () => {
   };
 
   const categorizedProducts = Object.keys(typeNames).reduce((acc, type) => {
-    acc[type] = userData.filter(item => item.displayItem.type === type);
+    acc[type] = userData.filter((item) => item.displayItem.type === type);
     return acc;
   }, {} as Record<string, DisplayItem[]>);
 
   return (
-    <section className='flex flex-col gap-5 items-center mt-10'>
+    <section className="flex flex-col gap-5 items-center mt-10">
       {Object.entries(categorizedProducts).map(([type, items]) => (
-        <div key={type} className='type_section'>
-          <div className='type_name'>
+        <div key={type} className="type_section">
+          <div className="type_name">
             <p>{typeNames[type]}</p>
-            <Link href={`/products/${type}`}>مشاهده همه <MdKeyboardDoubleArrowLeft /></Link>
+            <Link href={`/products/${type}`}>
+              مشاهده همه <MdKeyboardDoubleArrowLeft />
+            </Link>
           </div>
           <Swiper
             slidesPerView={2}

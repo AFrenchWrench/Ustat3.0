@@ -1,8 +1,8 @@
 # Exclude node_modules directory
-node_modules
+/node_modules/
 
 # Exclude build directories
-.next
+/.next/
 dist
 build
 next.config.mjs

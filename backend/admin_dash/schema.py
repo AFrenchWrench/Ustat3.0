@@ -614,7 +614,7 @@ class UpdateItemVariant(graphene.Mutation):
                     success=False, errors="نوع نمایشی مورد نظر یافت نشد"
                 )
 
-            errors = UpdateItemVariant.validate_input(item_variant, input)
+            item_variant, errors = UpdateItemVariant.validate_input(item_variant, input)
             if errors:
                 return UpdateItemVariant(success=False, errors=errors)
 
