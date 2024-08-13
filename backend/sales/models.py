@@ -48,7 +48,7 @@ class Order(models.Model):
     due_date = models.DateField(blank=True)
     creation_date = models.DateField(auto_now_add=True)
     order_number = models.CharField(max_length=17, unique=True, blank=True)
-    total_price = models.PositiveBigIntegerField()
+    total_price = models.PositiveBigIntegerField(default=0)
     address = models.ForeignKey(
         "users.Address", on_delete=models.PROTECT, null=True, blank=True
     )
