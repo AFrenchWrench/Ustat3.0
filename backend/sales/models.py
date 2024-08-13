@@ -99,7 +99,7 @@ class Order(models.Model):
         return f"UST{year}-{month}{order_no:06d}"
 
     def get_total_price(self):
-        total_price = sum(item.total_price for item in self.order.items.all())
+        total_price = sum(item.total_price for item in self.items.all())
         return total_price
 
     def __str__(self):
