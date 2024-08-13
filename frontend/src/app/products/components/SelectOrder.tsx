@@ -10,7 +10,6 @@ interface OrderItems {
     id: string;
     type: string;
     name: string;
-    dimensions: object;
     price: number;
     quantity: number;
 }
@@ -32,6 +31,8 @@ interface SelectOrderProps {
 }
 
 const SelectOrder: React.FC<SelectOrderProps> = ({ id, orderData, onRemove, onOrderUpdate }) => {
+    console.log(orderData);
+
     const [quantities, setQuantities] = useState<number>(1);
 
     const handleQuantityChange = (increment: boolean) => {

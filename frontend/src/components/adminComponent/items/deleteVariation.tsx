@@ -23,8 +23,8 @@ const DeleteVariation: React.FC<AddDisplayItemProps> = ({ onClose, id }) => {
         }
         const Authorization = Cookies.get("Authorization");
         const query = `
-                mutation DeleteDisplayItem {
-                    deleteDisplayItem(input: { id: "${id}" }) {
+                mutation DeleteItemVariant {
+                    deleteItemVariant(input: { id: "${id}" }) {
                         success
                         errors
                         messages
@@ -48,7 +48,7 @@ const DeleteVariation: React.FC<AddDisplayItemProps> = ({ onClose, id }) => {
 
 
             // Reset form and close the popup on success
-            if (result.data.deleteDisplayItem.success) {
+            if (result.data.deleteItemVariant.success) {
                 onClose();
             }
 

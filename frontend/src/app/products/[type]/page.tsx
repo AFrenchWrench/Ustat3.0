@@ -6,8 +6,6 @@ import Article from "../components/Article";
 import { useParams } from "next/navigation";
 import Cookies from "js-cookie";
 
-
-
 interface Ivariants {
     id: string;
     name: string;
@@ -26,7 +24,6 @@ interface OrderItems {
     id: string;
     type: string;
     name: string;
-    dimensions: object;
     price: number;
     quantity: number;
 }
@@ -55,7 +52,7 @@ const Page = () => {
             setLoading(true);
 
             // Simulate delay before fetching data
-            await new Promise((resolve) => setTimeout(resolve, 500)); // 0.5-second delay
+            await new Promise((resolve) => setTimeout(resolve, 5000)); // 0.5-second delay
 
             const token = Cookies.get("Authorization");
             const response = await fetch("/api/sales/graphql/", {
@@ -84,18 +81,21 @@ const Page = () => {
                           }
                           ${token
                             ? `
-                                orders(filter: { status: "ps" }) {
-                                  id
-                                  dueDate
-                                  creationDate
-                                  orderNumber
-                                  status
-                                  items {
-                                    id
-                                    type
-                                    name
-                                    quantity
-                                  }
+                            orders(filter: { status: "ps" }) {
+                                    totalPages
+                                    totalItems
+                                    items {
+                                        id
+                                        status
+                                        orderNumber
+                                        dueDate
+                                        items {
+                                            id
+                                            type
+                                            name
+                                            quantity
+                                        }
+                                    }
                                 }
                               `
                             : ""
@@ -119,12 +119,18 @@ const Page = () => {
                 throw new Error(data.errors ? data.errors[0].message : "No items found");
             }
 
-            // Update data efficiently using spread syntax and concatenation
-            setDisplayData((prevData) => [...prevData, ...data.data.displayItems.items]);
-            console.log(data.data.displayItems.items);
+            // Only append new data if the page has changed or the data is different
+            if (page !== 1 || data.data.displayItems.items.length !== displayData.length) {
+                setDisplayData((prevData) => {
+                    const newData = data.data.displayItems.items;
+                    // Check if the new data is different from the previous data
+                    const isDifferent = JSON.stringify(prevData) !== JSON.stringify([...prevData, ...newData]);
+                    return isDifferent ? [...prevData, ...newData] : prevData;
+                });
+            }
 
             setTotalPages(data.data.displayItems.totalPages);
-            if (token) setOrderData(data.data.orders);
+            if (token) setOrderData(data.data.orders.items);
 
         } catch (error) {
             console.error(error);
@@ -135,8 +141,6 @@ const Page = () => {
 
     useEffect(() => {
         fetchUserData(page); // Fetch data when the component mounts
-        console.log("hit end of page");
-
     }, [page, type]); // Re-fetch data if the page or type changes
 
     const lastItemRef = useCallback(

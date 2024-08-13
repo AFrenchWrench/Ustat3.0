@@ -256,7 +256,11 @@ const AddItemTable: React.FC = () => {
 
     useEffect(() => {
         fetchData(currentPage);
-    }, [showPopup, currentPage, showEdit]);
+    }, [showPopup, currentPage, showEdit, showDelete]);
+
+    useEffect(() => {
+        activeId ? fetchVariations(activeId) : "";
+    }, [showEditV, showDeleteV])
 
     const handleVariations = (id: string, type: string) => {
         setActiveId(id);

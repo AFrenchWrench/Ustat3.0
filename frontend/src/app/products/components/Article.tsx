@@ -12,12 +12,11 @@ interface OrderItems {
   id: string;
   type: string;
   name: string;
-  dimensions: object;
   price: number;
   quantity: number;
 }
 
-interface DisplayItem {
+interface DisplayOrder {
   id: string;
   dueDate: string;
   creationDate: string;
@@ -32,8 +31,8 @@ interface ArticleProps {
   price: string;
   productLink: string;
   type: string;
-  orderData: DisplayItem[];
-  onOrderUpdate: (newOrderData: DisplayItem[]) => void;
+  orderData: DisplayOrder[];
+  onOrderUpdate: (newOrderData: DisplayOrder[]) => void;
 }
 
 const Article: React.FC<ArticleProps> = ({ imageSrc, productName, price, productLink, type, orderData, onOrderUpdate }) => {

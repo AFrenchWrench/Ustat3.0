@@ -47,7 +47,7 @@ const orderSchema = z.object({
     description: z.string().optional()
 });
 
-type TupdateType = "update" | "delete" | "updateDate" | "changeStatus";
+type TupdateType = "update" | "delete" | "updateDate" | "changeStatus" | "changeStatusC";
 
 type TorderSchema = z.infer<typeof orderSchema>;
 
@@ -298,6 +298,16 @@ const Page = () => {
                 }
             `;
             variables = { itemIdVar: itemId, status: status, address: addressId };
+        } else if (type === "changeStatusC") {
+            query = `
+            mutation UpdateOrder($itemIdVar: ID!, $status: String!) {
+                updateOrder(input: { id: $itemIdVar, status: $status}) {
+                    success
+                    errors
+                }
+            }
+        `;
+            variables = { itemIdVar: itemId, status: status };
         }
 
         try {
@@ -482,7 +492,7 @@ const Page = () => {
 
                         <div className={Styles.acButtons}>
                             <button type='button' onClick={() => handleConfirmAlert('changeStatus', orderData.id, 'p', addressId)} className={Styles.submitButton}>ثبت</button>
-                            <button type='button' onClick={() => handleConfirmAlert('changeStatus', orderData.id, 'c')} className={Styles.cButton}>لغو</button>
+                            <button type='button' onClick={() => handleConfirmAlert('changeStatusC', orderData.id, 'c')} className={Styles.cButton}>لغو</button>
                         </div>
                     </>
                 )}

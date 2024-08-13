@@ -17,7 +17,6 @@ interface OrderItems {
     id: string;
     type: string;
     name: string;
-    dimensions: object;
     price: number;
     quantity: number;
 }
@@ -82,21 +81,22 @@ const Page = () => {
                                 slider3
                             }
                             ${token ? `
-                            orders {
+                orders(filter: { status: "ps" }) {
+                        totalPages
+                        totalItems
+                        items {
+                            id
+                            status
+                            orderNumber
+                            dueDate
+                            items {
                                 id
-                                dueDate
-                                creationDate
-                                orderNumber
-                                status
-                                items {
-                                    id
-                                    type
-                                    name
-                                    dimensions
-                                    price
-                                    quantity
-                                }
-                            }` : ''}
+                                type
+                                name
+                                quantity
+                            }
+                        }
+                    }` : ''}
                         }
                     `,
                 }),
@@ -107,7 +107,7 @@ const Page = () => {
             if (data.errors || !data.data.itemVariant) throw new Error(data.errors ? data.errors[0].message : 'No item found');
 
             setProduct(data.data.itemVariant);
-            if (data.data.orders && token) setUserOrders(data.data.orders);
+            if (data.data.orders && token) setUserOrders(data.data.orders.items);
         } catch (error) {
             console.error(error);
         } finally {

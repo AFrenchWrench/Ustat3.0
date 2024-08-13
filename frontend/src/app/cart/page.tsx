@@ -30,7 +30,7 @@ interface DisplayItem {
   items: OrderItems[];
 }
 
-type TupdateType = "update" | "delete" | "updateDate" | "changeStatus";
+type TupdateType = "update" | "delete" | "updateDate" | "changeStatus" | "changeStatusC";
 
 interface ConfirmAlertType {
   show: boolean;
@@ -70,24 +70,24 @@ const Cart = () => {
           },
           body: JSON.stringify({
             query: `
-              query Orders {
-                orders (filter: { status: ["ps", "p"]}){
-                  id
-                  dueDate
-                  creationDate
-                  orderNumber
-                  status
-                  items {
-                    id
-                    type
-                    name
-                    dimensions
-                    price
-                    description
-                    quantity
-                  }
-                }
-              }
+            query Orders {
+                orders(filter: { status: ["p","ps"] }) {        
+                        totalPages
+                        totalItems
+                        items {
+                            id
+                            status
+                            orderNumber
+                            dueDate
+                            items {
+                                id
+                                type
+                                name
+                                quantity
+                            }
+                        }
+                    }
+           }
             `,
           }),
         });
@@ -103,7 +103,7 @@ const Cart = () => {
           throw new Error(data.errors[0].message);
         }
 
-        setOrders(data.data.orders);
+        setOrders(data.data.orders.items);
       } catch (error) {
         console.log(error);
       }

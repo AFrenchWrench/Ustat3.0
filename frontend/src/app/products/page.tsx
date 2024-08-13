@@ -26,7 +26,6 @@ interface OrderItems {
   id: string;
   type: string;
   name: string;
-  dimensions: object;
   price: number;
   quantity: number;
 }
@@ -76,26 +75,26 @@ const Products = () => {
                       name
                   }
               }
-  ${
-    token
-      ? `
-          orders(filter: { status: "ps" }) {
-          id
-          dueDate
-          creationDate
-          orderNumber
-          status
-          items {
-              id
-              type
-              name
-              dimensions
-              price
-              quantity
-          }
-          }`
-      : ""
-  }
+  ${token
+              ? `
+                            orders(filter: { status: "ps" }) {
+                                    totalPages
+                                    totalItems
+                                    items {
+                                        id
+                                        status
+                                        orderNumber
+                                        dueDate
+                                        items {
+                                            id
+                                            type
+                                            name
+                                            quantity
+                                        }
+                                    }
+                                }`
+              : ""
+            }
 }
           `,
         }),
@@ -117,7 +116,7 @@ const Products = () => {
       }
 
       setUserData(data.data.showcase);
-      if (token) setOrderData(data.data.orders);
+      if (token) setOrderData(data.data.orders.items);
     } catch (error) {
       console.error(error);
     }

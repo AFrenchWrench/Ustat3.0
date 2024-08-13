@@ -218,7 +218,7 @@ const EditVariation: React.FC<AddDisplayItemProps> = ({ onClose, data }) => {
                                 id: ${data?.id}
                                 ${formData.name && formData.name !== data?.name ? `name: "${formData.name}",` : ""}
                                 ${formData.dimensions && dimensionsString !== data?.dimensions.replace(/\s+/g, '') ? `dimensions: "${escapeString(dimensionsString)}",` : ""}
-                                ${formData.price && formData.price !== data?.price ? `price: "${formData.price}",` : ""}
+                                ${formData.price && formData.price !== data?.price ? `price: ${formData.price},` : ""}
                                 ${formData.description && formData.description !== data?.description ? `description: "${formData.description}",` : ""}
                                 ${formData.fabric && formData.fabric !== data?.fabric ? `fabric: "${formData.fabric}",` : ""}
                                 ${formData.color && formData.color !== data?.color ? `color: "${formData.color}",` : ""}
@@ -229,6 +229,9 @@ const EditVariation: React.FC<AddDisplayItemProps> = ({ onClose, data }) => {
                         ) {
                             success
                             errors
+                            itemVariant {
+                                            id
+                                        }
                         }
                     }
         `;
@@ -267,36 +270,47 @@ const EditVariation: React.FC<AddDisplayItemProps> = ({ onClose, data }) => {
                 });
 
                 // Second request: Upload images
-                const uploadResponse = await fetch(`http://localhost/api/sales/display-item-variant/${itemId}/upload-images/`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': Authorization ? Authorization : '',
-                    },
-                    body: uploadData,
-                });
-
-                const uploadResult = await uploadResponse.json();
-
-                if (uploadResponse.ok) {
-                    setMessage('Images uploaded successfully!');
-                    reset();
-
-                    // Clear previews after successful upload
-                    setPreviews({
-                        thumbnail: null,
-                        slider1: null,
-                        slider2: null,
-                        slider3: null,
+                if (uploadData.values.length > 0) {
+                    const uploadResponse = await fetch(`http://localhost/api/sales/display-item-variant/${itemId}/upload-images/`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': Authorization ? Authorization : '',
+                        },
+                        body: uploadData,
                     });
+                    console.log(uploadData);
 
-                    setTimeout(() => {
-                        setMessage("");
-                    }, 2000);
 
-                } else {
-                    setMessage('Failed to upload images.');
-                    console.error('Upload Error:', uploadResult);
+                    const uploadResult = await uploadResponse.json();
+
+                    if (uploadResponse.ok) {
+                        setMessage('Images uploaded successfully!');
+                        reset();
+
+                        // Clear previews after successful upload
+                        setPreviews({
+                            thumbnail: null,
+                            slider1: null,
+                            slider2: null,
+                            slider3: null,
+                        });
+
+                        setTimeout(() => {
+                            setMessage("");
+                        }, 2000);
+
+                        onClose()
+
+                    } else {
+                        setMessage('Failed to upload images.');
+                        console.error('Upload Error:', uploadResult);
+                    }
                 }
+                else {
+                    onClose()
+                }
+
+
             } else {
                 setMessage('Failed to create item.');
             }
@@ -304,6 +318,7 @@ const EditVariation: React.FC<AddDisplayItemProps> = ({ onClose, data }) => {
             console.error('Error:', error);
             setMessage('An error occurred.');
         }
+
     };
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>, fieldName: FieldNames) => {

@@ -247,6 +247,10 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
           <button onClick={handleLogout} className='text-red-400 hover:text-red-200'>خروج از حساب<RiLogoutBoxLine size='20px' /></button>
         </div>
       </div>
+      <div className={styles.historyButtons}>
+        <button onClick={() => push("/orders")}>تاریخچه سفارشات</button>
+        <button>صورت حساب ها</button>
+      </div>
     </section>
   );
 };

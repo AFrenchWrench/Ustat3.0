@@ -3,7 +3,7 @@ import React from 'react';
 
 import Styles from "@/allStyles/orderStyles.module.css";
 
-type TupdateType = "update" | "delete" | "updateDate" | "changeStatus";
+type TupdateType = "update" | "delete" | "updateDate" | "changeStatus" | "changeStatusC";
 
 
 interface ConfirmAlertProps {
@@ -38,9 +38,9 @@ const ConfirmAlert: React.FC<ConfirmAlertProps> = ({ type, itemId, status, onCon
             return "آیا برای بروزرسانی زمان تحویل مطمعن هستید؟"
         }
         else if (type === 'changeStatus') {
-            if (status === "p") {
-                return "آیا برای ثبت سفارش مطمعن هستید؟"
-            }
+            return "آیا برای ثبت سفارش مطمعن هستید؟"
+        }
+        else if (type === 'changeStatusC') {
             return "آیا برای لغو سفارش مطمعن هستید؟"
         }
     }
