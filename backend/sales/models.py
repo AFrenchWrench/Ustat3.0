@@ -71,7 +71,8 @@ class Order(models.Model):
 
     def save(self, *args, **kwargs):
 
-        self.total_price = self.get_total_price()
+        if self.pk:
+            self.total_price = self.get_total_price()
 
         if not self.order_number:
             self.order_number = self.generate_order_number()
