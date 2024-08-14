@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Box from '@mui/material/Box';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridRowModel } from '@mui/x-data-grid';
 import Cookies from 'js-cookie';
 import { faIR } from '@mui/x-data-grid/locales';
 import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
@@ -71,6 +71,7 @@ const columns: GridColDef[] = [
             label: value,
         })),
         renderCell: (params) => statusMapping[params.value] || params.value,
+        editable: true
     },
     {
         field: 'creationDate',
@@ -155,7 +156,7 @@ export default function OrdersDataGrid() {
                     `,
                     variables: {
                         page: page + 1,
-                        perPage: isAll ? 1000000 : pageSize, // Use a high number for "all"
+                        perPage: isAll ? rowCount : pageSize, // Use a high number for "all"
                     },
                 }),
             })
@@ -166,7 +167,6 @@ export default function OrdersDataGrid() {
                         username: order.user.username,
                         firstName: order.user.firstName,
                         email: order.user.email,
-                        status: statusMapping[order.status],
                         creationDate: convertToJalaali(order.creationDate),
                         dueDate: convertToJalaali(order.dueDate),
                     }));
@@ -184,6 +184,70 @@ export default function OrdersDataGrid() {
         fetchOrders();
     }, [page, pageSize, isAll]);
 
+    const handleProcessRowUpdate = async (newRow: GridRowModel, oldRow: GridRowModel) => {
+        const updates: Record<string, any> = {};
+
+        // Compare fields and add changed ones to the updates object
+        if (newRow.status !== oldRow.status) {
+            console.log(newRow.status.toLowerCase());
+
+            updates.status = newRow.status.toLowerCase();
+        }
+
+        if (newRow.dueDate !== oldRow.dueDate) {
+            // Ensure the due date is in yyyy-mm-dd format
+            const [year, month, day] = newRow.dueDate.split('/');
+            updates.dueDate = `${year}-${month}-${day}`;
+        }
+
+        // If there are no updates, return the newRow immediately
+        if (Object.keys(updates).length === 0) {
+            return newRow;
+        }
+
+        try {
+            const token = Cookies.get('Authorization');
+
+            const response = await fetch('http://localhost/api/admin_dash/graphql/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? token : "",
+                },
+                body: JSON.stringify({
+                    query: `
+                        mutation UpdateOrder($id: ID!, $status: String, $dueDate: Date) {
+                            updateOrder(input: { id: $id, status: $status, dueDate: $dueDate }) {
+                                success
+                                errors
+                            }
+                        }
+                    `,
+                    variables: {
+                        id: newRow.id,
+                        ...updates, // Spread the updates object to send only the changed fields
+                    },
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.data.updateOrder.success) {
+                // If the update is successful, return the new row to update the UI
+                return newRow;
+            } else {
+                // If there are errors, log them and return the old row to revert the UI changes
+                console.error('Error updating order:', data.data.updateOrder.errors.join(', '));
+                return oldRow;
+            }
+        } catch (error) {
+            console.error('Error updating order:', error);
+            // In case of an error, return the old row to revert the UI changes
+            return oldRow;
+        }
+    };
+
+
     const existingTheme = useTheme();
 
     const theme = React.useMemo(
@@ -193,6 +257,7 @@ export default function OrdersDataGrid() {
                 typography: {
                     fontFamily: 'Vazir-bold',
                 },
+
             }),
         [existingTheme],
     );
@@ -240,13 +305,14 @@ export default function OrdersDataGrid() {
                         pageSizeOptions={[5, 10, 20, { value: rowCount, label: 'همه' }]} // Include "All" option
                         rowCount={rowCount}
                         disableRowSelectionOnClick
+                        processRowUpdate={handleProcessRowUpdate} // Add this handler
                         sx={{
                             backgroundColor: 'white',
                             color: 'black',
                             height: '100%',
                             '& .MuiDataGrid-cell': {
                                 borderColor: 'black',
-                                textAlign: 'center',
+                                textAlign: 'start',
                                 fontFamily: 'Vazir-bold',
                             },
                             '& .MuiDataGrid-virtualScrollerRenderZone': {

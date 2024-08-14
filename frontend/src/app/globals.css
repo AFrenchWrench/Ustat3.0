@@ -69,8 +69,8 @@ footer {
 
 @font-face {
   font-family: 'Vazir-bold';
-  src: url('../../public/fonts/vazir-font/Vazir-Bold.eot') format('eot'),
-       url('../../public/fonts/vazir-font/Vazir-Bold.ttf') format('ttf'),
+  src: url('../../public/fonts/vazir-font/Vazir-Bold.ttf') format('ttf'),
+        url('../../public/fonts/vazir-font/Vazir-Bold.eot') format('eot'),
        url('../../public/fonts/vazir-font/Vazir-Bold.woff') format('woff'),
        url('../../public/fonts/vazir-font/Vazir-Bold.woff2') format('woff2');
 }

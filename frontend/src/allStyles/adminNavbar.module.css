@@ -10,7 +10,7 @@
 }
 
 .adminNavbar ul{
-    gap: 50px;
+    gap: 35px;
     display: flex;
     flex-direction: column;
     align-items: center;
