@@ -12,6 +12,7 @@ import Cookies from 'js-cookie';
 import AddToCartButton from '../../components/addToCartButton';
 import Loading from '@/components/Loading';
 import SelectOrder from '../../components/SelectOrder';
+import Variations from '../../components/variations';
 
 interface OrderItems {
     id: string;
@@ -29,7 +30,17 @@ interface DisplayOrder {
     status: string;
     items: OrderItems[];
 }
-
+interface Ivariation {
+    id: string;
+    name: string;
+    fabric: string;
+    thumbnail: string;
+    price: number;
+    color: string;
+}
+interface IdisplayItemV {
+    variants: Ivariation[];
+}
 interface DisplayItem {
     id: string;
     type: string;
@@ -44,6 +55,7 @@ interface DisplayItem {
     slider1: string;
     slider2: string;
     slider3: string;
+    displayItem: IdisplayItemV
 }
 
 const Page = () => {
@@ -53,6 +65,7 @@ const Page = () => {
     const [userOrders, setUserOrders] = useState<DisplayOrder[]>([]);
     const [showSelectOrder, setShowSelectOrder] = useState(false);
     const [fetchTrigger, setFetchTrigger] = useState(false);
+    const [variantId, setVariansId] = useState<string | string[]>(id)
 
     const fetchProductData = async () => {
         try {
@@ -66,7 +79,7 @@ const Page = () => {
                 body: JSON.stringify({
                     query: `
                         query ItemVariant {
-                            itemVariant(id: ${id}) {
+                            itemVariant(id: ${variantId}) {
                                 id
                                 name
                                 dimensions
@@ -79,6 +92,16 @@ const Page = () => {
                                 slider1
                                 slider2
                                 slider3
+                                displayItem {
+                                    variants {
+                                        id
+                                        name
+                                        price
+                                        color
+                                        thumbnail
+                                        fabric
+                                    }
+                                }
                             }
                             ${token ? `
                 orders(filter: { status: "ps" }) {
@@ -107,6 +130,8 @@ const Page = () => {
             if (data.errors || !data.data.itemVariant) throw new Error(data.errors ? data.errors[0].message : 'No item found');
 
             setProduct(data.data.itemVariant);
+            console.log(data.data.itemVariant.displayItem.variants);
+
             if (data.data.orders && token) setUserOrders(data.data.orders.items);
         } catch (error) {
             console.error(error);
@@ -115,10 +140,14 @@ const Page = () => {
         }
     };
 
+    const onSelectVariation = (id: string) => {
+        setVariansId(id)
+    }
+
     useEffect(() => {
-        if (!id) return;
+        if (!variantId) return;
         fetchProductData();
-    }, [id]);
+    }, [variantId]);
 
     useEffect(() => {
         if (fetchTrigger) {
@@ -196,6 +225,7 @@ const Page = () => {
                 />
             </div>
             {showSelectOrder && <SelectOrder id={product.id} orderData={userOrders} onRemove={handleRemoveOrder} onOrderUpdate={updateOrderData} />}
+            <Variations active={variantId} onSelectVariation={onSelectVariation} variations={product.displayItem.variants} />
         </section>
     );
 };

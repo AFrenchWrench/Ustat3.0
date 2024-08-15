@@ -6,6 +6,10 @@ import Article from "../components/Article";
 import { useParams } from "next/navigation";
 import Cookies from "js-cookie";
 
+import useMediaQuery from '@mui/material/useMediaQuery';
+
+import LoadingArticle from "../components/loadingArticle";
+
 interface Ivariants {
     id: string;
     name: string;
@@ -45,14 +49,14 @@ const Page = () => {
     const [totalPages, setTotalPages] = useState<number | null>(null); // Track total pages
     const [loading, setLoading] = useState(false); // Track loading state
 
+    const isSmallScreen = useMediaQuery('(max-width:740px)');
+
+
     const observer = useRef<IntersectionObserver | null>(null); // Ref for intersection observer
 
     const fetchUserData = async (page: number) => {
         try {
             setLoading(true);
-
-            // Simulate delay before fetching data
-            await new Promise((resolve) => setTimeout(resolve, 5000)); // 0.5-second delay
 
             const token = Cookies.get("Authorization");
             const response = await fetch("/api/sales/graphql/", {
@@ -168,7 +172,9 @@ const Page = () => {
 
     return (
         <section className="flex flex-col gap-5 items-center mt-10">
-            <ImageList gap={8} sx={{ width: "80%" }} cols={3}>
+            <ImageList gap={8} sx={{ width: "80%" }} cols={isSmallScreen ? 2 : 3}
+
+            >
                 {displayData &&
                     displayData.map((article, index) => (
                         article.variants.length > 0 ? (
@@ -188,8 +194,13 @@ const Page = () => {
                             </ImageListItem>
                         ) : null
                     ))}
+                {loading && <LoadingArticle />}
+                {loading && <LoadingArticle />}
+                {loading && <LoadingArticle />}
+                {loading && <LoadingArticle />}
+                {loading && <LoadingArticle />}
+                {loading && <LoadingArticle />}
             </ImageList>
-            {loading && <p>Loading more items...</p>}
         </section>
     );
 };

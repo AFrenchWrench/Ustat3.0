@@ -235,8 +235,6 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
                     )
                   }
                 </div>
-
-
               </>
             )
           )
@@ -249,7 +247,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
       </div>
       <div className={styles.historyButtons}>
         <button onClick={() => push("/orders")}>تاریخچه سفارشات</button>
-        <button>صورت حساب ها</button>
+        <button onClick={() => push("/transactions")}>صورت حساب ها</button>
       </div>
     </section>
   );

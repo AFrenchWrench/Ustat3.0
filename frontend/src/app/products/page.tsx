@@ -8,6 +8,7 @@ import Article from "./components/Article";
 import Link from "next/link";
 import { MdKeyboardDoubleArrowLeft } from "react-icons/md";
 import Cookies from "js-cookie";
+import LoadingArticle from "./components/loadingArticle";
 
 interface IdisplayItem {
   id: string;
@@ -51,9 +52,11 @@ const Products = () => {
   const [userData, setUserData] = useState<DisplayItem[]>([]);
   const [orderData, setOrderData] = useState<DisplayOrder[]>([]);
   const [fetchTrigger, setFetchTrigger] = useState(false); // Trigger for re-fetching data
+  const [loading, setLoading] = useState(false); // Track loading state
 
   const fetchUserData = async () => {
     try {
+      setLoading(true);
       const token = Cookies.get("Authorization");
       const response = await fetch("/api/sales/graphql/", {
         method: "POST",
@@ -119,6 +122,8 @@ const Products = () => {
       if (token) setOrderData(data.data.orders.items);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -185,6 +190,11 @@ const Products = () => {
                 />
               </SwiperSlide>
             ))}
+            {loading && <SwiperSlide><LoadingArticle /></SwiperSlide>}
+            {loading && <SwiperSlide><LoadingArticle /></SwiperSlide>}
+            {loading && <SwiperSlide><LoadingArticle /></SwiperSlide>}
+            {loading && <SwiperSlide><LoadingArticle /></SwiperSlide>}
+            {loading && <SwiperSlide><LoadingArticle /></SwiperSlide>}
           </Swiper>
         </div>
       ))}
