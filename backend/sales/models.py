@@ -80,16 +80,20 @@ class Order(models.Model):
         if not self.pk and not self.due_date:
             self.due_date = timezone.localdate() + timezone.timedelta(days=25)
 
-        if self.status == "a" and not hasattr(self, "transactions"):
+        if (
+            self.status == "a"
+            and not OrderTransaction.objects.filter(order=self).exists()
+        ):
             transaction = OrderTransaction.objects.create(
                 order=self, amount=(self.total_price * 0.3)
             )
-        elif self.status == "c" and hasattr(self, "transactions"):
+        elif (
+            self.status == "c" and OrderTransaction.objects.filter(order=self).exists()
+        ):
             transactions = self.transactions
             for transaction in transactions:
                 transaction.status = "c"
                 transaction.save()
-
         super().save(*args, **kwargs)
 
     def generate_order_number(self):
