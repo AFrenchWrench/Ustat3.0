@@ -34,6 +34,7 @@ class OrderTransaction(models.Model):
         max_length=17, unique=True, blank=True, null=True
     )
     description = models.TextField(blank=True, null=True)
+    is_check = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
 
