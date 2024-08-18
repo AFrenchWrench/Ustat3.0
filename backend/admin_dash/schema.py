@@ -690,8 +690,8 @@ class UpdateBusiness(graphene.Mutation):
         except Exception as e:
             print(e)
             return UpdateBusiness(success=False, errors="خطایی رخ داده است")
-        
-        
+
+
 # ========================Update End========================
 
 # ========================Delete Start========================
@@ -911,7 +911,7 @@ class Mutation(graphene.ObjectType):
     update_order = UpdateOrder.Field()
     update_item_variant = UpdateItemVariant.Field()
     update_transaction = UpdateTransaction.Field()
-    update_business = UpdateBusiness.Filed()
+    update_business = UpdateBusiness.Field()
     delete_order_item = DeleteOrderItem.Field()
     delete_order = DeleteOrder.Field()
     delete_display_item = DeleteDisplayItem.Field()
