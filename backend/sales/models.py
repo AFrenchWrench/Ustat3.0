@@ -21,6 +21,8 @@ class OrderTransaction(models.Model):
     status = models.CharField(
         max_length=1,
         choices=[
+            ("a", "تایید شده"),
+            ("d", "تایید نشده"),
             ("p", "در انتظار پرداخت"),
             ("c", "لغو شده"),
             ("d", "پرداخت شده"),
@@ -38,6 +40,7 @@ class OrderTransaction(models.Model):
         optimized_image_output_size=(1000, 1000),
         optimized_image_resize_method="cover",
     )
+    description = models.TextField(null=True,blank=True)
 
     def save(self, *args, **kwargs):
 
@@ -57,14 +60,14 @@ class Order(models.Model):
         "users.Address", on_delete=models.PROTECT, null=True, blank=True
     )
     status = models.CharField(
-        max_length=2,
+        max_length=3,
         choices=[
             ("ps", "در انتظار ثبت"),
             ("p", "در انتظار تایید"),
             ("a", "تایید شده"),
             ("pp", "در انتظار پرداخت"),
             ("pd", "پرداخت شده"),
-            ("ps", "در انتظار ارسال"),
+            ("pse", "در انتظار ارسال"),
             ("s", "ارسال شده"),
             ("de", "تحویل داده شده"),
             ("d", "تایید نشده"),
