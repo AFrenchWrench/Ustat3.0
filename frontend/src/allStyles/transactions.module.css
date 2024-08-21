@@ -104,3 +104,16 @@
     font-size: 18px;
     color: red;
 }
+
+.actionContainer{
+    margin-top: auto;
+}
+.statusSelect{
+    background-color: rgb(55, 55, 55);
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    color: rgb(220, 220, 220);
+    padding: 2px 5px;
+    font-size: 14px;
+}

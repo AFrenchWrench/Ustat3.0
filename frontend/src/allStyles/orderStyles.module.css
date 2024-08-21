@@ -396,3 +396,14 @@
 .newAddressButton:hover{
     filter: brightness(80%);
 }
+
+.select{
+    width:25%;
+    background-color: rgb(55, 55, 55);
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    color: rgb(220, 220, 220);
+    padding: 2px 5px;
+    font-size: 14px;
+}
