@@ -19,13 +19,13 @@ class OrderTransaction(models.Model):
         "Order", on_delete=models.CASCADE, related_name="transactions"
     )
     status = models.CharField(
-        max_length=1,
+        max_length=2,
         choices=[
             ("a", "تایید شده"),
             ("d", "تایید نشده"),
             ("p", "در انتظار پرداخت"),
             ("c", "لغو شده"),
-            ("d", "پرداخت شده"),
+            ("pd", "پرداخت شده"),
         ],
         default="p",
     )
