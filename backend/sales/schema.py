@@ -204,11 +204,10 @@ class CreateTransaction(graphene.Mutation):
                     amount=total_price * (upfront / 100),
                 )
             )
-            print(total_price)
 
-            total_price -= total_price * (upfront / 100)
-
-            print(total_price)
+            total_price -= int(total_price * (upfront / 100))
+            if total_price == 0:
+                return CreateTransaction(transactions=order_transactions, success=True)
 
             i = 1
             interval = (total_price - (total_price % checks)) / checks
@@ -227,7 +226,6 @@ class CreateTransaction(graphene.Mutation):
                 )
                 i += 1
                 total_price -= interval
-                print(total_price)
 
             while total_price != 0:
                 order_transactions.append(
@@ -241,8 +239,7 @@ class CreateTransaction(graphene.Mutation):
                 )
                 i += 1
                 total_price -= interval
-                print(total_price)
-                # time.sleep(500)
+
             return CreateTransaction(transactions=order_transactions, success=True)
         except Exception as e:
             print(e)
