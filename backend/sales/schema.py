@@ -1,4 +1,5 @@
 import re
+import time
 from django.utils import timezone
 import graphene
 from django.contrib.auth import (
@@ -7,7 +8,7 @@ from django.contrib.auth import (
 from django.shortcuts import get_object_or_404
 from graphene_django import DjangoObjectType
 from django.core.paginator import Paginator
-from users.models import Address
+from users.models import Address, Business
 from utils.schema_utils import (
     login_required,
     resolve_model_with_filters,
@@ -66,6 +67,12 @@ class CreateOrderItemInput(graphene.InputObjectType):
     due_date = graphene.Date(required=False)
     description = graphene.String(required=False)
     quantity = graphene.Int(required=True)
+
+
+class CreateTransactionInput(graphene.InputObjectType):
+    order = graphene.ID(required=True)
+    upfront = graphene.Int(required=True)
+    checks = graphene.Int(required=True)
 
 
 class CreateOrderItem(graphene.Mutation):
@@ -155,6 +162,91 @@ class CreateOrderItem(graphene.Mutation):
         except Exception as e:
             print(e)
             return CreateOrderItem(success=False, errors="خطایی رخ داده است")
+
+
+class CreateTransaction(graphene.Mutation):
+    class Arguments:
+        input = CreateTransactionInput(required=True)
+
+    transactions = graphene.List(OrderTransactionType)
+    errors = graphene.JSONString()
+    success = graphene.Boolean()
+
+    @login_required
+    def mutate(self, info, input):
+        try:
+            user = info.context.user
+            business = Business.objects.filter(user=user).first()
+
+            upfront = input.get("upfront")
+            checks = input.get("checks")
+
+            try:
+                order = Order.objects.get(pk=input.get("order"))
+            except Order.DoesNotExist:
+                return CreateTransaction(
+                    success=False, errors="سفارش مورد نظر یافت نشد"
+                )
+
+            if order.user != user:
+                return CreateTransaction(
+                    success=False, errors="شما دسترسی به این سفارش را ندارید"
+                )
+
+            order_transactions = []
+
+            total_price = order.get_total_price()
+
+            order_transactions.append(
+                OrderTransaction.objects.create(
+                    order=order,
+                    title="فاکتور پرداخت نقدی سفارش شماره " + str(order.order_number),
+                    amount=total_price * (upfront / 100),
+                )
+            )
+            print(total_price)
+
+            total_price -= total_price * (upfront / 100)
+
+            print(total_price)
+
+            i = 1
+            interval = (total_price - (total_price % checks)) / checks
+            if total_price % checks != 0:
+                remainder = total_price % checks
+                total_price -= remainder
+
+                order_transactions.append(
+                    OrderTransaction.objects.create(
+                        order=order,
+                        title="فاکتور پرداخت چک سفارش شماره " + str(order.order_number),
+                        amount=((interval) + remainder),
+                        is_check=True,
+                        due_date=order.due_date + timezone.timedelta(days=(i * 30)),
+                    )
+                )
+                i += 1
+                total_price -= interval
+                print(total_price)
+
+            while total_price != 0:
+                order_transactions.append(
+                    OrderTransaction.objects.create(
+                        order=order,
+                        title="فاکتور پرداخت چک سفارش شماره " + str(order.order_number),
+                        amount=interval,
+                        is_check=True,
+                        due_date=order.due_date + timezone.timedelta(days=(i * 30)),
+                    )
+                )
+                i += 1
+                total_price -= interval
+                print(total_price)
+                # time.sleep(500)
+            return CreateTransaction(transactions=order_transactions, success=True)
+        except Exception as e:
+            print(e)
+            return CreateTransaction(success=False, errors="خطایی رخ داده است")
 
 
 # ========================Create End========================
@@ -440,6 +532,7 @@ class DeleteOrder(graphene.Mutation):
 
 class Mutation(graphene.ObjectType):
     create_order_item = CreateOrderItem.Field()
+    create_transaction = CreateTransaction.Field()
     update_order_item = UpdateOrderItem.Field()
     update_order = UpdateOrder.Field()
     delete_order_item = DeleteOrderItem.Field()
@@ -532,9 +625,6 @@ class Query(graphene.ObjectType):
 
     def resolve_display_items(self, info, page=1, per_page=12, filter=None):
         display_items = resolve_model_with_filters(DisplayItem, filter)
-        display_items = display_items.annotate(variants_count=Count("variants")).filter(
-            variants_count__gte=1
-        )
         paginator = Paginator(display_items, per_page)
         paginated_qs = paginator.page(page)
         return PaginatedDisplayItem(

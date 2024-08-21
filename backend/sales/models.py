@@ -30,11 +30,14 @@ class OrderTransaction(models.Model):
     amount = models.PositiveBigIntegerField()
     creation_date = models.DateField(auto_now_add=True)
     due_date = models.DateField(blank=True)
-    transacion_number = models.CharField(
-        max_length=17, unique=True, blank=True, null=True
-    )
-    description = models.TextField(blank=True, null=True)
     is_check = models.BooleanField(default=False)
+    proof = OptimizedImageField(
+        upload_to="proofs",
+        blank=True,
+        null=True,
+        optimized_image_output_size=(1000, 1000),
+        optimized_image_resize_method="cover",
+    )
 
     def save(self, *args, **kwargs):
 
@@ -81,16 +84,7 @@ class Order(models.Model):
         if not self.pk and not self.due_date:
             self.due_date = timezone.localdate() + timezone.timedelta(days=25)
 
-        if (
-            self.status == "a"
-            and not OrderTransaction.objects.filter(order=self).exists()
-        ):
-            transaction = OrderTransaction.objects.create(
-                order=self, amount=(self.total_price * 0.3)
-            )
-        elif (
-            self.status == "c" and OrderTransaction.objects.filter(order=self).exists()
-        ):
+        if self.status == "c" and OrderTransaction.objects.filter(order=self).exists():
             transactions = self.transactions
             for transaction in transactions:
                 transaction.status = "c"

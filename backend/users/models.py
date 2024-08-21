@@ -1,7 +1,6 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from image_optimizer.fields import OptimizedImageField
 from django.core.validators import (
     EmailValidator,
 )
@@ -58,6 +57,9 @@ class Business(models.Model):
     owner_last_name = models.CharField(max_length=32)
     owner_phone_number = models.CharField(max_length=16)
     is_confirmed = models.BooleanField(default=False)
+    rank = models.CharField(
+        choices=[("a", "A"), ("b", "B"), ("c", "C")], max_length=1, default="c"
+    )
 
     def __str__(self):
         return self.name
