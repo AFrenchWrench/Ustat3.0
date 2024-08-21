@@ -61,7 +61,6 @@ const UserSchema = z.object({
     ownerFirstName: z.string().optional(),
     ownerLastName: z.string().optional(),
     ownerPhoneNumber: z.string().optional(),
-    address: z.string().optional(),
   
   }).superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {
@@ -128,23 +127,6 @@ const UserSchema = z.object({
           path: ["ownerPhoneNumber"]
         });
       } // بررسی موجود بودن شماره تلفن در سیستم باید در اینجا اضافه شود
-  
-      if (!data.address) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "آدرس الزامی است",
-          path: ["address"]
-        });
-      } else {
-        const pattern = /^[\u0600-\u06FF0-9\s,]+$/;
-        if (!pattern.test(data.address)) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "در آدرس تنها از حروف فارسی، اعداد انگلیسی، و ویرگول و یا فاصله استفاده کنید",
-            path: ["address"]
-          });
-        }
-      }
     }
   });
 

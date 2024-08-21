@@ -524,6 +524,15 @@ const Page = () => {
                         selectedAddress={handleAddress}
                     />
                 )}
+            {
+                orderData.status === "A" && (
+                    <div>
+                        <button onClick={() => push(`/payment/${orderData.id}`)}>
+                            صفحه پرداخت
+                        </button>
+                    </div>
+                )
+            }
         </section>
     );
 }

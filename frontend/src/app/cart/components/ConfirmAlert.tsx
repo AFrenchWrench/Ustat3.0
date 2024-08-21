@@ -29,7 +29,7 @@ const ConfirmAlert: React.FC<ConfirmAlertProps> = ({ type, itemId, status, onCon
 
     const handleMessage = (type: string, status?: string) => {
         if (type === 'update') {
-            return "آیا برای ثبت سفارش مطمعن هستید؟"
+            return "آیا برای بروزرسانی سفارش مطمعن هستید؟"
         }
         else if (type === "delete") {
             return "آیا برای حذف این آیتم مطمعن هستید؟"

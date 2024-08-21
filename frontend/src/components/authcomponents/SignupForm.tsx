@@ -22,7 +22,7 @@ import "react-multi-date-picker/styles/backgrounds/bg-dark.css"
 import persian from "react-date-object/calendars/persian";
 import persian_fa from "react-date-object/locales/persian_fa";
 import gregorian from "react-date-object/calendars/gregorian";
-import Select, { ActionMeta, SingleValue } from "react-select"
+
 
 
 import { FaCalendarAlt } from "react-icons/fa";
@@ -59,7 +59,6 @@ type FieldNames =
   | "ownerFirstName"
   | "ownerLastName"
   | "ownerPhoneNumber"
-  | "address";
 
 
 // | "city"
@@ -128,7 +127,6 @@ const SignupForm = () => {
           ownerFirstName: "${userInfo.ownerFirstName}",
           ownerLastName: "${userInfo.ownerLastName}",
           ownerPhoneNumber: "${userInfo.ownerPhoneNumber}",
-          address: "${userInfo.address}"
         }
       ` : '';
 
@@ -178,7 +176,6 @@ const SignupForm = () => {
           owner_first_name: "ownerFirstName",
           owner_last_name: "ownerLastName",
           owner_phone_number: "ownerPhoneNumber",
-          address: "address"
         };
 
         Object.keys(errors).forEach((key) => {
@@ -545,16 +542,6 @@ const SignupForm = () => {
             {errors.ownerPhoneNumber && (
               <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5'>
                 {errors.ownerPhoneNumber.message}
-              </p>
-            )}
-          </div>
-          <div className='signup_form_container'>
-            <textarea {...register("address")} className="signup_form_input !pt-[20px] resize-none" id='address' required />
-            <label className="signup_form_label" htmlFor="address">آدرس :</label>
-            <div className='line'></div>
-            {errors.address && (
-              <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5'>
-                {errors.address.message}
               </p>
             )}
           </div>

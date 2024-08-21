@@ -71,7 +71,7 @@ const Cart = () => {
           body: JSON.stringify({
             query: `
             query Orders {
-                orders(filter: { status: ["p","ps"] }) {        
+                orders(filter: { status: ["p","ps","a"] }) {        
                         totalPages
                         totalItems
                         items {

@@ -172,7 +172,7 @@ const Page = () => {
 
     return (
         <section className="flex flex-col gap-5 items-center mt-10">
-            <ImageList gap={8} sx={{ width: "80%" }} cols={isSmallScreen ? 2 : 3}
+            <ImageList gap={8} sx={{ width: "93%" }} cols={isSmallScreen ? 2 : 3}
 
             >
                 {displayData &&

@@ -1,0 +1,106 @@
+.transactionsSection {
+    padding: 20px;
+    background-color: rgb(32, 32 ,32);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.header {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.transactionsList {
+    list-style-type: none;
+    padding: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.transactionItem {
+    width: 80%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: rgb(25, 25, 25);
+    box-shadow: 0px 0px 20px rgb(15, 15, 15);
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.title {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.proofContainer, .uploadContainer {
+    display: flex;
+    width: 50%;
+    align-items: center;
+    justify-content: center;
+}
+.uploadContainer{
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.previewImage {
+    width: 90%;
+    max-width: 300px;
+    display: block;
+    border-radius: 5px;
+}
+
+.proofImage{
+    width: 100%;
+    border-radius: 5px;
+
+}
+
+.fileInput {
+    margin-top: 10px;
+    display: none;
+}
+.fileLable{
+    margin-left: 20px;
+    background-color: rgb(255, 28, 28);
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.uploadButton {
+    margin-top: 10px;
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.uploadButton:hover {
+    background-color: #0056b3;
+}
+
+.loading {
+    text-align: center;
+    font-size: 18px;
+    color: #007bff;
+}
+
+.error {
+    text-align: center;
+    font-size: 18px;
+    color: red;
+}

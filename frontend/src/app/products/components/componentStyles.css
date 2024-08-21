@@ -23,11 +23,14 @@
 .more{
     width: 100%;
     text-align: center;
+    font-size: clamp(10px,2.5vw,14px);
 }
 .add_button{
     border-radius: 8px;
     width: 100%;
     margin-top: 10px;
+    padding: 5px 10px;
+    font-size: clamp(10px,2.5vw,14px);
 }
 .top_right_section{
     display: flex;
@@ -51,6 +54,7 @@
     padding: 5px;
     margin-left:auto;
     border-radius: 5px;
+    font-size: clamp(10px,2.5vw,16px);
 }
 
 .price{
@@ -58,7 +62,7 @@
     width: 100%;
     margin-top: 10px;
     text-align: start;
-    font-size: clamp(12px,1.5rem,16px);
+    font-size: clamp(10px,2.5vw,16px);
 }
 .picture{
     width: 100%;

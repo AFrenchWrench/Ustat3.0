@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { IoMdAddCircle } from "react-icons/io";
 import Navbar from "@/allStyles/adminNavbar.module.css";
 import { RiReceiptFill } from 'react-icons/ri';
+import { FaUsers } from 'react-icons/fa';
 
 const AdminNav = () => {
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
@@ -65,6 +66,11 @@ const AdminNav = () => {
                         <li>
                             <Link href={"/admin/orders"}>
                                 <RiReceiptFill color="black" size="30px" />
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href={"/admin/users"}>
+                                <FaUsers color="black" size="30px" />
                             </Link>
                         </li>
                     </ul>
