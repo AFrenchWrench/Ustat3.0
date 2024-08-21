@@ -320,6 +320,7 @@ class UpdateTransactionInput(graphene.InputObjectType):
     title = graphene.String(required=False)
     due_date = graphene.Date(required=False)
     status = graphene.String(required=False)
+    description = graphene.String(required=False)
 
 
 class UpdateBusinessInput(graphene.InputObjectType):
@@ -661,14 +662,15 @@ class UpdateTransaction(graphene.Mutation):
             print(e)
             return UpdateTransaction(success=False, errors="خطایی رخ داده است")
 
+
 class UpdateBusiness(graphene.Mutation):
     class Arguments:
         input = UpdateBusinessInput(required=True)
-        
+
     success = graphene.Boolean()
     errors = graphene.String()
     business = graphene.Field(BusinessType)
-    
+
     @staff_member_required
     def mutate(self, info, input):
         try:
@@ -676,13 +678,11 @@ class UpdateBusiness(graphene.Mutation):
                 business = Business.objects.get(pk=input.get("id"))
                 input.pop("id")
             except Business.DoesNotExist:
-                return UpdateBusiness(
-                    success=False, errors="شرکت مورد نظر یافت نشد"
-                )
-            
+                return UpdateBusiness(success=False, errors="شرکت مورد نظر یافت نشد")
+
             business.is_confirmed = input.get("is_confirmed")
             business.save()
-            
+
             return UpdateBusiness(success=True, business=business)
         except Exception as e:
             print(e)
