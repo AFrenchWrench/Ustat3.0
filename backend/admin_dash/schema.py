@@ -318,11 +318,8 @@ class UpdateItemVariantInput(graphene.InputObjectType):
 class UpdateTransactionInput(graphene.InputObjectType):
     id = graphene.ID(required=True)
     title = graphene.String(required=False)
-    amount = graphene.BigInt(required=False)
     due_date = graphene.Date(required=False)
-    transacion_number = graphene.String(required=False)
     status = graphene.String(required=False)
-    description = graphene.String(required=False)
 
 
 class UpdateBusinessInput(graphene.InputObjectType):

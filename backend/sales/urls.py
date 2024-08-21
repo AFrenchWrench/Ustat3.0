@@ -16,4 +16,9 @@ urlpatterns = [
         views.upload_display_item_variant_images,
         name="upload_display_item_variant_images",
     ),
+    path(
+        "transaction/<int:pk>/upload-image/",
+        views.upload_transaction_image,
+        name="upload_transaction_image",
+    ),
 ]
