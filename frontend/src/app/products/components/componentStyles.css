@@ -106,6 +106,7 @@
     margin-bottom: 20px;
     display: flex;
     align-items: center;
+    font-size: clamp(7px,2vw,15px);
 }
 
 

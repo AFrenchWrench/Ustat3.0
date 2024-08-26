@@ -53,7 +53,7 @@ const columns: GridColDef[] = [
         minWidth: 150,
         renderCell: (params) => (
             <Link
-                href={`/cart/${params.row.id}`}
+                href={`/admin/orders/${params.row.id}`}
                 style={{ textDecoration: 'none', color: 'inherit' }}
             >
                 {params.value}
@@ -98,13 +98,13 @@ const columns: GridColDef[] = [
         field: 'username',
         headerName: 'نام کاربری',
         flex: 1,
-        minWidth: 150,
+        minWidth: 90,
     },
     {
         field: 'firstName',
         headerName: 'نام',
         flex: 1,
-        minWidth: 150,
+        minWidth: 90,
     },
     {
         field: 'email',

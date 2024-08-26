@@ -31,11 +31,16 @@ interface OrderItems {
     dimensions: string;
 }
 
+interface Iaddress {
+    address: string
+}
+
 interface DisplayItem {
     id: string;
     dueDate: string;
     orderNumber: string;
     status: string;
+    address: Iaddress;
     items: OrderItems[];
 }
 
@@ -93,6 +98,9 @@ const Page = () => {
                                         dueDate
                                         orderNumber
                                         status
+                                        address {
+                                            address
+                                        }
                                         items {
                                             id
                                             type
@@ -496,6 +504,9 @@ const Page = () => {
                         </div>
                     </>
                 )}
+                {
+                    orderData.address ? <p>{orderData.address.address}</p> : ""
+                }
             </div>
 
             {confirmAlert && (

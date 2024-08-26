@@ -8,7 +8,6 @@
     min-width: 250px;
     width: 80%;
     background-color:rgb(42, 42, 42);
-    margin-top: 20px;
     padding: 10px 5px;
     border-radius: 10px;
     display: flex;
@@ -17,11 +16,8 @@
     align-items: center;
   }
   .twoContainer{
-    width: 90%;
-    display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin: 20px;
+    position: relative;
   }
 
   .twoContainer label{
@@ -68,7 +64,6 @@
         align-items: center;
         gap: 5px;
         position: relative;
-        margin-bottom: 40px;
       }
     .formDetails label{
         width: 90%;
@@ -122,7 +117,6 @@
         display: flex;
         align-items: center;
         gap: 5px;
-        margin-bottom: 40px;
     }
     .sliderContainer span{
         width: 33%;
@@ -161,8 +155,7 @@
       border-radius: 20px;
       padding: 15px;
       display: flex;
-      min-height: 70vh;
-      max-height: 80vh;
+      height: 80vh;
     }
 
     .tableDisplayItems{
@@ -208,6 +201,7 @@
       width: 100%;
       background-color: rgb(42, 42, 42);
       border-radius: 10px;
+      overflow-y: scroll;
     }
 
     .tableQueryItems{
@@ -221,6 +215,9 @@
       overflow-y: scroll;
     }
     .tableQueryItems::-webkit-scrollbar{
+      display: none;
+    }
+    .tableQueryDisplayItems::-webkit-scrollbar{
       display: none;
     }
 
@@ -300,10 +297,10 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      row-gap: 10px;
       border-radius: 15px;
       padding: 25px;
       background-color: rgb(32, 32, 32);
+      row-gap: 20px;
     }
     .addDisplayItemFormSection form div{
       display: flex;
