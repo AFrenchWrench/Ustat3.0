@@ -32,8 +32,8 @@ class User(AbstractUser):
     username = models.CharField(max_length=32, unique=True)
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
-    phone_number = models.CharField(max_length=16, unique=True)
-    landline_number = models.CharField(max_length=16, unique=True)
+    phone_number = models.CharField(max_length=20, unique=True)
+    landline_number = models.CharField(max_length=20, unique=True)
     email = models.EmailField(
         unique=True,
         validators=[EmailValidator(message="ایمیل وارد شده معتبر نمی‌باشد")],
@@ -55,7 +55,7 @@ class Business(models.Model):
     name = models.CharField(max_length=32, unique=True)
     owner_first_name = models.CharField(max_length=32)
     owner_last_name = models.CharField(max_length=32)
-    owner_phone_number = models.CharField(max_length=16)
+    owner_phone_number = models.CharField(max_length=20)
     is_confirmed = models.BooleanField(default=False)
     rank = models.CharField(
         choices=[("a", "A"), ("b", "B"), ("c", "C")], max_length=1, default="c"
