@@ -10,15 +10,16 @@
         font-family: Arial, sans-serif;
         margin: 0;
         padding: 0;
-        background-color: #f4f4f4;
+        background-color: #121212; /* Dark background */
+        color: #ffffff; /* Light text color */
       }
       .container {
         max-width: 600px;
         margin: 0 auto;
-        background-color: #ffffff;
+        background-color: #1e1e1e; /* Darker container background */
         padding: 20px;
         border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.1); /* Subtle light shadow */
       }
       .header {
         text-align: center;
@@ -32,16 +33,18 @@
         padding: 20px;
       }
       .content h1 {
-        color: #d32f2f; /* رنگ قرمز برای عنوان */
+        color: #d32f2f; /* Red color for the title */
+        font-size: 25px;
       }
       .content p {
-        color: #666666;
+        color: #e0e0e0; /* Light gray color for paragraphs */
+        font-size: 20px; /* Increase font size for better readability */
       }
       .verification-code {
         display: inline-block;
         padding: 10px 20px;
-        background-color: #d32f2f; /* پس‌زمینه قرمز برای کد تایید */
-        color: #ffffff;
+        background-color: #d32f2f; /* Red background for verification code */
+        color: #ffffff; /* White text color */
         border-radius: 5px;
         font-size: 1.2em;
         margin: 20px 0;
@@ -49,7 +52,7 @@
       .footer {
         text-align: center;
         padding: 20px;
-        color: #999999;
+        color: #999999; /* Light gray color for footer text */
         font-size: 0.9em;
       }
     </style>
@@ -60,11 +63,10 @@
         <img
           src="https://ustatticaret.com/images/%C3%9Cstat-Ticaret-Email-Header.png"
           alt="Header"
-          style="margin-bottom: -70px"
         />
       </div>
       <div class="content">
-        <h1 style="font-size: 25px;">{{full_name}} عزیز به استاد تجارت خوش اومدی</h1>
+        <h1>{{full_name}} عزیز به استاد تجارت خوش اومدی</h1>
         <p>کد یک بار مصرف شما</p>
         <div class="verification-code">{{otp_code}}</div>
         <p>

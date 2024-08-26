@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>لیست خرید</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #121212; /* Dark background */
+        color: #ffffff; /* Light text */
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #1e1e1e; /* Darker container background */
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.1); /* Subtle light shadow */
+      }
+      .header {
+        text-align: center;
+        padding: 20px 0;
+      }
+      .header img {
+        max-width: 150px;
+      }
+      .content {
+        text-align: center;
+        padding: 20px;
+      }
+      .content h1 {
+        color: #d32f2f;
+        font-size: 25px;
+      }
+      .content p {
+        color: #ffffff; /* Light text color for paragraphs */
+        font-size: 18px; /* Increased font size */
+      }
+      .content span {
+        color: #d32f2f; /* Red text for span */
+        font-size: 20px; /* Increased font size for span */
+        font-weight: bold;
+      }
+      .shopping-list {
+        text-align: right;
+        margin: 20px 0;
+        padding: 20px;
+        background-color: #333333; /* Darker background for shopping list */
+        border-radius: 5px;
+        border: 1px solid #444444; /* Subtle border */
+      }
+      .shopping-list h2 {
+        color: #d32f2f;
+        font-size: 20px;
+        margin-bottom: 10px;
+      }
+      .shopping-list ul {
+        list-style-type: none;
+        padding: 0;
+        color: #ffffff; /* Light text color */
+      }
+      .shopping-list ul li {
+        margin: 10px 0;
+        padding: 10px;
+        background-color: #2a2a2a; /* Darker background for list items */
+        border: 1px solid #444444;
+        border-radius: 5px;
+        font-size: 1em;
+      }
+      .footer {
+        text-align: center;
+        padding: 20px;
+        color: #bbbbbb; /* Lighter gray for footer text */
+        font-size: 0.9em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <img
+          src="https://ustatticaret.com/images/%C3%9Cstat-Ticaret-Email-Header.png"
+          alt="Header"
+        />
+      </div>
+      <div class="content">
+        <p>{{full_name}} عزیز وضعیت سفارش شما به شماره</p>
+        <span>{{order_number}}</span>
+        <p>به {{status}} تغییر پیدا کرده است</p>
+        <div class="shopping-list">
+          <h2>لیست خرید شما</h2>
+          <ul>
+            {% for item in items %}
+            <li>{{item}}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      <div class="footer">
+        <p>&copy; 2024 استاد تجارت. تمامی حقوق محفوظ است</p>
+      </div>
+    </div>
+  </body>
+</html>
