@@ -7,7 +7,7 @@
 
 .section{
     width: 100%;
-    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -98,6 +98,7 @@
     transition: .3s;
     z-index: 3;
     cursor: pointer;
+    font-size: clamp(7px,2vw,15px);
 }
 .productsDiv span{
     width: 100%;
@@ -164,7 +165,7 @@
 
 .productsGrid picture{
     background-color: black;
-    border-radius: 30px;
+    border-radius: 15%;
     overflow: hidden;
     position: relative;
     display: flex;
@@ -189,6 +190,7 @@
     opacity: 0;
     transition: .3s;
     z-index: 3;
+    font-size: clamp(7px,2vw,15px);
 }
 .productsGrid picture:hover p{
     transform: translateY(0);
@@ -249,4 +251,44 @@
  opacity: 0;
  animation: slideIn .2s ease forwards;
  animation-delay: .5s;
+}
+
+
+@media only screen and (max-width:600px) {
+    .section{
+        width: 98%;
+    }
+   
+    .homeCart{
+        aspect-ratio: unset;
+        height: unset;
+        max-width: unset;
+        margin: 10px auto;
+    }
+    .topDiv{
+        flex-direction: column;
+        row-gap: 10px;
+        align-items: flex-start;
+    }
+    .icon{
+        width: 50%;
+    }
+    .productsDiv{
+        width: 100%;
+        aspect-ratio: 2/1.2;
+    }
+    .bottomDiv{
+        flex-direction: column-reverse;
+        row-gap: 10px;
+    }
+    .textDiv{
+        width: 100%;
+        aspect-ratio: 2/1;
+    }
+    .gridDiv{
+        width: 100%;
+    }
+    .productsGrid{
+        width: 100%;
+    }
 }

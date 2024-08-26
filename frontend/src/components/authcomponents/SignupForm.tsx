@@ -170,7 +170,6 @@ const SignupForm = () => {
           email: "email",
           phone_number: "phoneNumber",
           landline_number: "landlineNumber",
-          // city: "city",
           birthdate: "birthDate",
           name: "businessName",
           owner_first_name: "ownerFirstName",

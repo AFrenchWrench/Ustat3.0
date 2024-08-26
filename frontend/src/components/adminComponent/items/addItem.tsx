@@ -13,6 +13,28 @@ import Cookies from 'js-cookie';
 
 const maxFileSize = 3 * 1024 * 1024;
 
+interface Dimensions {
+    height: number;
+    width: number;
+    length: number;
+    quantity?: number; // Optional property
+}
+
+type FieldNamesError =
+    | "name"
+    | "fabric"
+    | "color"
+    | "woodColor"
+    | "price"
+    | "description"
+    | "dimensions"
+    | "showInFirstPage"
+    | "isForBusiness"
+
+interface ErrorMapping {
+    [key: string]: FieldNamesError;
+}
+
 const fileSchema = z.instanceof(File).refine(file => file.size <= maxFileSize, {
     message: 'File size must be less than 3MB',
 }).refine(file => file.type.startsWith('image/'), {
@@ -26,7 +48,8 @@ const schema = z.object({
     dimensions: z.object({
         height: z.string().min(1, "Height is required"),
         width: z.string().min(1, "Width is required"),
-        depth: z.string().min(1, "Depth is required")
+        depth: z.string().min(1, "Depth is required"),
+        quantity: z.string().optional()
     }),
     fabric: z.string().optional(),
     color: z.string().optional(),
@@ -49,6 +72,8 @@ type AddDisplayItemProps = {
 };
 
 const CreateDisplayItem: React.FC<AddDisplayItemProps> = ({ onClose, id, type }) => {
+    console.log(type);
+
     const [message, setMessage] = useState('');
     const [previews, setPreviews] = useState<{ [key in FieldNames]: string | null }>({
         thumbnail: null,
@@ -62,6 +87,7 @@ const CreateDisplayItem: React.FC<AddDisplayItemProps> = ({ onClose, id, type })
         handleSubmit,
         formState: { errors },
         setValue,
+        setError,
         reset
     } = useForm<FormValues>({
         resolver: zodResolver(schema),
@@ -75,11 +101,15 @@ const CreateDisplayItem: React.FC<AddDisplayItemProps> = ({ onClose, id, type })
         const Authorization = Cookies.get("Authorization");
 
         // Prepare dimensions
-        const dimensions = {
+        const dimensions: Dimensions = {
             height: Number(data.dimensions.height),
             width: Number(data.dimensions.width),
-            length: Number(data.dimensions.depth),
+            length: Number(data.dimensions.depth)
         };
+
+        if (data.dimensions.quantity !== undefined) {
+            dimensions.quantity = Number(data.dimensions.quantity);
+        }
         const dimensionsString = JSON.stringify(dimensions);
 
         const escapeString = (str: string) => str.replace(/"/g, '\\"');
@@ -170,8 +200,40 @@ const CreateDisplayItem: React.FC<AddDisplayItemProps> = ({ onClose, id, type })
                     setMessage('Failed to upload images.');
                     console.error('Upload Error:', uploadResult);
                 }
-            } else {
-                setMessage('Failed to create item.');
+            }
+            if (result.data.createItemVariant.errors) {
+                const errors = JSON.parse(result.data.createItemVariant.errors)
+                const errorMapping: ErrorMapping = {
+                    name: "name",
+                    fabric: "fabric",
+                    color: "color",
+                    woodColor: "woodColor",
+                    price: "price",
+                    description: "description",
+                    dimensions: "dimensions",
+                    showInFirstPage: "showInFirstPage",
+                    isForBusiness: "isForBusiness",
+                };
+
+                Object.keys(errors).forEach((key) => {
+                    if (errorMapping[key]) {
+                        setError(errorMapping[key], {
+                            type: "server",
+                            message: errors[key]
+                        });
+                        console.log(errors[key]);
+
+                    }
+                });
+
+                return;
+
+            }
+
+            else {
+                setMessage(result.data.errors[0]);
+
+
             }
         } catch (error) {
             console.error('Error:', error);
@@ -247,6 +309,16 @@ const CreateDisplayItem: React.FC<AddDisplayItemProps> = ({ onClose, id, type })
                         <input dir='ltr' type="number" id='depth' {...register("dimensions.depth")} />
                         {errors.dimensions?.depth && (<p className={styles.errorMessage}>{errors.dimensions.depth.message}</p>)}
                     </span>
+                    {
+                        type === "M" && (
+                            <span>
+                                <label htmlFor="depth">تعداد :</label>
+                                <input dir='ltr' type="number" id='depth' {...register("dimensions.quantity")} />
+                                {errors.dimensions?.quantity && (<p className={styles.errorMessage}>{errors.dimensions.quantity.message}</p>)}
+                            </span>
+                        )
+                    }
+                    {errors.dimensions && (<p className={styles.errorMessage}>{errors.dimensions.message}</p>)}
                 </div>
 
                 <div className={styles.twoContainer}>
@@ -303,7 +375,7 @@ const CreateDisplayItem: React.FC<AddDisplayItemProps> = ({ onClose, id, type })
 
                 <div className={styles.formDetails}>
                     <label htmlFor="description">توضیحات :</label>
-                    <textarea dir='ltr' id='description' {...register("description")} />
+                    <textarea id='description' {...register("description")} />
                     {errors.description && (<p className={styles.errorMessage}>{errors.description.message}</p>)}
                 </div>
 
@@ -341,3 +413,5 @@ const CreateDisplayItem: React.FC<AddDisplayItemProps> = ({ onClose, id, type })
 };
 
 export default CreateDisplayItem;
+
+
