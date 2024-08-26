@@ -20,7 +20,6 @@ interface Ivariations {
 
 const Variations: React.FC<Ivariations> = ({ variations, onSelectVariation, active }) => {
 
-    const { push } = useRouter()
 
 
     return (

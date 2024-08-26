@@ -137,66 +137,69 @@ const Page = () => {
 
     return (
         <section className={Style.transactionsSection}>
-            <h1 className={Style.header}>Transactions</h1>
+            <h1 className={Style.header}>سر رسید ها</h1>
             <ul className={Style.transactionsList}>
                 {transactions.map((transaction) => (
                     <li key={transaction.id} className={Style.transactionItem}>
-                        <div>
-                            <h2 className={Style.title}>{transaction.title}</h2>
-                            <p>وضعیت : {statusChoices[transaction.status] || 'Unknown Status'}</p>
-                            <p>{Number(transaction.amount).toLocaleString('en-US')} تومان</p>
-                            <p>تاریخ ساخت : {convertToJalaali(transaction.creationDate)}</p>
-                            <p>تاریخ تحویل : {convertToJalaali(transaction.dueDate)}</p>
-                            <p>{transaction.isCheck ? 'چک' : 'نقدی'}</p>
-                            <p>{transaction.proof ? "عکس ارسال شده" : "عکس ارسال نشده"}</p>
-                        </div>
-                        {transaction.proof ? (
-                            <div className={Style.proofContainer}>
-                                <img
-                                    src={`/media/${transaction.proof}`} // URL where the proof image is served
-                                    alt="Proof"
-                                    className={Style.proofImage}
-                                />
+                        <h2 className={Style.title}>{transaction.title}</h2>
+                        <div className={Style.PInfo}>
+                            <div className={Style.infoP}>
+                                <p>وضعیت : {statusChoices[transaction.status] || 'Unknown Status'}</p>
+                                <p>{Number(transaction.amount).toLocaleString('en-US')} تومان</p>
+                                <p>تاریخ ساخت : {convertToJalaali(transaction.creationDate)}</p>
+                                <p>تاریخ تحویل : {convertToJalaali(transaction.dueDate)}</p>
+                                <p>{transaction.isCheck ? 'چک' : 'نقدی'}</p>
+                                <p>{transaction.proof ? "عکس ارسال شده" : "عکس ارسال نشده"}</p>
                             </div>
-                        ) : (
-                            <div className={Style.uploadContainer}>
-                                {previewUrl[transaction.id] && (
+                            {transaction.proof ? (
+                                <div className={Style.proofContainer}>
                                     <img
-                                        src={previewUrl[transaction.id]!}
-                                        alt="Preview"
-                                        className={Style.previewImage}
+                                        src={`/media/${transaction.proof}`} // URL where the proof image is served
+                                        alt="Proof"
+                                        className={Style.proofImage}
                                     />
-                                )}
-                                <div>
-                                    <label className={Style.fileLable} htmlFor={`proofInput${transaction.id}`}>انتخاب عکس</label>
-                                    <input
-                                        id={`proofInput${transaction.id}`}
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => {
-                                            if (e.target.files && e.target.files.length > 0) {
-                                                handleFileChange(transaction.id, e.target.files[0]);
-                                            }
-                                        }}
-                                        className={Style.fileInput}
-                                    />
-
-                                    <button
-                                        onClick={() => {
-                                            const file = selectedFile[transaction.id];
-                                            if (file) {
-                                                handleImageUpload(transaction.id, file);
-                                            } else {
-                                                alert('No file selected');
-                                            }
-                                        }}
-                                        className={Style.uploadButton}
-                                    >
-                                        ارسال
-                                    </button>
                                 </div>
-                            </div>
-                        )}
+                            ) : (
+                                <div className={Style.uploadContainer}>
+                                    {previewUrl[transaction.id] && (
+                                        <img
+                                            src={previewUrl[transaction.id]!}
+                                            alt="Preview"
+                                            className={Style.previewImage}
+                                        />
+                                    )}
+                                    <div className={Style.chooseImageButtonContainer}>
+                                        <label className={Style.fileLable} htmlFor={`proofInput${transaction.id}`}>انتخاب عکس</label>
+                                        <input
+                                            id={`proofInput${transaction.id}`}
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                                if (e.target.files && e.target.files.length > 0) {
+                                                    handleFileChange(transaction.id, e.target.files[0]);
+                                                }
+                                            }}
+                                            className={Style.fileInput}
+                                        />
+
+                                        <button
+                                            onClick={() => {
+                                                const file = selectedFile[transaction.id];
+                                                if (file) {
+                                                    handleImageUpload(transaction.id, file);
+                                                } else {
+                                                    alert('No file selected');
+                                                }
+                                            }}
+                                            className={Style.uploadButton}
+                                        >
+                                            ارسال
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                     </li>
                 ))}
             </ul>

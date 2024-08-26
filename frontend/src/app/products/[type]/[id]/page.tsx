@@ -14,6 +14,23 @@ import Loading from '@/components/Loading';
 import SelectOrder from '../../components/SelectOrder';
 import Variations from '../../components/variations';
 
+
+
+interface Dimensions {
+    width?: number;
+    height?: number;
+    length?: number;
+    chair?: ChairDimensions;
+}
+
+interface ChairDimensions {
+    width?: number;
+    height?: number;
+    length?: number;
+    quantity?: number;
+}
+
+
 interface OrderItems {
     id: string;
     type: string;
@@ -39,11 +56,11 @@ interface Ivariation {
     color: string;
 }
 interface IdisplayItemV {
+    type: string;
     variants: Ivariation[];
 }
 interface DisplayItem {
     id: string;
-    type: string;
     name: string;
     dimensions: string; // This is a JSON string
     price: string;
@@ -93,6 +110,7 @@ const Page = () => {
                                 slider2
                                 slider3
                                 displayItem {
+                                    type
                                     variants {
                                         id
                                         name
@@ -178,12 +196,14 @@ const Page = () => {
     if (!product) return <p>Product not found</p>;
 
     // Parse dimensions from JSON string
-    let dimensions: { width?: number; height?: number; length?: number } = {};
+    let dimensions: Dimensions = {};
+
     try {
         dimensions = JSON.parse(product.dimensions);
     } catch (e) {
         console.error('Error parsing dimensions JSON:', e);
     }
+
 
     return (
         <section className='sectionId'>
@@ -208,6 +228,17 @@ const Page = () => {
                             <p>{dimensions.length ? `طول: ${dimensions.length}` : 'N/A'}</p>
                         </div>
                     </div>
+                    {dimensions.chair && (
+                        <div className='dimensions_container'>
+                            <p>ابعاد صندلی:</p>
+                            <div>
+                                <p>{dimensions.chair.quantity ? `تعداد: ${dimensions.chair.quantity}` : 'تعداد: N/A'}</p>
+                                <p>{dimensions.chair.width ? `عرض: ${dimensions.chair.width}` : 'عرض: N/A'}</p>
+                                <p>{dimensions.chair.height ? `ارتفاع: ${dimensions.chair.height}` : 'ارتفاع: N/A'}</p>
+                                <p>{dimensions.chair.length ? `طول: ${dimensions.chair.length}` : 'طول: N/A'}</p>
+                            </div>
+                        </div>
+                    )}
                     <div className='color_section'>
                         <p>رنگ : <span>{product.color || 'N/A'}</span></p>
                         <p>رنگ چوب : <span>{product.woodColor || 'N/A'}</span></p>

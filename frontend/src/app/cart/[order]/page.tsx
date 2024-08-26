@@ -80,6 +80,8 @@ const Page = () => {
 
     useEffect(() => {
         if (!order) return;
+        console.log(order);
+
 
         const fetchProductData = async () => {
             try {
@@ -93,7 +95,7 @@ const Page = () => {
                     body: JSON.stringify({
                         query: `
                                 query Order {
-                                    order(id: ${order}) {
+                                    order(id: "${order}") {
                                         id
                                         dueDate
                                         orderNumber
@@ -468,7 +470,7 @@ const Page = () => {
                                 calendarPosition="bottom-right"
                                 onChange={handleDateChange}
                                 minDate={new DateObject({ calendar: persian }).set("day", 15)}
-                                className="red bg-dark text-color-white"
+                                className="datePicker red bg-dark text-color-white"
                                 inputClass={Styles.customInput}
                                 value={dateValue}
                                 disabled={orderData.status !== "PS"}
@@ -505,7 +507,7 @@ const Page = () => {
                     </>
                 )}
                 {
-                    orderData.address ? <p>{orderData.address.address}</p> : ""
+                    orderData.address ? <p className={Styles.addressText}>{orderData.address.address}</p> : ""
                 }
             </div>
 

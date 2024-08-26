@@ -34,15 +34,6 @@ const businessSchema = z.object({
     .refine(isValidPhoneNumber, {
       message: "شماره تلفن وارد شده معتبر نمی‌باشد فرمت درست : ...98+"
     }),
-  
-  address: z.string()
-    .nonempty({ message: "آدرس الزامی است" })
-    .refine((value) => {
-      const pattern = /^[\u0600-\u06FF0-9\s,]+$/;
-      return pattern.test(value);
-    }, {
-      message: "در آدرس تنها از حروف فارسی، اعداد انگلیسی، و ویرگول و یا فاصله استفاده کنید"
-    }),
 });
 
 export default businessSchema;

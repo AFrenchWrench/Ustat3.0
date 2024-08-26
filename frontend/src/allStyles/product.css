@@ -126,4 +126,28 @@
   .swiper-pagination-bullet-active {
     background-color: rgb(255, 48, 48) !important; /* Change active bullet color to dark red */
   }
+
+
+
+
+
+
+  @media only screen and (max-width:1000px) {
+    .sectionId{
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .container{
+        margin-right: unset;
+        width: 95%;
+        padding: 10px;
+        font-size: small;
+    }
+  }
+  @media only screen and (max-width:700px) {
+    .container{
+        font-size: x-small;
+    }
+  }
   

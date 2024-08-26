@@ -1,5 +1,4 @@
 .transactionsSection {
-    padding: 20px;
     background-color: rgb(32, 32 ,32);
     width: 100%;
     display: flex;
@@ -23,7 +22,7 @@
 }
 
 .transactionItem {
-    width: 80%;
+    width: 75%;
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 15px;
@@ -31,37 +30,65 @@
     background-color: rgb(25, 25, 25);
     box-shadow: 0px 0px 20px rgb(15, 15, 15);
     display: flex;
+    flex-direction: column;
     justify-content: space-evenly;
 }
 
+.PInfo{
+    display: flex;
+    justify-content: space-between;
+}
+.infoP{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    row-gap: 10px;
+}
+.PInfo p{
+    font-size: clamp(11px,1.5vw,16px);
+}
+
 .title {
-    font-size: 18px;
+    font-size: clamp(12px,1.5vw,18px);
     margin-bottom: 10px;
 }
 
 .proofContainer, .uploadContainer {
     display: flex;
     width: 50%;
+    aspect-ratio: 1;
+    position: relative;
     align-items: center;
     justify-content: center;
+    border-radius: 10px;
+    background: rgb(30 30 30);
 }
 .uploadContainer{
     margin-top: 10px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    align-items: flex-end;
+    justify-content: center;
+    align-items: center;
+}
+
+.chooseImageButtonContainer{
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    font-size: clamp(8px,1.5vw,16px);
 }
 
 .previewImage {
-    width: 90%;
-    max-width: 300px;
+    max-width: 100%;
+    max-height: 100%;
     display: block;
     border-radius: 5px;
+
 }
 
 .proofImage{
-    width: 100%;
+    max-width: 100%;
+    max-height: 100%;
     border-radius: 5px;
 
 }
@@ -116,4 +143,10 @@
     color: rgb(220, 220, 220);
     padding: 2px 5px;
     font-size: 14px;
+}
+
+@media only screen and (max-width:600px) {
+    .transactionItem{
+        width: 95%;
+    }
 }

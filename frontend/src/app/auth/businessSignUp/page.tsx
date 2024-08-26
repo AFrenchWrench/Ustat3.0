@@ -20,7 +20,6 @@ type FieldNames =
     | "ownerFirstName"
     | "ownerLastName"
     | "ownerPhoneNumber"
-    | "address";
 
 interface ErrorMapping {
     [key: string]: FieldNames;
@@ -33,10 +32,8 @@ const Page = () => {
     const {
         register,
         handleSubmit,
-        formState: { errors, isSubmitting },
+        formState: { errors },
         setError,
-        setValue,
-        control
     } = useForm<TuserEditSchema>({
         resolver: zodResolver(userSchema),
         mode: "all"
@@ -49,7 +46,6 @@ const Page = () => {
                         mutation CreateBusiness {
                             createBusiness(
                                 businessData: {
-                                    address: "${userInfo.address}"
                                     ownerPhoneNumber: "${userInfo.ownerPhoneNumber}"
                                     ownerLastName: "${userInfo.ownerLastName}"
                                     ownerFirstName: "${userInfo.ownerFirstName}"
@@ -87,7 +83,6 @@ const Page = () => {
                     owner_first_name: "ownerFirstName",
                     owner_last_name: "ownerLastName",
                     owner_phone_number: "ownerPhoneNumber",
-                    address: "address"
                 };
 
 
@@ -142,11 +137,6 @@ const Page = () => {
                             {errors.ownerPhoneNumber && (<p className={styles.errorMessage}>{errors.ownerPhoneNumber.message}</p>)}
 
                         </span>
-                    </div>
-                    <div className='relative w-full'>
-                        <label className='!ml-[auto]' htmlFor="address-edit">آدرس :</label>
-                        <textarea {...register("address")} id="address-edit"></textarea>
-                        {errors.address && (<p className={`${styles.errorMessage} !translate-y-1`}>{errors.address.message}</p>)}
                     </div>
                     <button>ثبت</button>
                 </form>

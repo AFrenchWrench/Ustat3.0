@@ -14,6 +14,7 @@
 }
 .Container{
     display: flex;
+    align-items: center;
     width: 90%;
     max-width: 600px;
     flex-direction: column;
@@ -186,8 +187,18 @@
 .formGroup {
     margin-bottom: 15px;
     position: relative;
+    width: 100%;
 }
-
+.formGroup button{
+    margin-bottom: 10px;
+}
+.formGroup p{
+    background-color: rgb(26, 26, 26);
+    padding: 10px;
+    border-radius: 7px;
+    font-size: clamp(10px, 2vw, 14px);
+    margin-left: auto;
+}
 .formGroup label {
     display: block;
     margin-bottom: 5px;
@@ -257,8 +268,17 @@
     display: flex;
     flex-direction: column;
     row-gap: 5px;
-    font-size: x-small;
+    font-size: clamp(8px, 1.5vw, 9px);
 }
+
+.addressText{
+    background-color: rgb(26, 26, 26);
+    padding: 10px;
+    border-radius: 7px;
+    font-size: clamp(10px, 2vw, 14px);
+    margin-left: auto;
+}
+
 
 .dimensionsContainer{
     display: flex;
@@ -406,4 +426,27 @@
     color: rgb(220, 220, 220);
     padding: 2px 5px;
     font-size: 14px;
+}
+
+@media only screen and (max-width:650px) {
+    .itemContainer{
+        flex-direction: column-reverse;
+        height: unset;
+
+    }
+    .itemRight{
+        width: 100%;
+        row-gap: 15px;
+        align-items: flex-start;
+    }
+    .itemLeft{
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    .itemLeft picture{
+        width: 40%;
+    }
 }

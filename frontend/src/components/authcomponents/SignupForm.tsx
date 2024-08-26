@@ -7,14 +7,10 @@ import Cookies from 'js-cookie';
 
 import { Controller, useForm } from "react-hook-form"
 
-// import citys from "../../../public/c.json"
-// import States from "../../../public/p.json"
-
 import { z } from "zod"
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import UserSchema from '@/types/userSchema';
-
 
 import DatePicker, { DateObject } from "react-multi-date-picker";
 import "react-multi-date-picker/styles/colors/red.css"
@@ -22,8 +18,6 @@ import "react-multi-date-picker/styles/backgrounds/bg-dark.css"
 import persian from "react-date-object/calendars/persian";
 import persian_fa from "react-date-object/locales/persian_fa";
 import gregorian from "react-date-object/calendars/gregorian";
-
-
 
 import { FaCalendarAlt } from "react-icons/fa";
 
@@ -33,18 +27,7 @@ import { FaCalendarAlt } from "react-icons/fa";
 const userSchema = UserSchema
 
 
-
-
 type signUpSchema = z.infer<typeof userSchema>;
-
-interface IfilterCitys {
-  name: string;
-  province_id: number;
-}
-interface StateOption {
-  value: string;
-  label: string;
-}
 
 type FieldNames =
   | "username"
@@ -60,8 +43,6 @@ type FieldNames =
   | "ownerLastName"
   | "ownerPhoneNumber"
 
-
-// | "city"
 interface ErrorMapping {
   [key: string]: FieldNames;
 }
@@ -71,28 +52,11 @@ interface ErrorMapping {
 
 const SignupForm = () => {
 
-
-  // const [filteredCities, setFilteredCities] = useState<IfilterCitys[]>([]);
   const [isBusinessSigninInput, setIsBusinessSigninInput] = useState(false)
 
   const { push } = useRouter();
 
-  // const handleStateChange = (selectedOption: SingleValue<StateOption>,
-  //   actionMeta: ActionMeta<StateOption>) => {
-  //   if (selectedOption) {
-  //     const stateId = selectedOption.value;
 
-
-  //     const filterCity = citys.filter(city => city.province_id.toString() === stateId);
-  //     setFilteredCities(filterCity);
-  //   }
-
-  // };
-
-  // const cityOptions = filteredCities.map(city => ({
-  //   value: city.name,
-  //   label: city.name
-  // }));
 
 
   const handleDateChange = (date: DateObject | null) => {
@@ -118,8 +82,6 @@ const SignupForm = () => {
           birthdate: "${userInfo.birthDate}"
         }
       `;
-
-      // city: "${userInfo.city}",
 
       const businessData = userInfo.isBusinessSigninInput ? `
         businessData: {
@@ -331,17 +293,25 @@ const SignupForm = () => {
 
       <div className='signup_form_container'>
         <input
-          {...register("phoneNumber")}
+          {...register("phoneNumber", {
+            required: "شماره تلفن الزامی است",
+            pattern: {
+              value: /^\+\d{9,15}$/,
+              message: "شماره تلفن معتبر نمیباشد"
+            }
+          })}
           className="signup_form_input"
           id='phoneNumber'
           dir='ltr'
           type='tel'
           required
-          maxLength={12}
-          pattern="\d{1,13}"
+          maxLength={16} // Maximum length of '+123456789012345'
           onInput={(e) => {
             const input = e.target as HTMLInputElement;
-            input.value = input.value.replace(/\D/g, '').slice(0, 13);
+            // Remove non-numeric characters except '+'
+            input.value = input.value.replace(/[^\d+]/g, '');
+            // Limit the length of the string
+            input.value = input.value.slice(0, 16);
           }}
         />
         {errors.phoneNumber && (
@@ -353,17 +323,25 @@ const SignupForm = () => {
 
       <div className='signup_form_container'>
         <input
-          {...register("landlineNumber")}
+          {...register("landlineNumber", {
+            required: "شماره تلفن ثابت الزامی است",
+            pattern: {
+              value: /^\+\d{9,15}$/,
+              message: "شماره تلفن ثابت معتبر نمیباشد"
+            }
+          })}
           className="signup_form_input"
           id='landlineNumber'
           dir='ltr'
           type='tel'
           required
-          maxLength={12}
-          pattern="\d{1,13}"
+          maxLength={16} // Maximum length of '+123456789012345'
           onInput={(e) => {
             const input = e.target as HTMLInputElement;
-            input.value = input.value.replace(/\D/g, '').slice(0, 13);
+            // Remove non-numeric characters except '+'
+            input.value = input.value.replace(/[^\d+]/g, '');
+            // Limit the length of the string
+            input.value = input.value.slice(0, 16);
           }}
         />
         {errors.landlineNumber && (
@@ -372,111 +350,6 @@ const SignupForm = () => {
         <span className='line'></span>
         <label className="signup_form_label" htmlFor="landlineNumber">شماره تلفن ثابت :</label>
       </div>
-
-
-
-
-      {/* <div className='signup_form_container location !justify-between'>
-        <div className='location_div flex items-center gap-2 relative'>
-          <p>استان :</p>
-
-          <Select
-            onChange={handleStateChange}
-            className='select_signup bg-[#1f1f1f]'
-            placeholder="انتخاب کنید..."
-            styles={{
-              input: (styles) => ({ ...styles, color: "white", fontSize: "12px", whiteSpace: "nowrap", direction: "rtl" }),
-              placeholder: (styles) => ({ ...styles, color: "#757575", fontSize: "12px", whiteSpace: "nowrap" }),
-              control: (styles) => ({ ...styles, background: "#212121", border: "none" }),
-              option: (styles) => ({ ...styles, background: "#212121", border: "none", direction: "rtl", fontSize: "13px" }),
-              singleValue: (base) => ({ ...base, color: 'white', fontSize: "13px", direction: "rtl" }),
-              valueContainer: (base) => ({
-                ...base,
-                background: "#212121",
-                color: 'white',
-                width: '100%',
-                minWidth: '90px'
-
-              }),
-              menuList: (base) => ({
-                ...base,
-                "::-webkit-scrollbar": {
-                  width: "4px",
-                  height: "0px",
-                },
-                "::-webkit-scrollbar-track": {
-                  background: "#212121"
-                },
-                "::-webkit-scrollbar-thumb": {
-                  background: "#888"
-                },
-                "::-webkit-scrollbar-thumb:hover": {
-                  background: "#555"
-                }
-
-              }),
-            }}
-            options={
-              States.map((state) => (
-                {
-                  value: state.id.toString(),
-                  label: state.name
-                }
-              ))}
-          />
-        </div>
-        <div className='location_div flex gap-2 items-center'>
-          <p>شهر:</p>
-          <Controller
-            control={control}
-            name='city'
-            render={({ field: { onChange, value } }) => {
-              return <Select
-                value={cityOptions.find(c => c.value === value)}
-                onChange={val => onChange(val ? val.value : null)}
-                className='select_signup bg-[#1f1f1f]'
-                placeholder="انتخاب کنید..."
-                styles={{
-                  input: (styles) => ({ ...styles, color: "white", fontSize: "12px", whiteSpace: "nowrap", direction: "rtl" }),
-                  placeholder: (styles) => ({ ...styles, color: "#757575", fontSize: "12px", whiteSpace: "nowrap" }),
-                  control: (styles) => ({ ...styles, background: "#212121", border: "none" }),
-                  option: (styles) => ({ ...styles, background: "#212121", border: "none", direction: "rtl", fontSize: "13px" }),
-                  singleValue: (base) => ({ ...base, color: 'white', fontSize: "13px", direction: "rtl" }),
-                  valueContainer: (base) => ({
-                    ...base,
-                    background: "#212121",
-                    color: 'white',
-                    width: '100%',
-                    minWidth: '90px'
-                  }),
-                  menuList: (base) => ({
-                    ...base,
-                    "::-webkit-scrollbar": {
-                      width: "4px",
-                      height: "0px",
-                    },
-                    "::-webkit-scrollbar-track": {
-                      background: "#212121"
-                    },
-                    "::-webkit-scrollbar-thumb": {
-                      background: "#888"
-                    },
-                    "::-webkit-scrollbar-thumb:hover": {
-                      background: "#555"
-                    }
-
-                  }),
-                }}
-                options={cityOptions} />;
-            }}
-          />
-
-          {errors.city && (
-            <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5 whitespace-nowrap'>{`${errors.city.message}`}</p>
-          )}
-        </div>
-      </div> */}
-
 
       <div className=' flex justify-center mt-[30px] gap-2 w-[100%] relative'>
         <label htmlFor="birthDate" className='flex items-center gap-2'>   تاریخ تولد :<FaCalendarAlt /></label>

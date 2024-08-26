@@ -107,7 +107,7 @@ input:-webkit-autofill:active{
 
 .signup_form{
   width:100%;
-  min-width: 290px;
+  min-width: 340px;
   max-width: 510px;
   border-radius: 15px;
   margin: 20px;
@@ -223,6 +223,15 @@ input[type=number] {
 .custom-input{
   background-color: #1f1f1f;
   border-radius: 5px;
+  color: white;
+  width: 90%;
+  text-align: center;
+}
+.rmdp-container{
+  width: 59%;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 /* datePicker styles */

@@ -402,3 +402,16 @@ padding: 5px;
     flex-direction: column;
     row-gap: 5px;
 }
+
+@media only screen and (max-width:1000px) {
+    .variation_container{
+        width: 95%;
+        font-size: x-small;
+    }
+  }
+
+@media only screen and (max-width:700px) {
+    .variation_container{
+        font-size: xx-small;
+    }
+  }

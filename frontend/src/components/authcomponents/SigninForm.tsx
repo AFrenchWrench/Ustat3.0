@@ -132,7 +132,7 @@ const SigninForm = () => {
           <span className='line'></span>
         </div>
 
-        <div className='signup_form_container'>
+        <div className='signup_form_container mb-5'>
           <input
             {...register("password", {
               required: "رمز عبور الزامی است",

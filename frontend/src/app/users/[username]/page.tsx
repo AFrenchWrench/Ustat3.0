@@ -52,7 +52,6 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
                     ownerFirstName
                     ownerLastName
                     ownerPhoneNumber
-
                     isConfirmed
                   }
                 }
@@ -60,17 +59,6 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
             `,
           }),
         });
-
-        //     city {
-        //       id
-        //       name
-        //       province {
-        //           id
-        //           name
-        //       }
-        // }
-
-        // address
 
 
         const data = await response.json();
@@ -184,15 +172,6 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
                     </span>
                   </div>
 
-                  {/* <div className={styles.firsLastName}>
-                    <span>
-                      <strong>استان :</strong><p> {userData.city.province.name}</p>
-                    </span>
-                    <span>
-                      <strong>شهر :</strong><p> {userData.city.name}</p>
-                    </span>
-                  </div> */}
-
                   <div className={styles.firsLastName}>
                     <span>
                       <strong>ایمیل :</strong><p dir='ltr' className='text-xs'> {userData.email}</p>
@@ -225,10 +204,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
 
                         <div className={styles.firsLastName}>
                           <span>
-                            <strong>شماره همراه صاحب شرکت :</strong><p> {userData.business.ownerPhoneNumber}</p>
-                          </span>
-                          <span>
-                            <strong>آدرس :</strong><p style={{ fontSize: "11px" }}> {userData.business.address}</p>
+                            <strong>شماره همراه صاحب شرکت :</strong><p dir='ltr'> {userData.business.ownerPhoneNumber}</p>
                           </span>
                         </div>
                       </>

@@ -101,7 +101,7 @@ export default function UsersAndBusinessesDataGrid() {
                                         isFullyAuthenticated
                                     }
                                 }
-                                businesses(page: $page, perPage: $perPage) {
+                                businesses(page: $pageBusinesses, perPage: $perPageBusinesses) {
                                     totalPages
                                     totalItems
                                     items {
@@ -118,6 +118,8 @@ export default function UsersAndBusinessesDataGrid() {
                     variables: {
                         page: pageUsers + 1,
                         perPage: pageSizeUsers,
+                        pageBusinesses: pageBusinesses + 1,
+                        perPageBusinesses: pageSizeBusinesses,
                     },
                 }),
             })

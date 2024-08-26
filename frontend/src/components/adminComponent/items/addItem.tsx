@@ -17,9 +17,14 @@ interface Dimensions {
     height: number;
     width: number;
     length: number;
-    quantity?: number; // Optional property
+    chair?: ChairDimensions; // Optional property
 }
-
+interface ChairDimensions {
+    width?: number;
+    height?: number;
+    length?: number;
+    quantity?: number;
+}
 type FieldNamesError =
     | "name"
     | "fabric"
@@ -49,7 +54,12 @@ const schema = z.object({
         height: z.string().min(1, "Height is required"),
         width: z.string().min(1, "Width is required"),
         depth: z.string().min(1, "Depth is required"),
-        quantity: z.string().optional()
+        chair: z.object({
+            quantity: z.string().min(1, "quantity is required"),
+            height: z.string().min(1, "Height is required"),
+            width: z.string().min(1, "Width is required"),
+            depth: z.string().min(1, "Depth is required"),
+        }).optional()
     }),
     fabric: z.string().optional(),
     color: z.string().optional(),
@@ -68,7 +78,7 @@ type FormValues = z.infer<typeof schema>;
 type AddDisplayItemProps = {
     onClose: () => void;
     id: string;
-    type: string
+    type: string;
 };
 
 const CreateDisplayItem: React.FC<AddDisplayItemProps> = ({ onClose, id, type }) => {
@@ -107,8 +117,13 @@ const CreateDisplayItem: React.FC<AddDisplayItemProps> = ({ onClose, id, type })
             length: Number(data.dimensions.depth)
         };
 
-        if (data.dimensions.quantity !== undefined) {
-            dimensions.quantity = Number(data.dimensions.quantity);
+        if (data.dimensions.chair !== undefined) {
+            dimensions.chair = {
+                quantity: Number(data.dimensions.chair.quantity),
+                height: Number(data.dimensions.chair.height),
+                width: Number(data.dimensions.chair.width),
+                length: Number(data.dimensions.chair.depth)
+            };
         }
         const dimensionsString = JSON.stringify(dimensions);
 
@@ -151,6 +166,9 @@ const CreateDisplayItem: React.FC<AddDisplayItemProps> = ({ onClose, id, type })
 
             console.log(query);
             console.log(result);
+            if (result.data.createItemVariant.errors) {
+                setMessage(JSON.parse(result.data.createItemVariant.errors))
+            }
 
             if (result.data.createItemVariant.success) {
                 setMessage('Item created successfully!');
@@ -309,18 +327,36 @@ const CreateDisplayItem: React.FC<AddDisplayItemProps> = ({ onClose, id, type })
                         <input dir='ltr' type="number" id='depth' {...register("dimensions.depth")} />
                         {errors.dimensions?.depth && (<p className={styles.errorMessage}>{errors.dimensions.depth.message}</p>)}
                     </span>
-                    {
-                        type === "M" && (
-                            <span>
-                                <label htmlFor="depth">تعداد :</label>
-                                <input dir='ltr' type="number" id='depth' {...register("dimensions.quantity")} />
-                                {errors.dimensions?.quantity && (<p className={styles.errorMessage}>{errors.dimensions.quantity.message}</p>)}
-                            </span>
-                        )
-                    }
                     {errors.dimensions && (<p className={styles.errorMessage}>{errors.dimensions.message}</p>)}
                 </div>
+                {
+                    type === "M" && (
+                        <div className={styles.twoContainer}>
 
+                            <span>
+                                <label htmlFor="quantity">تعداد :</label>
+                                <input dir='ltr' type="number" id='quantity' {...register("dimensions.chair.quantity")} />
+                                {errors.dimensions?.chair?.quantity && (<p className={styles.errorMessage}>{errors.dimensions.chair?.quantity.message}</p>)}
+                            </span>
+                            <span>
+                                <label htmlFor="cwidth">تعداد :</label>
+                                <input dir='ltr' type="number" id='cwidth' {...register("dimensions.chair.width")} />
+                                {errors.dimensions?.chair?.width && (<p className={styles.errorMessage}>{errors.dimensions.chair?.width.message}</p>)}
+                            </span>
+                            <span>
+                                <label htmlFor="cheight">تعداد :</label>
+                                <input dir='ltr' type="number" id='cheight' {...register("dimensions.chair.height")} />
+                                {errors.dimensions?.chair?.height && (<p className={styles.errorMessage}>{errors.dimensions.chair?.height.message}</p>)}
+                            </span>
+                            <span>
+                                <label htmlFor="cdepth">تعداد :</label>
+                                <input dir='ltr' type="number" id='cdepth' {...register("dimensions.chair.depth")} />
+                                {errors.dimensions?.chair?.depth && (<p className={styles.errorMessage}>{errors.dimensions.chair?.depth.message}</p>)}
+                            </span>
+                        </div>
+
+                    )
+                }
                 <div className={styles.twoContainer}>
                     <span className='w-[90%]'>
                         <label htmlFor="price">قیمت :</label>
