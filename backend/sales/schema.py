@@ -637,7 +637,7 @@ class Query(graphene.ObjectType):
     @login_required
     def resolve_orders(self, info, page=1, per_page=10, filter=None):
         orders = resolve_model_with_filters(Order, filter)
-        orders.filter(user=info.context.user)
+        orders = orders.filter(user=info.context.user)
         paginator = Paginator(orders, per_page)
         paginated_qs = paginator.page(page)
         return PaginatedOrder(
@@ -653,7 +653,7 @@ class Query(graphene.ObjectType):
     @login_required
     def resolve_transactions(self, info, page=1, per_page=10, filter=None):
         transactions = resolve_model_with_filters(OrderTransaction, filter)
-        transactions.filter(order__user=info.context.user)
+        transactions = transactions.filter(order__user=info.context.user)
         paginator = Paginator(transactions, per_page)
         paginated_qs = paginator.page(page)
         return PaginatedTransaction(
