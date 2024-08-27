@@ -88,7 +88,7 @@ export default function UsersAndBusinessesDataGrid() {
                 },
                 body: JSON.stringify({
                     query: `
-                            query Users ($page: Int, $perPage: Int) {
+                            query Users ($page: Int, $perPage: Int, $pageBusinesses: Int, $perPageBusinesses: Int) {
                                 users(page: $page, perPage: $perPage) {
                                     totalPages
                                     totalItems
