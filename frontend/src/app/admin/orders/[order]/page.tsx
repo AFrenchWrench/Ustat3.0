@@ -107,6 +107,7 @@ const Page = () => {
     const [orderData, setOrderData] = useState<DisplayItem | null>(null);
     const [loading, setLoading] = useState(true);
     const [selectedStatus, setSelectedStatus] = useState<string>('');
+    const [updated, handleUpdated] = useState<boolean>(false)
 
     const { order } = useParams();
     const { push } = useRouter();
@@ -187,7 +188,7 @@ const Page = () => {
         };
 
         fetchProductData();
-    }, [order, push]);
+    }, [order, push, updated]);
 
     const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedStatus(event.target.value);
@@ -222,6 +223,7 @@ const Page = () => {
 
             // Handle success or errors here
             console.log('Order status updated:', data);
+            handleUpdated(!updated)
         } catch (error) {
             console.error('Error updating order status:', error);
         }

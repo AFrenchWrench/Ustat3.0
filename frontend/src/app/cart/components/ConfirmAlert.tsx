@@ -21,6 +21,7 @@ const ConfirmAlert: React.FC<ConfirmAlertProps> = ({ type, itemId, status, onCon
 
     const handleConfirm = () => {
         onConfirm(type, itemId, status, addressId);
+        onCancel();
     };
 
     const handleCancel = () => {

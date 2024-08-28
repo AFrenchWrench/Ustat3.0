@@ -5,9 +5,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import Article from "../components/Article";
 import { useParams } from "next/navigation";
 import Cookies from "js-cookie";
-
 import useMediaQuery from '@mui/material/useMediaQuery';
-
 import LoadingArticle from "../components/loadingArticle";
 
 interface Ivariants {
@@ -50,7 +48,7 @@ const Page = () => {
     const [loading, setLoading] = useState(false); // Track loading state
 
     const isSmallScreen = useMediaQuery('(max-width:740px)');
-
+    const isMediumScreen = useMediaQuery('(max-width:1000px)');
 
     const observer = useRef<IntersectionObserver | null>(null); // Ref for intersection observer
 
@@ -170,11 +168,15 @@ const Page = () => {
         setPage(1); // Reset the page to 1 when updating the order data
     };
 
+    const calculateCols = () => {
+        if (isSmallScreen) return 2;
+        if (isMediumScreen) return 3;
+        return 4;
+    };
+
     return (
         <section className="flex flex-col gap-5 items-center mt-10">
-            <ImageList gap={8} sx={{ width: "93%" }} cols={isSmallScreen ? 2 : 3}
-
-            >
+            <ImageList gap={8} sx={{ width: "93%" }} cols={calculateCols()}>
                 {displayData &&
                     displayData.map((article, index) => (
                         article.variants.length > 0 ? (

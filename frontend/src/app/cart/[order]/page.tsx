@@ -78,6 +78,8 @@ const Page = () => {
     const [address, setAddress] = useState<string>("")
     const [showSelectAddress, setShowSelectAddress] = useState<boolean>(false)
 
+    const [errorMessage, setErrorMessage] = useState<string>("")
+
     useEffect(() => {
         if (!order) return;
         console.log(order);
@@ -175,8 +177,6 @@ const Page = () => {
     }, [orderData?.dueDate]);
 
     const {
-        register,
-        handleSubmit,
         formState: { errors },
         setValue,
         getValues,
@@ -299,6 +299,11 @@ const Page = () => {
             `;
             variables = { itemIdVar: itemId, dueDate: getValues("orderDate") };
         } else if (type === "changeStatus") {
+            if (!addressId) {
+                setErrorMessage("لطفا آدرس را انتخاب کنید")
+                return
+            }
+            setErrorMessage("")
             query = `
                 mutation UpdateOrder($itemIdVar: ID!, $status: String! , $address: ID!) {
                     updateOrder(input: { id: $itemIdVar, status: $status, address: $address }) {
@@ -488,6 +493,12 @@ const Page = () => {
                 </div>
                 <p style={{ color: handleStatusColor(orderData.status) }} className={orderData.status}>{handleStatus()}</p>
 
+
+                {
+                    errorMessage && (
+                        <p>{errorMessage}</p>
+                    )
+                }
                 {orderData.status === "PS" && (
                     <>
 
@@ -509,6 +520,7 @@ const Page = () => {
                 {
                     orderData.address ? <p className={Styles.addressText}>{orderData.address.address}</p> : ""
                 }
+
             </div>
 
             {confirmAlert && (

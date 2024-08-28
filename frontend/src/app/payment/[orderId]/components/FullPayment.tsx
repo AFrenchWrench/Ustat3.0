@@ -1,75 +1,47 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import React from 'react'
 
-const formOneSchema = z.object({
-    upfront: z.literal(100),
-});
+import Style from "@/allStyles/payment.module.css"
+import Image from 'next/image';
 
-type FormOneValues = z.infer<typeof formOneSchema>;
+interface Iitems {
+    name: string;
+    price: number;
+    quantity: number;
+}
 
-const FullPayment: React.FC = () => {
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm<FormOneValues>({
-        resolver: zodResolver(formOneSchema),
-        defaultValues: {
-            upfront: 100,
-        },
-    });
+interface FullPaymentProps {
+    payFunction: () => void;
+    items: Iitems[]
+    totalPrice: number | undefined;
+}
 
-    const onSubmit = async (data: FormOneValues) => {
-        try {
-            const response = await fetch('/api/graphql', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    query: `
-            mutation CreateTransaction($input: CreateTransactionInput!) {
-              createTransaction(input: $input) {
-                errors
-                success
-              }
-            }
-          `,
-                    variables: {
-                        input: {
-                            order: null,
-                            upfront: data.upfront,
-                            checks: null,
-                        },
-                    },
-                }),
-            });
-
-            const result = await response.json();
-
-            if (result.data.createTransaction.success) {
-                alert('Transaction created successfully!');
-            } else {
-                alert('Transaction failed to create.');
-                console.log(result.data.createTransaction.errors);
-            }
-        } catch (error) {
-            console.error('An error occurred:', error);
-        }
-    };
+const FullPayment: React.FC<FullPaymentProps> = ({ payFunction, items, totalPrice }) => {
+    console.log(totalPrice);
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
-            <div>
-                <label htmlFor="upfront">Upfront</label>
-                <input id="upfront" type="number" {...register('upfront')} readOnly />
-                {errors.upfront && <p>{errors.upfront.message}</p>}
+        <div className={Style.container}>
+            <Image className={Style.svgImage} src="/image/Group 15.png" alt="svg" width={500} height={300} />
+            <h3>پرداخت نقدی</h3>
+            <div className={Style.itemsContainer}>
+                {
+                    items.map((item, index) => {
+                        return (
+                            <div className={Style.itemContainer} key={index}>
+                                <p className={Style.itemQuantity}>x {item.quantity}</p>
+                                <p className={Style.itemName}>{item.name}</p>
+                                <p className={Style.itemPrice}>{Number(item.price).toLocaleString("en-US")}</p>
+                            </div>
+                        )
+                    })
+                }
             </div>
-            <button type="submit">Create Transaction</button>
-        </form>
-    );
-};
+            <div className={Style.totalPrice}>
+                <p>قیمت کل :</p>
+                <p>{Number(totalPrice).toLocaleString("en-US")} تومان</p>
+            </div>
+            <button className={Style.payButton} onClick={payFunction}>پرداخت</button>
+        </div>
+    )
+}
 
-export default FullPayment;
+export default FullPayment

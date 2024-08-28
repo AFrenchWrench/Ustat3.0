@@ -114,6 +114,9 @@ input:-webkit-autofill:active{
   padding: 30px 40px;
   background-color: #2a2a2a;
 }
+.signup_form p {
+  font-size: clamp(11px, 1.3vw, 16px) !important;
+}
 
 .signup_form_container {
   position: relative;

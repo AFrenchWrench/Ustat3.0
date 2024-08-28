@@ -1,7 +1,6 @@
 import React from 'react';
 import "./componentStyles.css";
 
-import { useRouter } from 'next/navigation';
 
 interface Ivariation {
     id: string
@@ -33,7 +32,7 @@ const Variations: React.FC<Ivariations> = ({ variations, onSelectVariation, acti
                             <p>{variation.fabric}</p>
                             <p>{variation.color}</p>
                         </span>
-                        <p>${variation.price.toFixed(2)}</p>
+                        <p>{Number(variation.price).toLocaleString("en-US")}</p>
                     </div>
                 </div>
             ))}

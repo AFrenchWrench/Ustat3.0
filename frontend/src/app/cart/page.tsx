@@ -139,7 +139,7 @@ const Cart = () => {
       case 'D':
         return "red";
       case 'A':
-        return "green";
+        return "#00ff00";
       case 'C':
         return "red";
       default:
