@@ -47,6 +47,13 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+    def is_business(self):
+        try:
+            business = Business.objects.get(user=self)
+            return business.is_confirmed
+        except Business.DoesNotExist:
+            return False
+
 
 class Business(models.Model):
     user = models.OneToOneField(

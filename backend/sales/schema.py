@@ -621,7 +621,12 @@ class Query(graphene.ObjectType):
     showcase = graphene.List(ItemVariantType)
 
     def resolve_display_items(self, info, page=1, per_page=12, filter=None):
+        user = info.context.user
         display_items = resolve_model_with_filters(DisplayItem, filter)
+        if user.is_authenticated:
+            display_items = display_items.filter(
+                variants__is_for_business=user.is_business()
+            )
         paginator = Paginator(display_items, per_page)
         paginated_qs = paginator.page(page)
         return PaginatedDisplayItem(
@@ -631,8 +636,7 @@ class Query(graphene.ObjectType):
         )
 
     def resolve_display_item(self, info, id):
-        display_item = get_object_or_404(DisplayItem, pk=id)
-        return display_item
+        return get_object_or_404(DisplayItem, pk=id)
 
     @login_required
     def resolve_orders(self, info, page=1, per_page=10, filter=None):
@@ -667,17 +671,23 @@ class Query(graphene.ObjectType):
         return get_object_or_404(OrderTransaction, pk=id, order__user=info.context.user)
 
     def resolve_item_variants(self, info, filter=None):
+        user = info.context.user
         item_variants = resolve_model_with_filters(ItemVariant, filter)
+        if user.is_authenticated:
+            item_variants = item_variants.filter(is_for_business=user.is_business())
         return item_variants
 
     def resolve_item_variant(self, info, id):
         return get_object_or_404(ItemVariant, pk=id)
 
     def resolve_showcase(self, info):
+        user = info.context.user
         showcases = []
         for type in ITEM_TYPE_CHOICES:
             item_variant = ItemVariant.objects.filter(
-                display_item__type=type[0], show_in_first_page=True
+                display_item__type=type[0],
+                show_in_first_page=True,
+                is_for_business=user.is_business() if user.is_authenticated else False,
             ).order_by("-id")[:5]
             for item in item_variant:
                 showcases.append(item)
