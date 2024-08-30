@@ -688,7 +688,7 @@ class Query(graphene.ObjectType):
                 display_item__type=type[0],
                 show_in_first_page=True,
                 is_for_business=user.is_business() if user.is_authenticated else False,
-            ).order_by("-id")[:5]
+            ).order_by("-id")[:4]
             for item in item_variant:
                 showcases.append(item)
         return showcases
