@@ -133,7 +133,7 @@ class CreateItemVariant(graphene.Mutation):
             errors["name"] = "نام نمایشی باید فارسی باشد"
 
         dimensions = input.get("dimensions")
-        
+
         if not {"length", "width", "height"}.issubset(dimensions.keys()):
             errors["dimensions"] = "طول، عرض و ارتفاع باید وارد شود"
         elif not all(
@@ -141,7 +141,23 @@ class CreateItemVariant(graphene.Mutation):
             for key in {"length", "width", "height"}
         ):
             errors["dimensions"] = "طول، عرض و ارتفاع باید عدد طبیعی باشند"
-            
+
+        if display_item.type == "s":
+            if "single seat" not in dimensions.keys():
+                errors["dimensions"] = "طول، عرض و ارتفاع تک نفره باید وارد شود"
+            elif {"length", "width", "height"} != set(
+                dimensions.get("single seat").keys()
+            ):
+                errors["dimensions"] = "طول، عرض و ارتفاع تک نفره باید وارد شود"
+            elif not all(
+                isinstance(dimensions.get("single seat").get(key), int)
+                and dimensions.get("single seat").get(key) > 0
+                for key in {"length", "width", "height"}
+            ):
+                errors["dimensions"] = (
+                    "طول، عرض، ارتفاع و تعداد تک نفره باید عدد طبیعی باشند"
+                )
+
         if display_item.type == "b" and "makeup table" in dimensions.keys():
             if {"length", "width", "height"} != set(
                 dimensions.get("makeup table").keys()
@@ -169,9 +185,7 @@ class CreateItemVariant(graphene.Mutation):
                     "طول، عرض، ارتفاع و تعداد پا تختی باید عدد طبیعی باشند"
                 )
         if display_item.type == "b" and "mirror" in dimensions.keys():
-            if {"length", "width", "height"} != set(
-                dimensions.get("mirror").keys()
-            ):
+            if {"length", "width", "height"} != set(dimensions.get("mirror").keys()):
                 errors["dimensions"] = "طول، عرض و ارتفاع آینه باید وارد شود"
             elif not all(
                 isinstance(dimensions.get("mirror").get(key), int)
@@ -181,6 +195,7 @@ class CreateItemVariant(graphene.Mutation):
                 errors["dimensions"] = (
                     "طول، عرض، ارتفاع و تعداد آینه باید عدد طبیعی باشند"
                 )
+
         if display_item.type == "m":
             if "chair" not in dimensions.keys():
                 errors["dimensions"] = " اطلاعات صندلی باید وارد شود"
@@ -213,12 +228,8 @@ class CreateItemVariant(graphene.Mutation):
                     "طول، عرض، ارتفاع و تعداد عسلی باید عدد طبیعی باشند"
                 )
 
-        if display_item.type == "c":
-            if "mirror" not in dimensions.keys():
-                errors["dimensions"] = " اطلاعات آینه باید وارد شود"
-            elif {"length", "width", "height"} != set(
-                dimensions.get("mirror").keys()
-            ):
+        if display_item.type == "c" and "mirror" in dimensions.keys():
+            if {"length", "width", "height"} != set(dimensions.get("mirror").keys()):
                 errors["dimensions"] = "طول، عرض و ارتفاع آینه باید وارد شود"
             elif not all(
                 isinstance(dimensions.get("mirror").get(key), int)
@@ -478,7 +489,7 @@ class UpdateItemVariant(graphene.Mutation):
                 item_variant.name = name
 
         dimensions = input.get("dimensions")
-        
+
         if dimensions:
             if not {"length", "width", "height"}.issubset(dimensions.keys()):
                 errors["dimensions"] = "طول، عرض و ارتفاع باید وارد شود"
@@ -487,6 +498,22 @@ class UpdateItemVariant(graphene.Mutation):
                 for key in {"length", "width", "height"}
             ):
                 errors["dimensions"] = "طول، عرض و ارتفاع باید عدد طبیعی باشند"
+
+            if display_item.type == "s":
+                if "single seat" not in dimensions.keys():
+                    errors["dimensions"] = "طول، عرض و ارتفاع تک نفره باید وارد شود"
+                elif {"length", "width", "height"} != set(
+                    dimensions.get("single seat").keys()
+                ):
+                    errors["dimensions"] = "طول، عرض و ارتفاع تک نفره باید وارد شود"
+                elif not all(
+                    isinstance(dimensions.get("single seat").get(key), int)
+                    and dimensions.get("single seat").get(key) > 0
+                    for key in {"length", "width", "height"}
+                ):
+                    errors["dimensions"] = (
+                        "طول، عرض، ارتفاع و تعداد تک نفره باید عدد طبیعی باشند"
+                    )
 
             if display_item.type == "b" and "makeup table" in dimensions.keys():
                 if {"length", "width", "height"} != set(
@@ -518,8 +545,8 @@ class UpdateItemVariant(graphene.Mutation):
                     )
             if display_item.type == "b" and "mirror" in dimensions.keys():
                 if {"length", "width", "height"} != set(
-                dimensions.get("mirror").keys()
-            ):
+                    dimensions.get("mirror").keys()
+                ):
                     errors["dimensions"] = "طول، عرض و ارتفاع آینه باید وارد شود"
                 elif not all(
                     isinstance(dimensions.get("mirror").get(key), int)
@@ -529,7 +556,7 @@ class UpdateItemVariant(graphene.Mutation):
                     errors["dimensions"] = (
                         "طول، عرض، ارتفاع و تعداد آینه باید عدد طبیعی باشند"
                     )
-                    
+
             if display_item.type == "m":
                 if "chair" not in dimensions.keys():
                     errors["dimensions"] = " اطلاعات صندلی باید وارد شود"
@@ -568,8 +595,8 @@ class UpdateItemVariant(graphene.Mutation):
                 if "mirror" not in dimensions.keys():
                     errors["dimensions"] = " اطلاعات آینه باید وارد شود"
                 elif {"length", "width", "height"} != set(
-                dimensions.get("mirror").keys()
-            ):
+                    dimensions.get("mirror").keys()
+                ):
                     errors["dimensions"] = "طول، عرض و ارتفاع آینه باید وارد شود"
                 elif not all(
                     isinstance(dimensions.get("mirror").get(key), int)

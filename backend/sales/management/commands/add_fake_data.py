@@ -77,6 +77,8 @@ def generate_dimensions(display_item_type):
         "width": random.randint(50, 150),
         "height": random.randint(50, 150),
     }
+    if display_item_type == "s":
+        dimensions["single seat"] = dimensions.copy()
 
     if display_item_type == "b":  # سرویس خواب
         dimensions["makeup table"] = dimensions.copy()
