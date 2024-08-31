@@ -53,6 +53,9 @@ const Cart = () => {
   const [confirmAlert, setConfirmAlert] = useState<ConfirmAlertType | null>(null);
   const [update, setUpdate] = useState(false);
 
+  const [showAllItems, setShowAllItems] = useState(false);
+  const maxItemsToShow = 4;
+
   useEffect(() => {
     const fetchOrders = async () => {
       const token = Cookies.get('Authorization');
@@ -214,47 +217,63 @@ const Cart = () => {
   return (
     <section className={Styles.container}>
       <div className={Styles.ordersSection}>
-        {orders && orders.length > 0 ? orders.map((order) => (
-          <Link key={order.id} href={`/cart/${order.id}`}>
-            <div >
-              <div className={Styles.orderNumberContainer}>
-                <p>شماره سفارش :</p>
-                <p className={Styles.orderNumber}>{order.orderNumber}</p>
-              </div>
-              <div className={Styles.itemsContainer}>
-                {order.items.map((item) => (
-                  <div key={item.id}>
-                    <p>{item.name}</p>
-                    <span>{item.quantity}×</span>
+        {orders && orders.length > 0 ?
+          <span className={Styles.shadow}></span> : ""}
+
+        <div className={Styles.orderItemsSection}>
+          {orders && orders.length > 0 ? orders.map((order) => (
+            <Link key={order.id} href={`/cart/${order.id}`}>
+              <div className={Styles.itemsSection}>
+                <div className={Styles.orderNumberContainer}>
+                  <p>شماره سفارش :</p>
+                  <p className={Styles.orderNumber}>{order.orderNumber}</p>
+                </div>
+                <div className={Styles.itemsContainer}>
+                  {order.items.slice(0, showAllItems ? order.items.length : maxItemsToShow).map((item) => (
+                    <div key={item.id}>
+                      <p>{item.name}</p>
+                      <span>{item.quantity}×</span>
+                    </div>
+                  ))}
+                  {order.items.length > maxItemsToShow && (
+                    <button className={Styles.showMoreButton} onClick={(e) => {
+                      e.preventDefault();
+                      setShowAllItems(!showAllItems);
+                    }}>
+                      {showAllItems ? 'نمایش کمتر' : 'نمایش همه'}
+                    </button>
+                  )}
+                </div>
+                <div className={Styles.bottomSection}>
+                  <div className={Styles.dateContainer}>
+                    <p>تاریخ دریافت :</p>
+                    <p className={Styles.notOrderNumber}>{convertToJalaali(order.dueDate)}</p>
                   </div>
-                ))}
+                  <div className={Styles.dateContainer}>
+                    <p>وضعیت :</p>
+                    <p style={{ color: handleStatusColor(order.status), textShadow: `0px 0px 4px ${handleStatusColor(order.status)}` }} className={Styles.notOrderNumber}>{handleStatus(order.status)}</p>
+                  </div>
+                  <button
+                    className={Styles.deleteButton}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleConfirmAlert('delete', order.id);
+                    }}
+                  >
+                    حذف سفارش
+                  </button>
+                </div>
               </div>
-              <div className={Styles.orderNumberContainer}>
-                <p>تاریخ دریافت :</p>
-                <p className={Styles.orderNumber}>{convertToJalaali(order.dueDate)}</p>
-              </div>
-              <div className={Styles.orderNumberContainer}>
-                <p>وضعیت :</p>
-                <p style={{ color: handleStatusColor(order.status) }} className={Styles.orderNumber}>{handleStatus(order.status)}</p>
-              </div>
+            </Link>
+          ))
+            :
+            <div className={Styles.emptyContainer}>
+              <BsCart4 className={Styles.cartIcon} />
+              <p>سبدخرید شما خالی است</p>
             </div>
-            <button
-              className={Styles.deleteButton}
-              onClick={(e) => {
-                e.preventDefault();
-                handleConfirmAlert('delete', order.id);
-              }}
-            >
-              <RiDeleteBin6Line color='white' width={35} height={35} />
-            </button>
-          </Link>
-        ))
-          :
-          <div className={Styles.emptyContainer}>
-            <BsCart4 className={Styles.cartIcon} />
-            <p>سبدخرید شما خالی است</p>
-          </div>
-        }
+          }
+        </div>
+
       </div>
       {confirmAlert && (
         <ConfirmAlert

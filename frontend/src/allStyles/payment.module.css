@@ -64,7 +64,7 @@ padding: 15px 10px;
   }
 
   .itemsContainer::-webkit-scrollbar-track {
-    background: #1c1c1c;
+    background: transparent;
     border-radius: 20px;
   }
 
@@ -147,6 +147,7 @@ padding: 15px 10px;
 @media only screen and (max-width:600px) {
     .paymentSection{
         flex-direction: column;
+        row-gap: 15px;
     }
     .container{
         width: clamp(300px, 95%, 420px);

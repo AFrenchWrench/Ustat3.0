@@ -13,15 +13,56 @@ import Cookies from 'js-cookie';
 
 const maxFileSize = 3 * 1024 * 1024;
 
+const dimensionsSchema = z.object({
+    width: z.string().optional(), // Making the width optional
+    height: z.string().optional(), // Making the height optional
+    length: z.string().optional(), // Making the length optional
+
+    mirror: z.object({
+        width: z.string().optional(),
+        height: z.string().optional(),
+        length: z.string().optional(),
+    }).optional(), // Making the mirror object optional
+
+    "night stand": z.object({
+        width: z.string().optional(),
+        height: z.string().optional(),
+        length: z.string().optional(),
+        quantity: z.string().optional(),
+    }).optional(), // Making the night stand object optional
+
+    "makeup table": z.object({
+        width: z.string().optional(),
+        height: z.string().optional(),
+        length: z.string().optional(),
+    }).optional(), // Making the makeup table object optional
+
+    chair: z.object({
+        quantity: z.string().optional(),
+        height: z.string().optional(),
+        width: z.string().optional(),
+        length: z.string().optional(),
+    }).optional(), // Making the chair object optional
+
+    "side table": z.object({
+        quantity: z.string().optional(),
+        height: z.string().optional(),
+        width: z.string().optional(),
+        length: z.string().optional(),
+    }).optional(), // Making the side table object optional
+
+    "single seat": z.object({
+        height: z.string().optional(),
+        width: z.string().optional(),
+        length: z.string().optional(),
+    }).optional(), // Making the single seat object optional
+});
+
 const schema = z.object({
     isForBusiness: z.boolean(),
     showInFirstPage: z.boolean(),
     name: z.string().min(1, 'Name is required'),
-    dimensions: z.object({
-        height: z.string().min(1, "Height is required"),
-        width: z.string().min(1, "Width is required"),
-        depth: z.string().min(1, "Depth is required")
-    }),
+    dimensions: dimensionsSchema,
     fabric: z.string().optional(),
     color: z.string().optional(),
     woodColor: z.string().optional(),
@@ -62,12 +103,34 @@ interface Ivariations {
     slider3: string,
 }
 
+interface Dimensions {
+    height: number;
+    width: number;
+    length: number;
+    chair?: ChairDimensions; // Optional property
+    mirror?: ChairDimensions;
+    "night stand"?: ChairDimensions
+    "makeup table"?: ChairDimensions
+    "side table"?: ChairDimensions
+    "single seat"?: ChairDimensions
+}
+
+interface ChairDimensions {
+    width?: number;
+    height?: number;
+    length?: number;
+    quantity?: number;
+}
+
+
 type AddDisplayItemProps = {
     onClose: () => void;
     data: Ivariations | null;
+    type: string;
 };
 
-const EditVariation: React.FC<AddDisplayItemProps> = ({ onClose, data }) => {
+const EditVariation: React.FC<AddDisplayItemProps> = ({ onClose, data, type }) => {
+
     const [message, setMessage] = useState('');
     const [previews, setPreviews] = useState<{ [key in FieldNames]: string | null }>({
         thumbnail: null,
@@ -91,7 +154,7 @@ const EditVariation: React.FC<AddDisplayItemProps> = ({ onClose, data }) => {
             dimensions: {
                 height: data ? JSON.parse(data.dimensions).height.toString() : '',
                 width: data ? JSON.parse(data.dimensions).width.toString() : '',
-                depth: data ? JSON.parse(data.dimensions).length.toString() : ''
+                length: data ? JSON.parse(data.dimensions).length.toString() : '',
             },
             fabric: data?.fabric || '',
             color: data?.color || '',
@@ -108,7 +171,36 @@ const EditVariation: React.FC<AddDisplayItemProps> = ({ onClose, data }) => {
             setValue('name', data.name);
             setValue('dimensions.height', JSON.parse(data.dimensions).height.toString());
             setValue('dimensions.width', JSON.parse(data.dimensions).width.toString());
-            setValue('dimensions.depth', JSON.parse(data.dimensions).length.toString());
+            setValue('dimensions.length', JSON.parse(data.dimensions).length.toString());
+
+            setValue('dimensions.chair.height', JSON.parse(data.dimensions).chair?.height.toString());
+            setValue('dimensions.chair.length', JSON.parse(data.dimensions).chair?.length.toString());
+            setValue('dimensions.chair.width', JSON.parse(data.dimensions).chair?.width.toString());
+            setValue('dimensions.chair.quantity', JSON.parse(data.dimensions).chair?.quantity.toString());
+
+            setValue('dimensions.night stand.height', JSON.parse(data.dimensions)["night stand"]?.height.toString());
+            setValue('dimensions.night stand.length', JSON.parse(data.dimensions)["night stand"]?.length.toString());
+            setValue('dimensions.night stand.width', JSON.parse(data.dimensions)["night stand"]?.width.toString());
+            setValue('dimensions.night stand.quantity', JSON.parse(data.dimensions)["night stand"]?.quantity.toString());
+
+            setValue('dimensions.side table.height', JSON.parse(data.dimensions)["side table"]?.height.toString());
+            setValue('dimensions.side table.length', JSON.parse(data.dimensions)["side table"]?.length.toString());
+            setValue('dimensions.side table.width', JSON.parse(data.dimensions)["side table"]?.width.toString());
+            setValue('dimensions.side table.quantity', JSON.parse(data.dimensions)["side table"]?.quantity.toString());
+
+            setValue('dimensions.makeup table.height', JSON.parse(data.dimensions)["makeup table"]?.height.toString());
+            setValue('dimensions.makeup table.length', JSON.parse(data.dimensions)["makeup table"]?.length.toString());
+            setValue('dimensions.makeup table.width', JSON.parse(data.dimensions)["makeup table"]?.width.toString());
+
+            setValue('dimensions.single seat.height', JSON.parse(data.dimensions)["single seat"]?.height.toString());
+            setValue('dimensions.single seat.length', JSON.parse(data.dimensions)["single seat"]?.length.toString());
+            setValue('dimensions.single seat.width', JSON.parse(data.dimensions)["single seat"]?.width.toString());
+
+            setValue('dimensions.mirror.height', JSON.parse(data.dimensions).mirror?.height.toString());
+            setValue('dimensions.mirror.length', JSON.parse(data.dimensions).mirror?.length.toString());
+            setValue('dimensions.mirror.width', JSON.parse(data.dimensions).mirror?.width.toString());
+
+
             setValue('fabric', data.fabric);
             setValue('color', data.color);
             setValue('woodColor', data.woodColor);
@@ -120,15 +212,88 @@ const EditVariation: React.FC<AddDisplayItemProps> = ({ onClose, data }) => {
     const onSubmit: SubmitHandler<FormValues> = async (formData) => {
         const Authorization = Cookies.get("Authorization");
 
+        const escapeString = (str: string) => str.replace(/"/g, '\\"');
+
+        const dimensions: Dimensions = {
+            width: Number(formData.dimensions.width),
+            height: Number(formData.dimensions.height),
+            length: Number(formData.dimensions.length),
+        };
+
+        switch (type) {
+            case "S":
+                dimensions['single seat'] = formData.dimensions['single seat'] ? {
+                    width: Number(formData.dimensions['single seat'].width),
+                    height: Number(formData.dimensions['single seat'].height),
+                    length: Number(formData.dimensions['single seat'].length),
+                } : undefined;
+                break;
+
+            case "M":
+                dimensions.chair = formData.dimensions.chair ? {
+                    width: Number(formData.dimensions.chair.width),
+                    height: Number(formData.dimensions.chair.height),
+                    length: Number(formData.dimensions.chair.length),
+                    quantity: Number(formData.dimensions.chair.quantity)
+                } : undefined;
+                break;
+
+            case "B":
+                if (formData.dimensions['makeup table']) {
+                    dimensions["makeup table"] = {
+                        width: Number(formData.dimensions['makeup table'].width),
+                        height: Number(formData.dimensions['makeup table'].height),
+                        length: Number(formData.dimensions['makeup table'].length),
+                    };
+                }
+                if (formData.dimensions['night stand']) {
+                    dimensions["night stand"] = {
+                        width: Number(formData.dimensions['night stand'].width),
+                        height: Number(formData.dimensions['night stand'].height),
+                        length: Number(formData.dimensions['night stand'].length),
+                        quantity: Number(formData.dimensions['night stand'].quantity),
+                    };
+                }
+                if (formData.dimensions.mirror) {
+                    dimensions.mirror = {
+                        width: Number(formData.dimensions.mirror.width),
+                        height: Number(formData.dimensions.mirror.height),
+                        length: Number(formData.dimensions.mirror.length),
+                    };
+                }
+                break;
+
+            case "J":
+                if (formData.dimensions['side table']) {
+                    dimensions["side table"] = {
+                        width: Number(formData.dimensions['side table'].width),
+                        height: Number(formData.dimensions['side table'].height),
+                        length: Number(formData.dimensions['side table'].length),
+                        quantity: Number(formData.dimensions['side table'].quantity),
+                    };
+                }
+                break;
+
+            case "C":
+                if (formData.dimensions.mirror) {
+                    dimensions.mirror = {
+                        width: Number(formData.dimensions.mirror.width),
+                        height: Number(formData.dimensions.mirror.height),
+                        length: Number(formData.dimensions.mirror.length),
+                    };
+                }
+                break;
+
+            default:
+                break;
+        }
+
+
+
         const isFormUnchanged = (
             formData.name === data?.name && // Check name equality
-            // Dimensions check with whitespace removal using regular expression
-            JSON.stringify({
-                width: Number(formData.dimensions.width),
-                height: Number(formData.dimensions.height),
-                length: Number(formData.dimensions.depth),
-            }) === data.dimensions.replace(/\s+/g, '') &&
             formData.price === data?.price && // Check price equality
+            dimensions === JSON.parse(data?.dimensions) &&
             formData.description === data?.description && // Check description equality
             formData.fabric === data?.fabric && // Check fabric equality (typo fixed)
             formData.color === data?.color && // Check color equality
@@ -136,6 +301,13 @@ const EditVariation: React.FC<AddDisplayItemProps> = ({ onClose, data }) => {
             formData.showInFirstPage === data?.showInFirstPage && // Check showInFirstPage equality
             formData.isForBusiness === data?.isForBusiness// Check isForBusiness equality
         );
+
+        console.log(dimensions);
+        if (data?.dimensions) {
+            console.log(JSON.parse(data.dimensions));
+
+        }
+
 
         const isImageUnchanged = (
             formData.thumbnail?.length === 0 &&
@@ -202,15 +374,13 @@ const EditVariation: React.FC<AddDisplayItemProps> = ({ onClose, data }) => {
             }
         }
 
-        // Prepare dimensions
-        const dimensions = {
-            width: Number(formData.dimensions.width),
-            height: Number(formData.dimensions.height),
-            length: Number(formData.dimensions.depth),
-        };
+
+
+        // Convert cleaned dimensions object to JSON string
         const dimensionsString = JSON.stringify(dimensions);
 
-        const escapeString = (str: string) => str.replace(/"/g, '\\"');
+
+
         const query = `
                     mutation UpdateItemVariant {
                         updateItemVariant(
@@ -388,10 +558,190 @@ const EditVariation: React.FC<AddDisplayItemProps> = ({ onClose, data }) => {
 
                     <span>
                         <label htmlFor="depth">ارتفاع :</label>
-                        <input dir='ltr' type="number" id='depth' {...register("dimensions.depth")} />
-                        {errors.dimensions?.depth && (<p className={styles.errorMessage}>{errors.dimensions.depth.message}</p>)}
+                        <input dir='ltr' type="number" id='depth' {...register("dimensions.length")} />
+                        {errors.dimensions?.length && (<p className={styles.errorMessage}>{errors.dimensions.length.message}</p>)}
                     </span>
                 </div>
+
+                {
+                    type === "M" && (
+                        <div className={styles.twoContainer}>
+
+                            <span>
+                                <label htmlFor="quantity">تعداد صندلی :</label>
+                                <input dir='ltr' type="number" id='quantity' {...register("dimensions.chair.quantity")} />
+                                {errors.dimensions?.chair?.quantity && (<p className={styles.errorMessage}>{errors.dimensions.chair?.quantity.message}</p>)}
+                            </span>
+                            <span>
+                                <label htmlFor="cwidth">عرض صندلی :</label>
+                                <input dir='ltr' type="number" id='cwidth' {...register("dimensions.chair.width")} />
+                                {errors.dimensions?.chair?.width && (<p className={styles.errorMessage}>{errors.dimensions.chair?.width.message}</p>)}
+                            </span>
+                            <span>
+                                <label htmlFor="cheight">ارتفاع صندلی :</label>
+                                <input dir='ltr' type="number" id='cheight' {...register("dimensions.chair.height")} />
+                                {errors.dimensions?.chair?.height && (<p className={styles.errorMessage}>{errors.dimensions.chair?.height.message}</p>)}
+                            </span>
+                            <span>
+                                <label htmlFor="cdepth">طول صندلی :</label>
+                                <input dir='ltr' type="number" id='cdepth' {...register("dimensions.chair.length")} />
+                                {errors.dimensions?.chair?.length && (<p className={styles.errorMessage}>{errors.dimensions.chair?.length.message}</p>)}
+                            </span>
+                        </div>
+
+                    )
+                }
+                {
+                    type === "B" && (
+
+                        <>
+                            {/* Mirror dimensions */}
+                            <div className={styles.twoContainer}>
+                                <span>
+                                    <label htmlFor="mirrorWidth">عرض آینه :</label>
+                                    <input dir='ltr' type="number" id='mirrorWidth' {...register("dimensions.mirror.width")} />
+                                    {errors.dimensions?.mirror?.width && (<p className={styles.errorMessage}>{errors.dimensions.mirror?.width.message}</p>)}
+                                </span>
+                                <span>
+                                    <label htmlFor="mirrorHeight">ارتفاع آینه :</label>
+                                    <input dir='ltr' type="number" id='mirrorHeight' {...register("dimensions.mirror.height")} />
+                                    {errors.dimensions?.mirror?.height && (<p className={styles.errorMessage}>{errors.dimensions.mirror?.height.message}</p>)}
+                                </span>
+                                <span>
+                                    <label htmlFor="mirrorLength">طول آینه :</label>
+                                    <input dir='ltr' type="number" id='mirrorLength' {...register("dimensions.mirror.length")} />
+                                    {errors.dimensions?.mirror?.length && (<p className={styles.errorMessage}>{errors.dimensions.mirror?.length.message}</p>)}
+                                </span>
+                            </div>
+
+                            {/* Night stand */}
+                            <div className={styles.twoContainer}>
+                                <span>
+                                    <label htmlFor="nightStandQuantity">تعداد پاتختی :</label>
+                                    <input dir='ltr' type="number" id='nightStandQuantity' {...register("dimensions.night stand.quantity")} />
+                                    {errors.dimensions?.["night stand"]?.quantity && (<p className={styles.errorMessage}>{errors.dimensions["night stand"]?.quantity.message}</p>)}
+                                </span>
+                                <span>
+                                    <label htmlFor="nightStandWidth">عرض پاتختی :</label>
+                                    <input dir='ltr' type="number" id='nightStandWidth' {...register("dimensions.night stand.width")} />
+                                    {errors.dimensions?.["night stand"]?.width && (<p className={styles.errorMessage}>{errors.dimensions["night stand"]?.width.message}</p>)}
+                                </span>
+                                <span>
+                                    <label htmlFor="nightStandHeight">ارتفاع پاتختی :</label>
+                                    <input dir='ltr' type="number" id='nightStandHeight' {...register("dimensions.night stand.height")} />
+                                    {errors.dimensions?.["night stand"]?.height && (<p className={styles.errorMessage}>{errors.dimensions["night stand"]?.height.message}</p>)}
+                                </span>
+                                <span>
+                                    <label htmlFor="nightStandLength">طول پاتختی :</label>
+                                    <input dir='ltr' type="number" id='nightStandLength' {...register("dimensions.night stand.length")} />
+                                    {errors.dimensions?.["night stand"]?.length && (<p className={styles.errorMessage}>{errors.dimensions["night stand"]?.length.message}</p>)}
+                                </span>
+                            </div>
+
+                            {/* Makeup table */}
+                            <div className={styles.twoContainer}>
+                                <span>
+                                    <label htmlFor="makeupTableWidth">عرض میز آرایش :</label>
+                                    <input dir='ltr' type="number" id='makeupTableWidth' {...register("dimensions.makeup table.width")} />
+                                    {errors.dimensions?.["makeup table"]?.width && (<p className={styles.errorMessage}>{errors.dimensions["makeup table"]?.width.message}</p>)}
+                                </span>
+                                <span>
+                                    <label htmlFor="makeupTableHeight">ارتفاع میز آرایش :</label>
+                                    <input dir='ltr' type="number" id='makeupTableHeight' {...register("dimensions.makeup table.height")} />
+                                    {errors.dimensions?.["makeup table"]?.height && (<p className={styles.errorMessage}>{errors.dimensions["makeup table"]?.height.message}</p>)}
+                                </span>
+                                <span>
+                                    <label htmlFor="makeupTableLength">طول میز آرایش :</label>
+                                    <input dir='ltr' type="number" id='makeupTableLength' {...register("dimensions.makeup table.length")} />
+                                    {errors.dimensions?.["makeup table"]?.length && (<p className={styles.errorMessage}>{errors.dimensions["makeup table"]?.length.message}</p>)}
+                                </span>
+                            </div>
+                        </>
+                    )
+                }
+                {
+                    type === "J" && (
+
+                        <>
+                            {/* Night stand */}
+                            <div className={styles.twoContainer}>
+                                <span>
+                                    <label htmlFor="sidetableQuantity">تعداد میز :</label>
+                                    <input dir='ltr' type="number" id='sidetableQuantity' {...register("dimensions.side table.quantity")} />
+                                    {errors.dimensions?.["side table"]?.quantity && (<p className={styles.errorMessage}>{errors.dimensions["side table"]?.quantity.message}</p>)}
+                                </span>
+                                <span>
+                                    <label htmlFor="sidetableWidth">عرض میز :</label>
+                                    <input dir='ltr' type="number" id='sidetableWidth' {...register("dimensions.side table.width")} />
+                                    {errors.dimensions?.["side table"]?.width && (<p className={styles.errorMessage}>{errors.dimensions["side table"]?.width.message}</p>)}
+                                </span>
+                                <span>
+                                    <label htmlFor="sidetableHeight">ارتفاع میز :</label>
+                                    <input dir='ltr' type="number" id='sidetableHeight' {...register("dimensions.side table.height")} />
+                                    {errors.dimensions?.["side table"]?.height && (<p className={styles.errorMessage}>{errors.dimensions["side table"]?.height.message}</p>)}
+                                </span>
+                                <span>
+                                    <label htmlFor="sidetableLength">طول میز :</label>
+                                    <input dir='ltr' type="number" id='sidetableLength' {...register("dimensions.side table.length")} />
+                                    {errors.dimensions?.["side table"]?.length && (<p className={styles.errorMessage}>{errors.dimensions["side table"]?.length.message}</p>)}
+                                </span>
+                            </div>
+
+                        </>
+                    )
+                }
+                {
+                    type === "C" && (
+
+                        <>
+                            {/* Night stand */}
+                            <div className={styles.twoContainer}>
+                                <span>
+                                    <label htmlFor="mirrorWidth">عرض آینه :</label>
+                                    <input dir='ltr' type="number" id='mirrorWidth' {...register("dimensions.mirror.width")} />
+                                    {errors.dimensions?.mirror?.width && (<p className={styles.errorMessage}>{errors.dimensions.mirror?.width.message}</p>)}
+                                </span>
+                                <span>
+                                    <label htmlFor="mirrorHeight">ارتفاع آینه :</label>
+                                    <input dir='ltr' type="number" id='mirrorHeight' {...register("dimensions.mirror.height")} />
+                                    {errors.dimensions?.mirror?.height && (<p className={styles.errorMessage}>{errors.dimensions.mirror?.height.message}</p>)}
+                                </span>
+                                <span>
+                                    <label htmlFor="mirrorLength">طول آینه :</label>
+                                    <input dir='ltr' type="number" id='mirrorLength' {...register("dimensions.mirror.length")} />
+                                    {errors.dimensions?.mirror?.length && (<p className={styles.errorMessage}>{errors.dimensions.mirror?.length.message}</p>)}
+                                </span>
+                            </div>
+
+                        </>
+                    )
+                }
+                {
+                    type === "S" && (
+
+                        <>
+                            {/* Night stand */}
+                            <div className={styles.twoContainer}>
+                                <span>
+                                    <label htmlFor="singleWidth">عرض تک نفره :</label>
+                                    <input dir='ltr' type="number" id='singleWidth' {...register("dimensions.single seat.width")} />
+                                    {errors.dimensions?.["single seat"]?.width && (<p className={styles.errorMessage}>{errors.dimensions['single seat'].width.message}</p>)}
+                                </span>
+                                <span>
+                                    <label htmlFor="single seatHeight">ارتفاع تک نفره :</label>
+                                    <input dir='ltr' type="number" id='single seatHeight' {...register("dimensions.single seat.height")} />
+                                    {errors.dimensions?.["single seat"]?.height && (<p className={styles.errorMessage}>{errors.dimensions['single seat'].height.message}</p>)}
+                                </span>
+                                <span>
+                                    <label htmlFor="single seatLength">طول تک نفره :</label>
+                                    <input dir='ltr' type="number" id='single seatLength' {...register("dimensions.single seat.length")} />
+                                    {errors.dimensions?.["single seat"]?.length && (<p className={styles.errorMessage}>{errors.dimensions['single seat'].length.message}</p>)}
+                                </span>
+                            </div>
+
+                        </>
+                    )
+                }
 
                 <div className={styles.twoContainer}>
                     <span className='w-[90%]'>

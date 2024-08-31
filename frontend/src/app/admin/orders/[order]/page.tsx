@@ -291,7 +291,7 @@ const Page = () => {
                 {/* Status dropdown */}
                 <div className={Styles.statusContainer}>
                     <label htmlFor="orderStatus">وضعیت سفارش:</label>
-                    <select className={Styles.select} id="orderStatus" value={selectedStatus} onChange={handleStatusChange}>
+                    <select className={Styles.selectAdmin} id="orderStatus" value={selectedStatus} onChange={handleStatusChange}>
                         {Object.entries(statusMapping).map(([key, value]) => (
                             <option key={key} value={key}>{value}</option>
                         ))}

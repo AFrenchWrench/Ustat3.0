@@ -3,11 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Box from '@mui/material/Box';
-import { DataGrid, GridColDef, GridRowModel } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridFilterModel, GridRowModel } from '@mui/x-data-grid';
 import Cookies from 'js-cookie';
 import { faIR } from '@mui/x-data-grid/locales';
 import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
 import jalaali from 'jalaali-js';
+import Alert from '@/components/Alert';
 
 interface Order {
     id: string;
@@ -21,6 +22,9 @@ interface Order {
         firstName: string;
         email: string;
     };
+}
+interface OrderWithChanges extends Order {
+    hasChanges?: boolean; // Track changes for each row
 }
 
 // Status mapping
@@ -45,74 +49,7 @@ const convertToJalaali = (gregorianDate: string | undefined) => {
     }
 };
 
-const columns: GridColDef[] = [
-    {
-        field: 'orderNumber',
-        headerName: 'شماره سفارش',
-        flex: 1,
-        minWidth: 150,
-        renderCell: (params) => (
-            <Link
-                href={`/admin/orders/${params.row.id}`}
-                style={{ textDecoration: 'none', color: 'inherit' }}
-            >
-                {params.value}
-            </Link>
-        ),
-    },
-    {
-        field: 'status',
-        headerName: 'وضعیت',
-        flex: 1,
-        type: "singleSelect",
-        minWidth: 100,
-        valueOptions: Object.entries(statusMapping).map(([key, value]) => ({
-            value: key,
-            label: value,
-        })),
-        renderCell: (params) => statusMapping[params.value] || params.value,
-        editable: true
-    },
-    {
-        field: 'creationDate',
-        headerName: 'تاریخ ایجاد',
-        flex: 1,
-        minWidth: 100,
-    },
-    {
-        field: 'dueDate',
-        headerName: 'تاریخ تحویل',
-        flex: 1,
-        minWidth: 100,
-    },
-    {
-        field: 'totalPrice',
-        headerName: 'مجموع قیمت',
-        flex: 1,
-        type: 'number',
-        headerClassName: 'custom-header-style',
-        cellClassName: 'custom-cell-style',
-        minWidth: 100,
-    },
-    {
-        field: 'username',
-        headerName: 'نام کاربری',
-        flex: 1,
-        minWidth: 90,
-    },
-    {
-        field: 'firstName',
-        headerName: 'نام',
-        flex: 1,
-        minWidth: 90,
-    },
-    {
-        field: 'email',
-        headerName: 'ایمیل',
-        flex: 1,
-        minWidth: 200,
-    },
-];
+
 
 export default function OrdersDataGrid() {
     const [orders, setOrders] = useState<Order[]>([]);
@@ -121,93 +58,191 @@ export default function OrdersDataGrid() {
     const [page, setPage] = useState<number>(0); // Default page
     const [rowCount, setRowCount] = useState<number>(0); // Total number of rows
     const [isAll, setIsAll] = useState<boolean>(false); // Track "All" option
+    const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
+    const [alert, setAlert] = useState<{ message: string; type: 'success' | 'failed' } | null>(null);
+    const [editingRow, setEditingRow] = useState<OrderWithChanges | null>(null);
+
+
+    const columns: GridColDef[] = [
+        {
+            field: 'orderNumber',
+            headerName: 'شماره سفارش',
+            flex: 1,
+            minWidth: 150,
+            renderCell: (params) => (
+                <Link
+                    href={`/admin/orders/${params.row.id}`}
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                    {params.value}
+                </Link>
+            ),
+        },
+        {
+            field: 'status',
+            headerName: 'وضعیت',
+            flex: 1,
+            type: "singleSelect",
+            minWidth: 100,
+            valueOptions: Object.entries(statusMapping).map(([key, value]) => ({
+                value: key,
+                label: value,
+            })),
+            renderCell: (params) => statusMapping[params.value] || params.value,
+            editable: true
+        },
+        {
+            field: 'creationDate',
+            headerName: 'تاریخ ایجاد',
+            flex: 1,
+            minWidth: 100,
+        },
+        {
+            field: 'dueDate',
+            headerName: 'تاریخ تحویل',
+            flex: 1,
+            minWidth: 100,
+        },
+        {
+            field: 'totalPrice',
+            headerName: 'مجموع قیمت',
+            flex: 1,
+            type: 'number',
+            headerClassName: 'custom-header-style',
+            cellClassName: 'custom-cell-style',
+            minWidth: 100,
+        },
+        {
+            field: 'firstName',
+            headerName: 'نام',
+            flex: 1,
+            minWidth: 90,
+        },
+        {
+            field: 'email',
+            headerName: 'ایمیل',
+            flex: 1,
+            minWidth: 150,
+        },
+        {
+            field: 'actions',
+            headerName: 'عملیات',
+            flex: 1,
+            minWidth: 150,
+            renderCell: (params) => {
+                const { row } = params;
+                const hasChanges = (row as OrderWithChanges).hasChanges;
+
+                return (
+                    <button
+                        disabled={!hasChanges} // Disable button if there are no changes
+                        onClick={() => handleSubmitButtonClick(row as OrderWithChanges)}
+                        style={{
+                            backgroundColor: '#4CAF50',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '6px 12px',
+                            cursor: 'pointer',
+                        }
+                        }
+                        className={`px-4 py-2 rounded border-none text-white cursor-pointer ${!hasChanges
+                            ? 'bg-gray-400 cursor-not-allowed opacity-70' // Styles for disabled state
+                            : 'bg-green-500 hover:bg-green-600' // Styles for enabled state
+                            }`}
+                    >
+                        ثبت
+                    </button>
+                );
+            },
+        },
+
+    ];
 
     useEffect(() => {
         const token = Cookies.get('Authorization');
 
-        const fetchOrders = () => {
-            fetch('http://localhost/api/sales/graphql/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token ? token : "",
-                },
-                body: JSON.stringify({
-                    query: `
-                        query Orders($page: Int, $perPage: Int) {
-                            orders(page: $page, perPage: $perPage) {
-                                totalPages
-                                totalItems
-                                items {
-                                    id
-                                    dueDate
-                                    creationDate
-                                    orderNumber
-                                    totalPrice
-                                    status
-                                    user {
-                                        username
-                                        firstName
-                                        email
+        const formattedFilterModel = {
+            ...createFilterObject(filterModel),
+        };
+
+        const fetchOrders = async () => {
+            setLoading(true); // Set loading to true at the start of fetching
+            try {
+                const response = await fetch('http://localhost/api/admin_dash/graphql/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? token : "",
+                    },
+                    body: JSON.stringify({
+                        query: `
+                            query Orders($page: Int, $perPage: Int , $filters: OrderFilterInput) {
+                                orders(page: $page, perPage: $perPage, filter: $filters) {
+                                    totalPages
+                                    totalItems
+                                    items {
+                                        id
+                                        dueDate
+                                        creationDate
+                                        orderNumber
+                                        totalPrice
+                                        status
+                                        user {
+                                            firstName
+                                            email
+                                        }
                                     }
                                 }
                             }
-                        }
-                    `,
-                    variables: {
-                        page: page + 1,
-                        perPage: isAll ? rowCount : pageSize, // Use a high number for "all"
-                    },
-                }),
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    const ordersData = data.data.orders.items.map((order: Order) => ({
-                        ...order,
-                        username: order.user.username,
-                        firstName: order.user.firstName,
-                        email: order.user.email,
-                        creationDate: convertToJalaali(order.creationDate),
-                        dueDate: convertToJalaali(order.dueDate),
-                    }));
-                    const totalItems = data.data.orders.totalItems;
-                    setOrders(ordersData);
-                    setRowCount(totalItems);
-                    setLoading(false);
-                })
-                .catch((error) => {
-                    console.error('Error fetching orders data:', error);
-                    setLoading(false);
+                        `,
+                        variables: {
+                            page: page + 1,
+                            perPage: isAll ? rowCount : pageSize, // Use a high number for "all"
+                            filters: formattedFilterModel,
+                        },
+                    }),
                 });
+
+                const data = await response.json();
+
+                const ordersData = data.data.orders.items.map((order: Order) => ({
+                    ...order,
+                    username: order.user.username,
+                    firstName: order.user.firstName,
+                    email: order.user.email,
+                    creationDate: convertToJalaali(order.creationDate),
+                    dueDate: convertToJalaali(order.dueDate),
+                }));
+
+                const totalItems = data.data.orders.totalItems;
+                setOrders(ordersData);
+                setRowCount(totalItems);
+            } catch (error) {
+                console.error('Error fetching orders data:', error);
+            } finally {
+                setLoading(false); // Ensure loading is set to false after fetching is done
+            }
         };
 
         fetchOrders();
-    }, [page, pageSize, isAll]);
 
-    const handleProcessRowUpdate = async (newRow: GridRowModel, oldRow: GridRowModel) => {
-        const updates: Record<string, any> = {};
+    }, [page, pageSize, isAll, filterModel]);
 
-        // Compare fields and add changed ones to the updates object
-        if (newRow.status !== oldRow.status) {
-            console.log(newRow.status.toLowerCase());
 
-            updates.status = newRow.status.toLowerCase();
-        }
+    const handleProcessRowUpdate = (newRow: GridRowModel, oldRow: GridRowModel) => {
+        // Set hasChanges to true for the row being edited
+        return { ...newRow, hasChanges: true };
+    };
 
-        if (newRow.dueDate !== oldRow.dueDate) {
-            // Ensure the due date is in yyyy-mm-dd format
-            const [year, month, day] = newRow.dueDate.split('/');
-            updates.dueDate = `${year}-${month}-${day}`;
-        }
-
-        // If there are no updates, return the newRow immediately
-        if (Object.keys(updates).length === 0) {
-            return newRow;
-        }
-
+    const handleSubmitButtonClick = async (row: OrderWithChanges) => {
+        if (!row.hasChanges) return;
+        const originalStatus = row.status; // Save the original status
+        const newStatus = row.status.toUpperCase();
+        const id = row.id;
+        const status = row.status.toLowerCase();
         try {
             const token = Cookies.get('Authorization');
-
             const response = await fetch('http://localhost/api/admin_dash/graphql/', {
                 method: 'POST',
                 headers: {
@@ -221,31 +256,82 @@ export default function OrdersDataGrid() {
                                 success
                                 errors
                             }
-                        }
-                    `,
+                        }`,
                     variables: {
-                        id: newRow.id,
-                        ...updates, // Spread the updates object to send only the changed fields
+                        id: id,
+                        status: status,
                     },
                 }),
             });
 
             const data = await response.json();
-
             if (data.data.updateOrder.success) {
-                // If the update is successful, return the new row to update the UI
-                return newRow;
+                // Show success alert
+                setAlert({ message: 'عملیات موفقیت آمیز بود', type: 'success' });
+                setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus } : o));
+                setEditingRow(null); // Reset editing row
             } else {
-                // If there are errors, log them and return the old row to revert the UI changes
-                console.error('Error updating order:', data.data.updateOrder.errors.join(', '));
-                return oldRow;
+                const errors = JSON.parse(data.data.updateOrder.errors);
+                const errorKeys = Object.keys(errors);
+                const firstKey = errorKeys.length > 0 ? errorKeys[0] : 'unknownError';
+                const firstErrorMessage = errors[firstKey] || 'Failed to update order!';
+                // Show error alert and revert status
+                setAlert({ message: firstErrorMessage, type: 'failed' });
+                setOrders(orders.map(o => o.id === id ? { ...o, status: originalStatus } : o));
             }
         } catch (error) {
-            console.error('Error updating order:', error);
-            // In case of an error, return the old row to revert the UI changes
-            return oldRow;
+            console.error('Error during submit:', error);
+            setAlert({ message: 'Error during submit!', type: 'failed' });
         }
     };
+
+    const closeAlert = () => {
+        setAlert(null);
+    };
+
+
+    const createFilterObject = (filterModel: GridFilterModel) => {
+        const filters: any = {};
+        filterModel.items.forEach((item) => {
+            if (item.value !== undefined && item.value !== null) { // Check if item.value is defined
+                switch (item.field) {
+                    case 'username':
+                        filters.user_Username_Icontains = item.value;
+                        break;
+                    case 'status':
+                        filters.status = item.value.toLowerCase(); // Convert status to lowercase
+                        break;
+                    case 'dueDate':
+                        if (item.value === 'بعد از') {
+                            filters.dueDate_Gte = item.value; // Assume item.value is in yyyy-mm-dd format
+                        }
+                        if (item.value === 'قبل از') {
+                            filters.dueDate_Lte = item.value; // Assume item.value is in yyyy-mm-dd format
+                        }
+                        break;
+                    case 'creationDate':
+                        if (item.value === 'بعد از') {
+                            filters.creationDate_Gte = item.value; // Assume item.value is in yyyy-mm-dd format
+                        }
+                        if (item.value === 'قبل از') {
+                            filters.creationDate_Lte = item.value; // Assume item.value is in yyyy-mm-dd format
+                        }
+                        break;
+                    case 'orderNumber':
+                        filters.orderNumber_Icontains = item.value;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
+
+        return filters;
+    };
+
+
+
+
 
 
     const existingTheme = useTheme();
@@ -302,7 +388,9 @@ export default function OrdersDataGrid() {
                                 }
                             }
                         }}
-                        pageSizeOptions={[5, 10, 20, { value: rowCount, label: 'همه' }]} // Include "All" option
+                        filterModel={filterModel} // Add this line to use the filter model
+                        onFilterModelChange={(newFilterModel) => setFilterModel(newFilterModel)}
+                        pageSizeOptions={[5, 10, 20]} // Include "All" option
                         rowCount={rowCount}
                         disableRowSelectionOnClick
                         processRowUpdate={handleProcessRowUpdate} // Add this handler
@@ -355,6 +443,13 @@ export default function OrdersDataGrid() {
                     />
                 </div>
             </ThemeProvider>
+            {alert && (
+                <Alert
+                    message={alert.message}
+                    type={alert.type}
+                    onClose={closeAlert}
+                />
+            )}
         </Box>
     );
 }

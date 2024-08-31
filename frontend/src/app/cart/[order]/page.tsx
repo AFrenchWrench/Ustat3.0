@@ -19,6 +19,10 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import ConfirmAlert from "../components/ConfirmAlert"; // Import the ConfirmAlert component
 import SelectAddress from '../components/selectAddress';
 
+import { CiEdit } from "react-icons/ci";
+
+import "@/allStyles/datePickerOrder.css"
+
 interface OrderItems {
     id: string;
     type: string;
@@ -29,6 +33,8 @@ interface OrderItems {
     color: string;
     woodColor: string;
     dimensions: string;
+    price: number;
+    totalPrice: number;
 }
 
 interface Iaddress {
@@ -41,6 +47,7 @@ interface DisplayItem {
     orderNumber: string;
     status: string;
     address: Iaddress;
+    totalPrice: number;
     items: OrderItems[];
 }
 
@@ -102,6 +109,7 @@ const Page = () => {
                                         dueDate
                                         orderNumber
                                         status
+                                        totalPrice
                                         address {
                                             address
                                         }
@@ -111,10 +119,8 @@ const Page = () => {
                                             name
                                             quantity
                                             thumbnail
-                                            fabric
-                                            color
-                                            woodColor
-                                            dimensions
+                                            price
+                                            totalPrice
                                         }
                                     }
                                 }
@@ -186,13 +192,14 @@ const Page = () => {
         mode: "all"
     });
 
-    const handleDateChange = (date: DateObject | null) => {
+    const handleDateChange = (date: DateObject | null, id: string) => {
         if (date) {
             const gregorianDate = date.convert(gregorian).toDate();
             const utcDate = new Date(Date.UTC(gregorianDate.getFullYear(), gregorianDate.getMonth(), gregorianDate.getDate()));
             const formattedDate = utcDate.toISOString().split("T")[0];
             setValue("orderDate", formattedDate);
             setDateValue(convertToJalaali(formattedDate));
+            handleConfirm("updateDate", id)
         } else {
             setValue("orderDate", '');
             setDateValue(undefined);
@@ -202,13 +209,17 @@ const Page = () => {
     const handleQuantityChange = (itemId: string, increment: boolean) => {
         setItemQuantities((prevQuantities) => {
             const currentQuantity = prevQuantities[itemId] || 1;
-            if (increment) {
-                return { ...prevQuantities, [itemId]: currentQuantity + 1 };
-            } else {
-                return { ...prevQuantities, [itemId]: Math.max(currentQuantity - 1, 1) };
-            }
+            const newQuantity = increment ? currentQuantity + 1 : Math.max(currentQuantity - 1, 1);
+
+            // Call handleConfirm with the newQuantity
+            handleConfirm("update", itemId, undefined, undefined, newQuantity);
+
+            // Return updated state
+            return { ...prevQuantities, [itemId]: newQuantity };
         });
     };
+
+
 
     const handleAddressId = (id: string) => {
         setAddressId(id)
@@ -247,7 +258,7 @@ const Page = () => {
             case 'D':
                 return "red";
             case 'A':
-                return "green";
+                return "#00ff00";
             case 'C':
                 return "red";
             default:
@@ -259,7 +270,7 @@ const Page = () => {
         setConfirmAlert({ show: true, type, itemId, status, addressId });
     };
 
-    const handleConfirm = async (type: TupdateType, itemId: string, status?: string, addressId?: string) => {
+    const handleConfirm = async (type: TupdateType, itemId: string, status?: string, addressId?: string, newQuantity?: number) => {
         const user = Cookies.get("Authorization");
 
         let query: string = '';  // Initialize with an empty string
@@ -287,7 +298,7 @@ const Page = () => {
                     }
                 }
             `;
-            variables = { itemIdVar: itemId, quantity: itemQuantities[itemId] };
+            variables = { itemIdVar: itemId, quantity: newQuantity };
         } else if (type === "updateDate") {
             query = `
                 mutation UpdateOrder($itemIdVar: ID!, $dueDate: Date!) {
@@ -397,25 +408,9 @@ const Page = () => {
                         <div className={Styles.itemContainer} key={item.id}>
                             <div className={Styles.itemRight}>
                                 <p>{item.name}</p>
-                                <div className={Styles.infoContainer}>
-                                    <div className={Styles.dimensionsContainer}>
-                                        <div>
-                                            <p>{JSON.parse(item.dimensions).length ? `طول: ${JSON.parse(item.dimensions).length}` : 'N/A'}</p>
-                                            <p>{JSON.parse(item.dimensions).width ? `عرض: ${JSON.parse(item.dimensions).width}` : 'N/A'} x</p>
-                                            <p>{JSON.parse(item.dimensions).height ? `ارتفاع: ${JSON.parse(item.dimensions).height}` : 'N/A'} x</p>
-                                        </div>
-                                    </div>
-                                    <div className={Styles.colorSection}>
-                                        <p>رنگ : <span>{item.color || 'N/A'}</span></p>
-                                        <p>رنگ چوب : <span>{item.woodColor || 'N/A'}</span></p>
-                                    </div>
-                                    <div className={Styles.colorSection}>
-                                        <p className='fabric_title'>پارچه : <span>{item.fabric || 'N/A'}</span></p>
-                                    </div>
-                                </div>
                                 <div className={Styles.quantityControl}>
+                                    <p>تعداد :</p>
                                     <span className='flex gap-[10px] items-center'>
-                                        <p>تعداد :</p>
                                         {orderData.status === "PS" && (
                                             <button
                                                 className={Styles.increment}
@@ -436,18 +431,16 @@ const Page = () => {
                                         )}
                                     </span>
                                 </div>
-                            </div>
-                            <div className={Styles.itemLeft}>
-                                <picture><img src={`/media/${item.thumbnail}`} alt="thumbnail" /></picture>
-
+                                <div className={Styles.price}>
+                                    <p>قیمت :</p>
+                                    <p>{Number(item.price).toLocaleString("en-US")}</p>
+                                </div>
+                                <div className={Styles.totalPrice}>
+                                    <p>قیمت کل :</p>
+                                    <p>{Number(item.totalPrice).toLocaleString("en-US")}</p>
+                                </div>
                                 {orderData.status === "PS" && (
                                     <div className={Styles.udButtons}>
-                                        <button
-                                            className={Styles.updateButton}
-                                            onClick={() => handleConfirmAlert('update', item.id)}
-                                        >
-                                            بروزرسانی
-                                        </button>
                                         <button
                                             className={Styles.deleteButton}
                                             onClick={() => handleConfirmAlert('delete', item.id)}
@@ -456,42 +449,49 @@ const Page = () => {
                                         </button>
                                     </div>
                                 )}
+
+                            </div>
+                            <div className={Styles.itemLeft}>
+                                <picture><img src={`/media/${item.thumbnail}`} alt="thumbnail" /></picture>
                             </div>
                         </div>
                     ))}
                 </div>
-                <div className='flex justify-center mt-[30px] gap-2 w-[100%] relative items-center'>
-                    <label htmlFor="orderDate" className='flex items-center gap-2'>
-                        تاریخ تحویل :<FaCalendarAlt />
-                    </label>
-                    <Controller
-                        control={control}
-                        name='orderDate'
-                        render={() => (
-                            <DatePicker
-                                id='orderDate'
-                                calendar={persian}
-                                locale={persian_fa}
-                                calendarPosition="bottom-right"
-                                onChange={handleDateChange}
-                                minDate={new DateObject({ calendar: persian }).set("day", 15)}
-                                className="datePicker red bg-dark text-color-white"
-                                inputClass={Styles.customInput}
-                                value={dateValue}
-                                disabled={orderData.status !== "PS"}
-                            />
+                <div className={Styles.dateStatusContainer}>
+                    <div className={Styles.dateContainer}>
+                        <label htmlFor="orderDate" className='flex items-center gap-2'>
+                            تاریخ دریافت :<FaCalendarAlt />
+                        </label>
+                        <Controller
+                            control={control}
+                            name='orderDate'
+                            render={() => (
+                                <DatePicker
+                                    id='orderDate'
+                                    calendar={persian}
+                                    locale={persian_fa}
+                                    calendarPosition="bottom-right"
+                                    onChange={(date) => handleDateChange(date, orderData.id)}
+                                    minDate={new DateObject({ calendar: persian }).set("day", 15)}
+                                    className="red bg-dark text-color-white"
+                                    inputClass={Styles.customInput}
+                                    value={dateValue}
+                                    disabled={orderData.status !== "PS"}
+                                />
+                            )}
+                        />
+                        {errors.orderDate && (
+                            <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5 whitespace-nowrap'>
+                                {errors.orderDate.message}
+                            </p>
                         )}
-                    />
-                    {orderData.status === "PS" && (
-                        <button onClick={() => handleConfirmAlert('updateDate', orderData.id)} className={Styles.updateButton}>بروزرسانی</button>
-                    )}
-                    {errors.orderDate && (
-                        <p className='text-sm text-red-700 absolute bottom-0 left-0 translate-y-5 whitespace-nowrap'>
-                            {errors.orderDate.message}
-                        </p>
-                    )}
+                    </div>
+                    <div className={Styles.statusContainer}>
+                        <p>وضعیت :</p>
+                        <p style={{ color: handleStatusColor(orderData.status), textShadow: `0px 0px 4px ${handleStatusColor(orderData.status)}` }} className={Styles.status}>{handleStatus()}</p>
+                    </div>
+
                 </div>
-                <p style={{ color: handleStatusColor(orderData.status) }} className={orderData.status}>{handleStatus()}</p>
 
 
                 {
@@ -503,24 +503,35 @@ const Page = () => {
                     <>
 
                         <div className={Styles.formGroup}>
-                            <button type='button' onClick={() => setShowSelectAddress(true)} disabled={showSelectAddress}>انتخاب آدرس</button>
-                            {
-                                address && (
-                                    <p>{address}</p>
-                                )
-                            }
+                            <p>آدرس :</p>
+                            <div className='flex items-center gap-1 w-[85%] bg-[rgb(42,42,42)] p-1 py-0 rounded-md'>
+                                {
+                                    address ? (
+                                        <p>{address}</p>
+                                    ) : (
+                                        orderData.address && <p className={Styles.addressText}>{orderData.address.address}</p>
+                                    )
+                                }
+                                <button className='bg-transparent p-0 mr-[auto]' type='button' onClick={() => setShowSelectAddress(true)} disabled={showSelectAddress}><CiEdit className={Styles.editFontSize} /></button>
+                            </div>
                         </div>
 
                         <div className={Styles.acButtons}>
-                            <button type='button' onClick={() => handleConfirmAlert('changeStatus', orderData.id, 'p', addressId)} className={Styles.submitButton}>ثبت</button>
-                            <button type='button' onClick={() => handleConfirmAlert('changeStatusC', orderData.id, 'c')} className={Styles.cButton}>لغو</button>
+                            <button type='button' onClick={() => handleConfirmAlert('changeStatus', orderData.id, 'p', addressId)} className={Styles.cButton}>ثبت</button>
+                            <button type='button' onClick={() => handleConfirmAlert('changeStatusC', orderData.id, 'c')} className={Styles.submitButton}>لغو</button>
                         </div>
                     </>
                 )}
-                {
-                    orderData.address ? <p className={Styles.addressText}>{orderData.address.address}</p> : ""
-                }
 
+                {
+                    orderData.status === "A" && (
+                        <div>
+                            <button onClick={() => push(`/payment/${orderData.id}`)}>
+                                صفحه پرداخت
+                            </button>
+                        </div>
+                    )
+                }
             </div>
 
             {confirmAlert && (
@@ -549,15 +560,7 @@ const Page = () => {
                         selectedAddress={handleAddress}
                     />
                 )}
-            {
-                orderData.status === "A" && (
-                    <div>
-                        <button onClick={() => push(`/payment/${orderData.id}`)}>
-                            صفحه پرداخت
-                        </button>
-                    </div>
-                )
-            }
+
         </section>
     );
 }

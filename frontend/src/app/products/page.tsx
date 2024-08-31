@@ -45,7 +45,7 @@ const typeNames: Record<string, string> = {
   B: "سرویس خواب",
   M: "میز و صندلی",
   J: "جلومبلی و عسلی",
-  C: "آینه کنسول",
+  C: "آینه کنسول و میز تلوزیون",
 };
 
 const Products = () => {

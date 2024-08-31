@@ -47,6 +47,7 @@ const SigninForm = () => {
                 token
                 success
                 redirectUrl
+                errors
               }
             }
           `,
@@ -68,9 +69,8 @@ const SigninForm = () => {
         return;
       }
 
-      if (data.errors) {
-        console.error("Server returned errors:", data.errors);
-        setError("username", { message: data.errors[0].message || "نام کاربری یا رمز عبور اشتباه است", type: "server" });
+      if (data.data.login.errors) {
+        setError("username", { message: data.data.login.errors || "نام کاربری یا رمز عبور اشتباه است", type: "server" });
         return;
       }
 

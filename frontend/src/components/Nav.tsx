@@ -18,7 +18,6 @@ const Nav = () => {
   const accountRef = useRef<HTMLLIElement>(null);
   const productsRef = useRef<HTMLLIElement>(null);
   const cartRef = useRef<HTMLLIElement>(null);
-  const supportRef = useRef<HTMLLIElement>(null);
 
   useEffect(() => {
     const determineBgTop = () => {
@@ -32,8 +31,6 @@ const Nav = () => {
         selectedElement = homeRef.current;
       } else if (router.startsWith('/cart')) {
         selectedElement = cartRef.current;
-      } else if (router.startsWith('/support')) {
-        selectedElement = supportRef.current;
       }
 
       if (selectedElement) {
@@ -62,9 +59,6 @@ const Nav = () => {
         </li>
         <li ref={cartRef}>
           <Link href={"/cart"}><PiShoppingCartSimple color='white' className={Navbar.icons} /></Link>
-        </li>
-        <li ref={supportRef}>
-          <Link href={"/support"}><MdOutlineSupportAgent color='white' className={Navbar.icons} /></Link>
         </li>
         <div className={Navbar.holder}>
           <span className={Navbar.selectedBg} style={{ top: selectBgTop, transform: 'translateY(-50%)' }}></span>

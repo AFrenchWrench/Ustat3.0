@@ -202,7 +202,7 @@ const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
           Cookies.set("username", userInfo.username)
           Cookies.remove("Authorization")
         }
-        if (userInfo.password && userInfo.newPassword && userInfo.confirmNewPassword || userInfo.username) {
+        if (userInfo.password && userInfo.newPassword !== userInfo.confirmNewPassword || userInfo.username !== userData.username) {
           Cookies.remove("Authorization")
         }
         push(result.data.updateUser.redirectUrl);
@@ -292,35 +292,6 @@ const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
       </div>
 
       <div className={styles.twoHolder}>
-        <div className=' flex justify-start gap-2 w-[100%] relative'>
-          <label htmlFor="birthDate" className='flex items-center gap-2'>   تاریخ تولد :<FaCalendarAlt /></label>
-          <Controller
-            control={control}
-            name='birthdate'
-            render={() => (
-              <DatePicker
-                id='birthDate'
-                calendar={persian}
-                locale={persian_fa}
-                calendarPosition="bottom-right"
-                onChange={handleDateChange}
-                maxDate={new DateObject({ calendar: persian }).set("day", 15)}
-                className="red bg-dark"
-                inputClass="custom-input"
-                value={dateValue}
-              />)
-            }
-          />
-
-          {errors.birthdate && (<p className={styles.errorMessage}>{errors.birthdate.message}</p>)}
-
-        </div>
-
-      </div>
-
-
-
-      <div className={styles.twoHolder}>
         <span className='!w-full relative'>
           <label htmlFor="password-edit">رمز عبور :</label>
           <input
@@ -364,7 +335,32 @@ const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
         </span>
       </div>
 
+      <div className={styles.twoHolder}>
+        <div className=' flex justify-start gap-2 w-[100%] relative'>
+          <label htmlFor="birthDate" className='flex items-center gap-2'>   تاریخ تولد :<FaCalendarAlt /></label>
+          <Controller
+            control={control}
+            name='birthdate'
+            render={() => (
+              <DatePicker
+                id='birthDate'
+                calendar={persian}
+                locale={persian_fa}
+                calendarPosition="bottom-right"
+                onChange={handleDateChange}
+                maxDate={new DateObject({ calendar: persian }).set("day", 15)}
+                className="red bg-dark"
+                inputClass="custom-input"
+                value={dateValue}
+              />)
+            }
+          />
 
+          {errors.birthdate && (<p className={styles.errorMessage}>{errors.birthdate.message}</p>)}
+
+        </div>
+
+      </div>
 
 
 

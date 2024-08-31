@@ -18,7 +18,6 @@ interface DisplayItem {
     type: string;
     name: string;
 }
-
 interface Ivariations {
     id: string,
     name: string,
@@ -381,7 +380,7 @@ const AddItemTable: React.FC = () => {
                         disabled={showPopup || showPopupV}
                         className='disabled:bg-red-400'
                     >
-                        add displayItem
+                        اضافه کردن
                     </button>
                 </div>
 
@@ -405,7 +404,7 @@ const AddItemTable: React.FC = () => {
                         onClick={handleOpenPopupV}
                         disabled={showPopup || showPopupV}
                         className='disabled:bg-red-400'
-                    >add</button>
+                    >اضافه کردن</button>
                 </div>
             </div>
 
@@ -467,7 +466,7 @@ const AddItemTable: React.FC = () => {
                     />
                 </div>
                 <div className={styles.filterRow}>
-                    <label htmlFor="isForBusinessFilter">مناسب برای کسب و کار:</label>
+                    <label htmlFor="isForBusinessFilter">مناسب برای شرکت:</label>
                     <select id="isForBusinessFilter" value={filterIsForBusiness || ''} onChange={handleFilterIsForBusinessChange}>
                         <option value="">همه</option>
                         <option value="true">بله</option>
@@ -494,7 +493,7 @@ const AddItemTable: React.FC = () => {
             )}
             {showEditV && (
                 <div className={styles.popupOverlay}>
-                    <EditVariation onClose={handleCloseEditV} data={itemVariationData} />
+                    <EditVariation onClose={handleCloseEditV} data={itemVariationData} type={itemType} />
                 </div>
             )}
             {showDelete && (

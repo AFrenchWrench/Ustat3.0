@@ -1,11 +1,13 @@
 .customInput{
     color: white;
-    background-color: rgb(36, 36, 36);
-    border-radius: 10px;
+    background-color: rgb(42, 42, 42);
+    border-radius: 5px;
     text-align: center;
+    width: 100%;
 }
 .section{
     width: 100%;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -16,6 +18,7 @@
     display: flex;
     align-items: center;
     width: 90%;
+    height: 90%;
     max-width: 600px;
     flex-direction: column;
     gap: 10px;
@@ -24,6 +27,20 @@
     box-shadow: 0px 0px 20px rgb(29, 29, 29);
     border-radius: 15px;
     padding: 15px 10px;
+}
+
+.dateStatusContainer{
+    display: flex;
+    width: 95%;
+    margin-top: 15px;
+    justify-content: space-between;
+    font-size: clamp(10px,2vw,14px);
+}
+.dateContainer{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    column-gap: 10%;
 }
 
 .name{
@@ -39,7 +56,13 @@
 .itemsContainer{
     display: flex;
     flex-direction: column;
-    row-gap: 20px;
+    row-gap: 5px;
+    height: 70%;
+    overflow-y: scroll;
+    font-size: clamp(10px, 3vw, 16px);
+}
+.itemsContainer::-webkit-scrollbar{
+    display: none;
 }
 .itemContainer{
     display: flex;
@@ -47,15 +70,18 @@
     background-color: rgb(25, 25, 25);
     padding: 5px 10px;
     border-radius: 10px;
-    height: 300px;
 }
 
 .itemRight{
     display: flex;
     justify-content: space-evenly;
     flex-direction: column;
-    row-gap: 40px;
-    width: 50%;
+    align-items: center;
+    padding-left: 10px;
+    width: 60%
+}
+.itemRight div{
+    margin-top: 10px;
 }
 
 .itemRight p{
@@ -80,13 +106,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    width: 100%;
 }
 
 .itemLeft{
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    width: 50%;
+    width: 40%;
+    aspect-ratio: 1;
 }
 .itemLeft picture{
     width: 90%;
@@ -188,16 +213,21 @@
     margin-bottom: 15px;
     position: relative;
     width: 100%;
-}
-.formGroup button{
-    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
 }
 .formGroup p{
-    background-color: rgb(26, 26, 26);
-    padding: 10px;
-    border-radius: 7px;
-    font-size: clamp(10px, 2vw, 14px);
-    margin-left: auto;
+    font-size: clamp(12px, 2vw, 16px);
+    overflow-x: hidden;
+}
+.formGroup button{
+    border-right: 1px solid white;
+    padding: 5px;
+}
+.editFontSize{
+    font-size: clamp(25px, 3vw, 30px);
 }
 .formGroup label {
     display: block;
@@ -272,7 +302,7 @@
 }
 
 .addressText{
-    background-color: rgb(26, 26, 26);
+    width: 80%;
     padding: 10px;
     border-radius: 7px;
     font-size: clamp(10px, 2vw, 14px);
@@ -427,7 +457,41 @@
     padding: 2px 5px;
     font-size: 14px;
 }
+.selectAdmin{
+    width:30%;
+    background-color: rgb(55, 55, 55);
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    color: rgb(220, 220, 220);
+    padding: 2px 5px;
+    font-size: 14px;
+}
+.statusContainer{
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    column-gap: 10px;
+}
+.status{
+    background-color: rgb(42, 42, 42);
+    padding: 0 5px;
+    border-radius: 5px;
+}
 
+.price{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+.totalPrice{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid white ;
+    padding-top: 6px;
+
+}
 @media only screen and (max-width:650px) {
     .itemContainer{
         flex-direction: column-reverse;
@@ -436,17 +500,19 @@
     }
     .itemRight{
         width: 100%;
-        row-gap: 15px;
         align-items: flex-start;
     }
     .itemLeft{
-        width: 100%;
+        width: 60%;
+        margin:  0 auto;
         display: flex;
         flex-direction: column;
         align-items: center;
-        margin-bottom: 10px;
     }
     .itemLeft picture{
-        width: 40%;
+        width: 98%;
+    }
+    .deleteButton{
+        margin-right: auto;
     }
 }
