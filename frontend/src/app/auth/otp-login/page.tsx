@@ -123,8 +123,8 @@ const Page = () => {
 
 
   return (
-    <section className='flex w-full flex-col items-center justify-center'>
-      <form className='signup_form flex flex-col items-center p-10 relative' onSubmit={handleSubmit(onSubmit)}>
+    <section className='flex w-full flex-col items-center justify-center min-h-[100vh]'>
+      <form className='signup_form flex flex-col items-center p-10 relative' onSubmit={handleSubmit(onSubmit)} autoComplete="off">
         <Controller
           control={control}
           name='verificationCode'
@@ -134,7 +134,7 @@ const Page = () => {
           <button disabled={isSubmitting} className='w-1/8 py-2 bg-red-600 text-[#212121] rounded hover:bg-red-700 focus:outline-none disabled:bg-red-300' type='submit'>تایید</button>
 
           <div className='flex flex-col items-start h-[30px]'>
-            {isTimerRunning && <CountdownTimer initialTime={5} setResendvar={setResendvar} setIsTimerRunning={setIsTimerRunning} />}
+            {isTimerRunning && <CountdownTimer initialTime={30} setResendvar={setResendvar} setIsTimerRunning={setIsTimerRunning} />}
             <button type='button' onClick={handleResend} disabled={!resendvar} className='bg-transparent disabled:text-gray-500 p-0'>ارسال مجدد کد</button>
           </div>
         </div>

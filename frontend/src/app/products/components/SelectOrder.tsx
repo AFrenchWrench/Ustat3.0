@@ -92,15 +92,17 @@ const SelectOrder: React.FC<SelectOrderProps> = ({ id, orderData, onRemove, onOr
                             <p>{order.orderNumber}</p>
                             <span>
                                 {order.items[0]?.name && (
-                                    <p>{order.items[0].name}
-                                        <span className='item_quantity'>{order.items[0].quantity}×</span>
-                                    </p>
+                                    <div>
+                                        <p>{order.items[0].name}</p>
+                                        <p className='item_quantity'>{order.items[0].quantity}×</p>
+                                    </div>
                                 )}
 
                                 {order.items[1]?.name && (
-                                    <p>{order.items[1].name}
-                                        <span className='item_quantity'>{order.items[1].quantity}×</span>
-                                    </p>
+                                    <div>
+                                        <p>{order.items[1].name}</p>
+                                        <p className='item_quantity'>{order.items[1].quantity}×</p>
+                                    </div>
                                 )}
                             </span>
                             <p className='text-yellow-600'>در انتظار ثبت</p>

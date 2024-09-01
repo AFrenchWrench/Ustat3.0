@@ -55,7 +55,9 @@ const Article: React.FC<ArticleProps> = ({ imageSrc, productName, price, product
     <article className='article'>
       <div className='top_section'>
         <picture className='picture'>
-          <img src={imageSrc} alt={productName} />
+          <Link href={`/products/${type}/${productLink}`}>
+            <img src={imageSrc} alt={productName} />
+          </Link>
         </picture>
         <div className='top_right_section'>
           <p className='product_name'><strong>{productName}</strong></p>

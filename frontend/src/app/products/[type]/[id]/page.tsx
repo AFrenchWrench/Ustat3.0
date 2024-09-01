@@ -17,12 +17,16 @@ import Variations from '../../components/variations';
 
 
 interface Dimensions {
-    width?: number;
     height?: number;
+    width?: number;
     length?: number;
-    chair?: ChairDimensions;
+    chair?: ChairDimensions; // Optional property
+    mirror?: ChairDimensions;
+    "night stand"?: ChairDimensions
+    "makeup table"?: ChairDimensions
+    "side table"?: ChairDimensions
+    "single seat"?: ChairDimensions
 }
-
 interface ChairDimensions {
     width?: number;
     height?: number;
@@ -230,15 +234,62 @@ const Page = () => {
                     </div>
                     {dimensions.chair && (
                         <div className='dimensions_container'>
-                            <p>ابعاد صندلی:</p>
                             <div>
-                                <p>{dimensions.chair.quantity ? `تعداد: ${dimensions.chair.quantity}` : 'تعداد: N/A'}</p>
-                                <p>{dimensions.chair.width ? `عرض: ${dimensions.chair.width}` : 'عرض: N/A'}</p>
-                                <p>{dimensions.chair.height ? `ارتفاع: ${dimensions.chair.height}` : 'ارتفاع: N/A'}</p>
-                                <p>{dimensions.chair.length ? `طول: ${dimensions.chair.length}` : 'طول: N/A'}</p>
+                                <p>{dimensions.chair.quantity ? `تعداد صندلی: ${dimensions.chair.quantity}` : 'تعداد صندلی: N/A'}</p>
+                                <p>{dimensions.chair.width ? `عرض صندلی : ${dimensions.chair.width}` : 'عرض صندلی: N/A'}</p>
+                                <p>{dimensions.chair.height ? `ارتفاع صندلی: ${dimensions.chair.height}` : 'ارتفاع صندلی: N/A'}</p>
+                                <p>{dimensions.chair.length ? `طول صندلی: ${dimensions.chair.length}` : 'طول صندلی: N/A'}</p>
                             </div>
                         </div>
                     )}
+                    {dimensions.mirror && (
+                        <div className='dimensions_container'>
+                            <div>
+                                <p>{dimensions.mirror.width ? `عرض آینه: ${dimensions.mirror.width}` : 'عرض آینه: N/A'}</p>
+                                <p>{dimensions.mirror.height ? `ارتفاع آینه: ${dimensions.mirror.height}` : 'ارتفاع آینه: N/A'}</p>
+                                <p>{dimensions.mirror.length ? `طول آینه: ${dimensions.mirror.length}` : 'طول آینه: N/A'}</p>
+                            </div>
+                        </div>
+                    )}
+                    {dimensions["night stand"] && (
+                        <div className='dimensions_container'>
+                            <div>
+                                <p>{dimensions["night stand"].quantity ? `تعداد پاتختی: ${dimensions["night stand"].quantity}` : 'تعداد پاتختی: N/A'}</p>
+                                <p>{dimensions["night stand"].width ? `عرض پاتختی: ${dimensions["night stand"].width}` : 'عرض پاتختی: N/A'}</p>
+                                <p>{dimensions["night stand"].height ? `ارتفاع پاتختی: ${dimensions["night stand"].height}` : 'ارتفاع پاتختی: N/A'}</p>
+                                <p>{dimensions["night stand"].length ? `طول پاتختی: ${dimensions["night stand"].length}` : 'طول پاتختی: N/A'}</p>
+                            </div>
+                        </div>
+                    )}
+                    {dimensions["makeup table"] && (
+                        <div className='dimensions_container'>
+                            <div>
+                                <p>{dimensions["makeup table"].width ? `عرض میز آرایش: ${dimensions["makeup table"].width}` : 'عرض میز آرایش: N/A'}</p>
+                                <p>{dimensions["makeup table"].height ? `ارتفاع میز آرایش: ${dimensions["makeup table"].height}` : 'ارتفاع میز آرایش: N/A'}</p>
+                                <p>{dimensions["makeup table"].length ? `طول میز آرایش: ${dimensions["makeup table"].length}` : 'طول میز آرایش: N/A'}</p>
+                            </div>
+                        </div>
+                    )}
+                    {dimensions["side table"] && (
+                        <div className='dimensions_container'>
+                            <div>
+                                <p>{dimensions["side table"].quantity ? `تعداد میز: ${dimensions["side table"].quantity}` : 'تعداد میز: N/A'}</p>
+                                <p>{dimensions["side table"].width ? `عرض میز: ${dimensions["side table"].width}` : 'عرض میز: N/A'}</p>
+                                <p>{dimensions["side table"].height ? `ارتفاع میز: ${dimensions["side table"].height}` : 'ارتفاع میز: N/A'}</p>
+                                <p>{dimensions["side table"].length ? `طول میز: ${dimensions["side table"].length}` : 'طول میز: N/A'}</p>
+                            </div>
+                        </div>
+                    )}
+                    {dimensions["single seat"] && (
+                        <div className='dimensions_container'>
+                            <div>
+                                <p>{dimensions["single seat"].width ? `عرض تک نفره: ${dimensions["single seat"].width}` : 'عرض تک نفره: N/A'}</p>
+                                <p>{dimensions["single seat"].height ? `ارتفاع تک نفره: ${dimensions["single seat"].height}` : 'ارتفاع تک نفره: N/A'}</p>
+                                <p>{dimensions["single seat"].length ? `طول تک نفره: ${dimensions["single seat"].length}` : 'طول تک نفره: N/A'}</p>
+                            </div>
+                        </div>
+                    )}
+
                     <div className='color_section'>
                         <p>رنگ : <span>{product.color || 'N/A'}</span></p>
                         <p>رنگ چوب : <span>{product.woodColor || 'N/A'}</span></p>

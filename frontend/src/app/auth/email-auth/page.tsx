@@ -25,7 +25,7 @@ const Page = () => {
   const { push } = useRouter();
 
   const handleResend = async () => {
-    const username = Cookies.get("username");
+    const email = Cookies.get("email");
     const query = `
       mutation ResendEmail {
         resendEmail(emailType: "verification") {
@@ -40,7 +40,7 @@ const Page = () => {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'username': username ? username : '',
+          'email': email ? email : '',
         },
         body: JSON.stringify({ query }),
       });
@@ -110,8 +110,8 @@ const Page = () => {
 
 
   return (
-    <section className='flex w-full flex-col items-center justify-center'>
-      <form className='signup_form flex flex-col items-center p-10 relative' onSubmit={handleSubmit(onSubmit)}>
+    <section className='flex w-full flex-col items-center justify-center min-h-[100vh]'>
+      <form className='signup_form flex flex-col items-center !p-5 relative' onSubmit={handleSubmit(onSubmit)} autoComplete='off'>
         <Controller
           control={control}
           name='verificationCode'

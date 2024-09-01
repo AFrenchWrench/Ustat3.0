@@ -21,6 +21,9 @@ body {
   color: var(--accent-white);
   font-family: "Vazir-bold";
 }
+body::-webkit-scrollbar{
+  display: none;
+}
 
 
 header {
@@ -219,7 +222,22 @@ input[type=number] {
 }
 
 
-
+.customSelectSpan{
+  background-color: rgb(68, 68, 68);
+  border-radius: 15px;
+  padding: 5px 15px;
+  padding-left: 25px;
+  position: relative;
+}
+.customSelectSpan::after{
+  content: ">";
+  color: white;
+  position: absolute;
+  left: 10px;
+  font-size: larger;
+  aspect-ratio: 1;
+  transform: rotate(-90deg);
+}
 
 /* datePicker styles */
 
@@ -236,7 +254,9 @@ input[type=number] {
   align-items: center !important;
   justify-content: center !important;
 }
-
+.paginationDivCustom button{
+  color: white;
+}
 /* datePicker styles */
 
 

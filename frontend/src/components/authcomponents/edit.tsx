@@ -336,7 +336,7 @@ const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
       </div>
 
       <div className={styles.twoHolder}>
-        <div className=' flex justify-start gap-2 w-[100%] relative'>
+        <div className=' flex justify-center gap-2 w-[100%] relative'>
           <label htmlFor="birthDate" className='flex items-center gap-2'>   تاریخ تولد :<FaCalendarAlt /></label>
           <Controller
             control={control}

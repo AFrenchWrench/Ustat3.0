@@ -231,24 +231,22 @@ const Page = () => {
         setShowSelectAddress(false)
     }
 
-    const handleStatus = () => {
-        const status = orderData?.status;
-        switch (status) {
-            case 'P':
-                return 'در انتظار تایید';
-            case 'PS':
-                return 'در انتظار ثبت';
-            case 'D':
-                return 'تایید نشده';
-            case 'A':
-                return 'تایید شده';
-            case 'C':
-                return 'لغو شده';
-            default:
-                return 'نامشخص';
-        }
+    const statusMapping: Record<string, string> = {
+        "PS": "در انتظار ثبت",
+        "P": "در انتظار تایید",
+        "A": "تایید شده",
+        "PP": "در انتظار پرداخت",
+        "PD": "پرداخت شده",
+        "PSE": "در انتظار ارسال",
+        "S": "ارسال شده",
+        "DE": "تحویل داده شده",
+        "D": "تایید نشده",
+        "C": "لغو شده",
     };
 
+    const handleStatus = (status: string): string => {
+        return statusMapping[status] || 'نامشخص';
+    };
     const handleStatusColor = (status: string) => {
         switch (status) {
             case 'P':
@@ -410,7 +408,7 @@ const Page = () => {
                                 <p>{item.name}</p>
                                 <div className={Styles.quantityControl}>
                                     <p>تعداد :</p>
-                                    <span className='flex gap-[10px] items-center'>
+                                    <span className='flex gap-[10px] items-center ml-3'>
                                         {orderData.status === "PS" && (
                                             <button
                                                 className={Styles.increment}
@@ -488,7 +486,7 @@ const Page = () => {
                     </div>
                     <div className={Styles.statusContainer}>
                         <p>وضعیت :</p>
-                        <p style={{ color: handleStatusColor(orderData.status), textShadow: `0px 0px 4px ${handleStatusColor(orderData.status)}` }} className={Styles.status}>{handleStatus()}</p>
+                        <p style={{ color: handleStatusColor(orderData.status), textShadow: `0px 0px 4px ${handleStatusColor(orderData.status)}` }} className={Styles.status}>{handleStatus(orderData.status)}</p>
                     </div>
 
                 </div>
@@ -522,6 +520,16 @@ const Page = () => {
                         </div>
                     </>
                 )}
+                {
+                    orderData.address && (
+                        <div className={Styles.formGroup}>
+                            <p>آدرس :</p>
+                            <div className='flex items-center gap-1 w-[85%] bg-[rgb(42,42,42)] p-1 py-0 rounded-md'>
+                                <p className={Styles.addressText}>{orderData.address.address}</p>
+                            </div>
+                        </div>
+                    )
+                }
 
                 {
                     orderData.status === "A" && (

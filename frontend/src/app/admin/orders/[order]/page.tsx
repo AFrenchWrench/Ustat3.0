@@ -20,6 +20,8 @@ interface OrderItems {
     color: string;
     woodColor: string;
     dimensions: string;
+    price: number;
+    totalPrice: number
 }
 
 interface Iprovince {
@@ -58,22 +60,10 @@ const statusMapping: Record<string, string> = {
     "C": "لغو شده",
 };
 
-const handleStatus = (status: string) => {
-    switch (status) {
-        case 'P':
-            return 'در انتظار تایید';
-        case 'PS':
-            return 'در انتظار ثبت';
-        case 'D':
-            return 'تایید نشده';
-        case 'A':
-            return 'تایید شده';
-        case 'C':
-            return 'لغو شده';
-        default:
-            return 'نامشخص';
-    }
+const handleStatus = (status: string): string => {
+    return statusMapping[status] || 'نامشخص';
 };
+
 
 
 
@@ -149,6 +139,7 @@ const Page = () => {
                                         name
                                         dimensions
                                         price
+                                        totalPrice
                                         description
                                         fabric
                                         color
@@ -239,7 +230,7 @@ const Page = () => {
 
     return (
         <section className={Styles.section}>
-            <div className={Styles.Container}>
+            <div className={Styles.ContainerAdmin}>
                 <div className={Styles.name} key={orderData.id}>
                     <p>شماره سفارش :</p>
                     <p className={Styles.orderNumber}>{orderData.orderNumber}</p>
@@ -249,43 +240,48 @@ const Page = () => {
                         <div className={Styles.itemContainer} key={item.id}>
                             <div className={Styles.itemRight}>
                                 <p>{item.name}</p>
-                                <div className={Styles.infoContainer}>
-                                    <div className={Styles.dimensionsContainer}>
-                                        <div>
-                                            <p>{JSON.parse(item.dimensions).length ? `طول: ${JSON.parse(item.dimensions).length}` : 'N/A'}</p>
-                                            <p>{JSON.parse(item.dimensions).width ? `عرض: ${JSON.parse(item.dimensions).width}` : 'N/A'} x</p>
-                                            <p>{JSON.parse(item.dimensions).height ? `ارتفاع: ${JSON.parse(item.dimensions).height}` : 'N/A'} x</p>
-                                        </div>
-                                    </div>
-                                    <div className={Styles.colorSection}>
-                                        <p>رنگ : <span>{item.color || 'N/A'}</span></p>
-                                        <p>رنگ چوب : <span>{item.woodColor || 'N/A'}</span></p>
-                                    </div>
-                                    <div className={Styles.colorSection}>
-                                        <p className='fabric_title'>پارچه : <span>{item.fabric || 'N/A'}</span></p>
-                                    </div>
-                                </div>
                                 <div className={Styles.quantityControl}>
-                                    <span className='flex gap-[10px] items-center'>
-                                        <p>تعداد : {item.quantity}</p>
+                                    <p>تعداد :</p>
+                                    <span className='flex gap-[10px] items-center ml-3'>
+
+                                        <span className={Styles.quantity}>{item.quantity}</span>
+
                                     </span>
                                 </div>
+                                <div className={Styles.price}>
+                                    <p>قیمت :</p>
+                                    <p>{Number(item.price).toLocaleString("en-US")}</p>
+                                </div>
+                                <div className={Styles.totalPrice}>
+                                    <p>قیمت کل :</p>
+                                    <p>{Number(item.totalPrice).toLocaleString("en-US")}</p>
+                                </div>
+
                             </div>
                             <div className={Styles.itemLeft}>
                                 <picture><img src={`/media/${item.thumbnail}`} alt="thumbnail" /></picture>
                             </div>
                         </div>
                     ))}
+
                 </div>
-                <div className='flex justify-center mt-[30px] gap-2 w-[100%] relative items-center'>
-                    <label htmlFor="orderDate" className='flex items-center gap-2'>
-                        تاریخ تحویل :<FaCalendarAlt />
-                    </label>
-                    <p>{convertToJalaali(orderData.dueDate)}</p>
+                <div className={Styles.dateStatusContainer}>
+                    <div className={Styles.dateContainer}>
+                        <label htmlFor="orderDate" className='flex items-center gap-2'>
+                            تاریخ دریافت :<FaCalendarAlt />
+                        </label>
+                        <p>{convertToJalaali(orderData.dueDate)}</p>
+                    </div>
+                    <div className={Styles.statusContainer}>
+                        <p>وضعیت :</p>
+                        <p style={{ color: handleStatusColor(orderData.status), textShadow: `0px 0px 4px ${handleStatusColor(orderData.status)}` }} className={Styles.status}>{handleStatus(orderData.status)}</p>
+                    </div>
+
                 </div>
-                <p style={{ color: handleStatusColor(orderData.status) }} className={orderData.status}>{handleStatus(orderData.status)}</p>
-                <p>{orderData.address.city.province.name}</p>
-                <p>{orderData.address.city.name}</p>
+                <div>
+                    <p>استان : {orderData.address.city.province.name}</p>
+                    <p>شهر : {orderData.address.city.name}</p>
+                </div>
                 <p>{orderData.address.address}</p>
 
                 {/* Status dropdown */}
@@ -296,12 +292,12 @@ const Page = () => {
                             <option key={key} value={key}>{value}</option>
                         ))}
                     </select>
+                    {/* Submit button */}
+                    <button onClick={handleStatusUpdate}>
+                        ثبت وضعیت
+                    </button>
                 </div>
 
-                {/* Submit button */}
-                <button onClick={handleStatusUpdate}>
-                    ثبت وضعیت
-                </button>
             </div>
 
             <div>

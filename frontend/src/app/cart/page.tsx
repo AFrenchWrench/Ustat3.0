@@ -8,7 +8,6 @@ import Styles from '@/allStyles/cartStyles.module.css'
 import Link from 'next/link';
 
 import * as jalaali from 'jalaali-js';
-import { RiDeleteBin6Line } from 'react-icons/ri';
 import ConfirmAlert from './components/ConfirmAlert';
 import { BsCart4 } from 'react-icons/bs';
 
@@ -117,22 +116,23 @@ const Cart = () => {
 
 
 
-  const handleStatus = (status: string) => {
-    switch (status) {
-      case 'P':
-        return 'در انتظار تایید';
-      case 'PS':
-        return 'در انتظار ثبت';
-      case 'D':
-        return 'تایید نشده';
-      case 'A':
-        return 'تایید شده';
-      case 'C':
-        return 'لغو شده';
-      default:
-        return 'نامشخص';
-    }
-  }
+  const statusMapping: Record<string, string> = {
+    "PS": "در انتظار ثبت",
+    "P": "در انتظار تایید",
+    "A": "تایید شده",
+    "PP": "در انتظار پرداخت",
+    "PD": "پرداخت شده",
+    "PSE": "در انتظار ارسال",
+    "S": "ارسال شده",
+    "DE": "تحویل داده شده",
+    "D": "تایید نشده",
+    "C": "لغو شده",
+  };
+
+  const handleStatus = (status: string): string => {
+    return statusMapping[status] || 'نامشخص';
+  };
+
   const handleStatusColor = (status: string) => {
     switch (status) {
       case 'P':

@@ -46,6 +46,8 @@ const Page = () => {
     const [page, setPage] = useState(1); // Track the current page
     const [totalPages, setTotalPages] = useState<number | null>(null); // Track total pages
     const [loading, setLoading] = useState(false); // Track loading state
+    const [fetchTrigger, setFetchTrigger] = useState(false); // Trigger for re-fetching data
+
 
     const isSmallScreen = useMediaQuery('(max-width:740px)');
     const isMediumScreen = useMediaQuery('(max-width:1000px)');
@@ -145,6 +147,13 @@ const Page = () => {
         fetchUserData(page); // Fetch data when the component mounts
     }, [page, type]); // Re-fetch data if the page or type changes
 
+    useEffect(() => {
+        if (fetchTrigger) {
+            fetchUserData(page);
+            setFetchTrigger(false);
+        }
+    }, [fetchTrigger]); // Fetch updated data when fetchTrigger is true
+
     const lastItemRef = useCallback(
         (node: HTMLLIElement | null) => {
             if (loading || page >= (totalPages || 1)) return; // Avoid unnecessary re-observing
@@ -165,7 +174,7 @@ const Page = () => {
 
     const updateOrderData = (newOrderData: DisplayOrder[]) => {
         setOrderData(newOrderData);
-        setPage(1); // Reset the page to 1 when updating the order data
+        setFetchTrigger(true);
     };
 
     const calculateCols = () => {

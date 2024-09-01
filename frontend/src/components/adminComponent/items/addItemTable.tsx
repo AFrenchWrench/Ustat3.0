@@ -425,6 +425,7 @@ const AddItemTable: React.FC = () => {
                     <input
                         id="priceGteFilter"
                         type="number"
+                        dir='ltr'
                         value={filterPriceGte !== null ? filterPriceGte : ''}
                         onChange={handleFilterPriceGteChange}
                     />
@@ -432,6 +433,7 @@ const AddItemTable: React.FC = () => {
                 <div className={styles.filterRow}>
                     <label htmlFor="priceLteFilter">حداکثر قیمت:</label>
                     <input
+                        dir='ltr'
                         id="priceLteFilter"
                         type="number"
                         value={filterPriceLte !== null ? filterPriceLte : ''}

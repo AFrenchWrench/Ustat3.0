@@ -88,6 +88,20 @@ const columns: GridColDef[] = [
         cellClassName: 'custom-cell-style',
         minWidth: 100,
     }, // Takes 1 part of the available space
+    {
+        field: 'transaction',
+        headerName: 'رسید',
+        flex: 1,  // Takes 1 part of the available space
+        minWidth: 100,
+        renderCell: (params) => (
+            <Link
+                href={`/cart/${params.row.id}/${params.row.id}`}
+                className='bg-red-600 p-2 text-white hover:text-white hover:bg-red-500 rounded-md'
+            >
+                سر رسید
+            </Link>
+        ),
+    },
 ];
 
 export default function OrdersDataGrid() {

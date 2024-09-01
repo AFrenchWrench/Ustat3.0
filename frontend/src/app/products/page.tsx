@@ -9,6 +9,8 @@ import Link from "next/link";
 import { MdKeyboardDoubleArrowLeft } from "react-icons/md";
 import Cookies from "js-cookie";
 import LoadingArticle from "./components/loadingArticle";
+import { Pagination } from "swiper/modules";
+
 
 interface IdisplayItem {
   id: string;
@@ -161,6 +163,11 @@ const Products = () => {
           <Swiper
             slidesPerView={2}
             spaceBetween={10}
+            modules={[Pagination]}
+            pagination={{
+              clickable: true, // Enable clickable pagination bullets
+              dynamicBullets: true, // Optional: dynamic bullets for a better UX
+            }}
             breakpoints={{
               640: {
                 slidesPerView: 2,

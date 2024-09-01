@@ -19,27 +19,16 @@ const convertToJalaali = (gregorianDate: string | undefined) => {
 const columnsUsers: GridColDef[] = [
     { field: 'firstName', headerName: 'نام', flex: 1, minWidth: 150 },
     { field: 'lastName', headerName: 'نام خانوادگی', flex: 1, minWidth: 150 },
-    { field: 'phoneNumber', headerName: 'تلفن همراه', flex: 1, minWidth: 150 },
+    { field: 'phoneNumber', headerName: 'تلفن همراه', flex: 1, minWidth: 150, cellClassName: 'phone' },
     { field: 'email', headerName: 'ایمیل', flex: 1, minWidth: 200 },
     { field: 'dateJoined', headerName: 'تاریخ عضویت', flex: 1, minWidth: 200 },
-    {
-        field: 'isFullyAuthenticated',
-        headerName: 'وضعیت تایید',
-        flex: 1,
-        minWidth: 200,
-        renderCell: (params) => (
-            <span style={{ color: params.value ? 'green' : 'red', fontWeight: 'bold' }}>
-                {params.value ? 'تایید شده' : 'تایید نشده'}
-            </span>
-        ),
-    },
 ];
 
 
 const columnsBusinesses: GridColDef[] = [
     { field: 'ownerFirstName', headerName: 'نام مالک', flex: 1, minWidth: 150 },
     { field: 'ownerLastName', headerName: 'نام خانوادگی مالک', flex: 1, minWidth: 150 },
-    { field: 'ownerPhoneNumber', headerName: 'تلفن مالک', flex: 1, minWidth: 150 },
+    { field: 'ownerPhoneNumber', headerName: 'تلفن مالک', flex: 1, minWidth: 150, cellClassName: 'phone' },
     { field: 'name', headerName: 'نام کسب‌وکار', flex: 1, minWidth: 200 },
     {
         field: 'isConfirmed',
@@ -48,7 +37,7 @@ const columnsBusinesses: GridColDef[] = [
         minWidth: 150,
         type: 'singleSelect',
         renderCell: (params) => (
-            <span style={{ color: params.value ? 'green' : 'red', fontWeight: 'bold' }}>
+            <span style={{ color: params.value ? 'green' : 'red', fontWeight: 'bold' }} className='customSelectSpan'>
                 {params.value ? 'تایید شده' : 'تایید نشده'}
             </span>
         ),
@@ -98,7 +87,6 @@ export default function UsersAndBusinessesDataGrid() {
                                         lastName
                                         phoneNumber
                                         email
-                                        isFullyAuthenticated
                                     }
                                 }
                                 businesses(page: $pageBusinesses, perPage: $perPageBusinesses) {
@@ -232,7 +220,6 @@ export default function UsersAndBusinessesDataGrid() {
                     rowGap: '20px',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    height: '180vh',
                     width: '100%',
                     maxWidth: '1000px',
                     margin: '50px auto',
@@ -270,6 +257,9 @@ export default function UsersAndBusinessesDataGrid() {
                                 textAlign: 'start',
                                 fontFamily: 'Vazir-bold',
                             },
+                            '& .MuiDataGrid-virtualScrollerRenderZone': {
+                                marginRight: '10px'
+                            },
                             '& .MuiDataGrid-columnHeaders': {
                                 backgroundColor: '#D32F2F',
                                 color: 'black',
@@ -279,6 +269,33 @@ export default function UsersAndBusinessesDataGrid() {
                                 backgroundColor: '#D32F2F',
                                 color: 'white',
                                 fontFamily: 'Vazir-bold',
+                            },
+                            '& .custom-header-style': {
+                                direction: 'ltr',
+                                flexDirection: 'row-reverse',
+                            },
+                            '& .custom-header-style .MuiDataGrid-columnHeaderDraggableContainer': {
+                                flexDirection: 'row-reverse',
+                            },
+                            '& .custom-header-style .MuiDataGrid-columnSeparator': {
+                                marginRight: '10px',
+                            },
+                            '& .MuiTablePagination-root': {
+                                color: 'white',
+                                fontFamily: 'Vazir-bold',
+                                marginLeft: 'auto',
+                                marginRight: '15px',
+                            },
+                            '& .MuiTablePagination-selectLabel': {
+                                color: 'white',
+                                fontFamily: 'Vazir-bold',
+                            },
+                            '& .MuiDataGrid-columnSeparator': {
+                                position: 'relative',
+                            },
+                            '& .phone': {
+                                direction: 'ltr',
+                                textAlign: 'end'
                             },
                         }}
                     />
@@ -312,6 +329,9 @@ export default function UsersAndBusinessesDataGrid() {
                                 textAlign: 'start',
                                 fontFamily: 'Vazir-bold',
                             },
+                            '& .MuiDataGrid-virtualScrollerRenderZone': {
+                                marginRight: '10px'
+                            },
                             '& .MuiDataGrid-columnHeaders': {
                                 backgroundColor: '#D32F2F',
                                 color: 'black',
@@ -321,6 +341,33 @@ export default function UsersAndBusinessesDataGrid() {
                                 backgroundColor: '#D32F2F',
                                 color: 'white',
                                 fontFamily: 'Vazir-bold',
+                            },
+                            '& .custom-header-style': {
+                                direction: 'ltr',
+                                flexDirection: 'row-reverse',
+                            },
+                            '& .custom-header-style .MuiDataGrid-columnHeaderDraggableContainer': {
+                                flexDirection: 'row-reverse',
+                            },
+                            '& .custom-header-style .MuiDataGrid-columnSeparator': {
+                                marginRight: '10px',
+                            },
+                            '& .MuiTablePagination-root': {
+                                color: 'white',
+                                fontFamily: 'Vazir-bold',
+                                marginLeft: 'auto',
+                                marginRight: '15px',
+                            },
+                            '& .MuiTablePagination-selectLabel': {
+                                color: 'white',
+                                fontFamily: 'Vazir-bold',
+                            },
+                            '& .MuiDataGrid-columnSeparator': {
+                                position: 'relative',
+                            },
+                            '& .phone': {
+                                direction: 'ltr',
+                                textAlign: 'end'
                             },
                         }}
                     />

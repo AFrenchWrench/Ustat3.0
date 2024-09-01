@@ -29,7 +29,7 @@
 
 .profileDetails {
   width: 100%;
-  max-width: 700px;
+  max-width: 900px;
   padding: 10px;
   background-color: rgb(42, 42, 42);
   border: 2px solid gray;
@@ -52,15 +52,14 @@
 }
 
 .profileDetails strong {
-  font-size: 16px;
+  font-size: clamp(12px, 2vw, 15px);
   color: white;
   margin-left: 10px;
-  max-width: 50%;
 }
 
 .firsLastName {
   display: flex;
-  width: 83%;
+  width: 95%;
   justify-content: space-between;
   margin: 0 auto;
 }
@@ -123,6 +122,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  row-gap: 10px;
 }
 
 .formDetails textarea {
@@ -140,6 +140,9 @@
 .saveBtn {
   border-radius: 5px;
   background-color: rgb(217, 45, 45);
+}
+.buttonContainer {
+  font-size: clamp(10px, 2vw, 15px);
 }
 
 .errorMessage {
@@ -196,13 +199,12 @@
     max-width: 100%;
   }
 
-  .buttonContainer {
-    flex-direction: column;
-    align-items: center;
-  }
+
 
   .buttonContainer button {
     width: 100%;
     margin-top: 10px;
+    display: flex;
+    justify-content: center;
   }
 }

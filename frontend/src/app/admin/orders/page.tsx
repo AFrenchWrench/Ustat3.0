@@ -10,6 +10,8 @@ import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
 import jalaali from 'jalaali-js';
 import Alert from '@/components/Alert';
 
+import CustomPagination from '@/types/customPagination';
+
 interface Order {
     id: string;
     dueDate: string;
@@ -443,6 +445,13 @@ export default function OrdersDataGrid() {
                     />
                 </div>
             </ThemeProvider>
+            <CustomPagination
+                page={page}
+                pageSize={pageSize}
+                rowCount={rowCount}
+                onPageChange={(newPage) => setPage(newPage)}
+                onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+            />
             {alert && (
                 <Alert
                     message={alert.message}

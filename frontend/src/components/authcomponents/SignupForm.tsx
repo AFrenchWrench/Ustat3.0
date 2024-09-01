@@ -75,8 +75,8 @@ const SignupForm = () => {
           lastName: "${userInfo.lastName}",
           password1: "${userInfo.password}",
           password2: "${userInfo.confirmPassword}",
-          phoneNumber: "+${userInfo.phoneNumber}",
-          landlineNumber: "+${userInfo.landlineNumber}",
+          phoneNumber: "${userInfo.phoneNumber}",
+          landlineNumber: "${userInfo.landlineNumber}",
           email: "${userInfo.email}",
 
           birthdate: "${userInfo.birthDate}"

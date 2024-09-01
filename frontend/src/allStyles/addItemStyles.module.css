@@ -345,6 +345,7 @@
     .filterRow select
     {
       background-color: rgb(29, 29, 29);
+      color: white;
     }
 
     /* addDisplayItemFormSection */
