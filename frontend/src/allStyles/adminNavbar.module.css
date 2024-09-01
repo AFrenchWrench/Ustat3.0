@@ -10,7 +10,7 @@
 }
 
 .adminNavbar ul{
-    gap: 50px;
+    gap: 35px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -21,11 +21,11 @@
     position: absolute;
     right: 0;
     background-color: rgb(252, 46, 46);
-    border-top-right-radius: 20%;
-    border-bottom-right-radius: 20%;
+    border-top-left-radius: 20%;
+    border-bottom-left-radius: 20%;
     height: 45px;
     width: 60px;
-    mix-blend-mode: screen;    
+    mix-blend-mode: darken;    
     pointer-events: none;
     transition: .3s;
 }

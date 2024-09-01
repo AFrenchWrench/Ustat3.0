@@ -73,13 +73,13 @@ const SigninForm = () => {
   };
 
   return (
-    <section className='flex w-full flex-col items-center justify-center'>
-      <form noValidate onSubmit={handleSubmit(onSubmit)} className='signup_form flex flex-col items-center p-10 '>
+    <section className='flex w-full flex-col items-center justify-center min-h-[100vh]'>
+      <form noValidate onSubmit={handleSubmit(onSubmit)} className='signup_form flex flex-col items-center !p-5 '>
 
         <div className='signup_form_container !mt-0'>
           <input
             {...register("email", {
-              required: "نام کاربری الزامی است",
+              required: "ایمیل الزامی است",
             })}
             className="signup_form_input ltr"
             id='user-name'

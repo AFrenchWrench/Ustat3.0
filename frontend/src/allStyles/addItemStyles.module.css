@@ -8,7 +8,6 @@
     min-width: 250px;
     width: 80%;
     background-color:rgb(42, 42, 42);
-    margin-top: 20px;
     padding: 10px 5px;
     border-radius: 10px;
     display: flex;
@@ -17,11 +16,8 @@
     align-items: center;
   }
   .twoContainer{
-    width: 90%;
-    display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin: 20px;
+    position: relative;
   }
 
   .twoContainer label{
@@ -52,19 +48,22 @@
     .twoContainer span{
         display: flex;
         align-items: center;
-        justify-content: space-around;
-        gap: auto;
+        justify-content: flex-start;
+        gap: 5px;
+        width: 50%;
         position: relative;
+    }
+    .isForBusiness{
+      width: unset !important;
     }
 
     .formDetails{
-        width: 90%;
+        width: 80%;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 5px;
         position: relative;
-        margin-bottom: 40px;
       }
     .formDetails label{
         width: 90%;
@@ -90,7 +89,7 @@
         width: 45% !important;
         border-radius: 10px;
         aspect-ratio: 1;
-        background-color: rgb(31, 31, 31);
+        background-color: rgb(21, 21, 21);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -104,7 +103,7 @@
         width: 100%;
         height: 100%;
         border-radius: 10px;
-        background-color: rgb(31, 31, 31);
+        background-color: rgb(21, 21, 21);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -118,7 +117,6 @@
         display: flex;
         align-items: center;
         gap: 5px;
-        margin-bottom: 40px;
     }
     .sliderContainer span{
         width: 33%;
@@ -136,3 +134,218 @@
       left:0;
       transform: translateY(120%); 
     }
+
+
+
+    /* tabel section */
+
+    .tableSection{
+      position: relative;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 30px 0;
+      column-gap: 10px;
+    }
+
+    .table{
+      width: clamp(300px,90%,900px);
+      background-color: rgb(31, 31, 31);
+      border-radius: 20px;
+      padding: 15px;
+      display: flex;
+      height: 80vh;
+    }
+
+    .tableDisplayItems{
+      width: 35%;
+      border-left: 4px solid white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .tableDisplayItems p{
+      width: 100%;
+      border-bottom: 4px solid white;
+      margin-bottom: 5px;
+
+    }
+    .tableDisplayItems button{
+      width: 90%;
+      border-radius: 15px;
+    }
+
+    .tableItems{
+      width: 65%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .tableItems p{
+      width: 100%;
+      border-bottom: 4px solid white;
+      margin-bottom: 5px;
+      padding-right: 10px;
+    }
+    .tableItems button{
+      margin-right: auto;
+      border-radius: 10px;
+    }
+
+
+    .tableQueryItems,
+     .tableQueryDisplayItems{
+      height: 80%;
+      margin: 10px;
+      width: 100%;
+      background-color: rgb(42, 42, 42);
+      border-radius: 10px;
+      overflow-y: scroll;
+    }
+
+    .tableQueryItems{
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      row-gap: 10px;
+      overflow-y: scroll;
+    }
+    .tableQueryItems::-webkit-scrollbar{
+      display: none;
+    }
+    .tableQueryDisplayItems::-webkit-scrollbar{
+      display: none;
+    }
+
+
+    .tableQueryDisplayItems{
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      padding: 10px;
+      row-gap: 10px;
+    }
+
+    .item{
+      cursor: pointer;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      border-radius: 15px;
+      background-color: rgb(32, 32, 32);
+    }
+    .editDeleteButtons{
+      display: flex;
+      align-items: center;
+      column-gap: 20px;
+    }
+    .editDeleteButtons button{
+      padding: unset !important;
+      width: unset !important;
+      background-color: transparent !important;
+    }
+    .edtiIcon{
+      font-size: 25px;
+    }
+    .editIconD{
+      font-size: 25px;
+      background-color: red;
+      border-radius: 50%;
+      padding: 5px;
+    }
+    .item p{
+      border-bottom: unset;
+    }
+
+    .popupOverlay{
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+
+    .activeItem {
+      background-color: white;
+      color: black;
+  }
+
+    /* tabel section */
+
+
+    /* addDisplayItemFormSection */
+
+    .addDisplayItemFormSection{
+      z-index: 900;
+      width: 100%;
+      height: 100%;
+      background-color: transparent;
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .addDisplayItemFormSection form{
+      display: flex;
+      max-width:800px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 15px;
+      padding: 25px;
+      background-color: rgb(32, 32, 32);
+      row-gap: 20px;
+    }
+    .addDisplayItemFormSection form div{
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+    }
+    .addDisplayItemFormSection form div input,
+    .addDisplayItemFormSection form div select{
+      width:55%;
+      background-color: rgb(55, 55, 55);
+      border: none;
+      border-radius: 5px;
+      outline: none;
+      color: rgb(220, 220, 220);
+      padding: 2px 5px;
+      font-size: 14px;
+    }
+
+
+    .filterForm{
+      display: flex;
+      flex-direction: column;
+      row-gap: 10px;
+      background-color: rgb(32, 32, 32);
+      padding: 10px;
+      border-radius: 15px;
+    }
+    .filterForm h3{
+      color: white;
+    }
+    .filterForm button{
+      background-color: white;
+      color: rgb(32, 32, 32);
+    }
+    .filterRow{
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      row-gap: 10px;
+    }
+    .filterRow input,
+    .filterRow select
+    {
+      background-color: rgb(29, 29, 29);
+      color: white;
+    }
+
+    /* addDisplayItemFormSection */

@@ -70,7 +70,7 @@ def login_required(func):
         if user.is_authenticated and token:
             return func(root, info, *args, **kwargs)
         else:
-            raise GraphQLError("Your are not logged in")
+            raise GraphQLError("شما وارد حساب کاربری خود نشده اید")
 
     return wrapper
 
@@ -88,7 +88,7 @@ def staff_member_required(func):
         if user.is_authenticated and user.is_staff and token:
             return func(root, info, *args, **kwargs)
         else:
-            raise GraphQLError("You do not have permission to perform this action.")
+            raise GraphQLError("شما دسترسی انجام این عملیات را ندارید")
 
     return wrapper
 
@@ -110,6 +110,44 @@ def django_staff_member_required(view_func):
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
             user = get_object_or_404(User, username=payload["username"])
             if user.is_authenticated and user.is_staff:
+                return view_func(request, *args, **kwargs)
+            else:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "شما دسترسی انجام این عملیات را ندارید",
+                    },
+                    status=403,
+                )
+        else:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "توکن شما نامعتبر است",
+                },
+                status=403,
+            )
+
+    return _wrapped_view
+
+
+def django_login_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        token = request.headers.get("Authorization")
+
+        try:
+            BurnedTokens.objects.get(token=token)
+            token_valid = False
+        except BurnedTokens.DoesNotExist:
+            token_valid = True
+
+        if token_valid:
+            if token.startswith("Bearer "):
+                token = token.split(" ")[1]
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            user = get_object_or_404(User, username=payload["username"])
+            if user.is_authenticated:
                 return view_func(request, *args, **kwargs)
             else:
                 return JsonResponse(

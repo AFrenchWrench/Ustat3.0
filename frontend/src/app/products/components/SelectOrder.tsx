@@ -10,7 +10,6 @@ interface OrderItems {
     id: string;
     type: string;
     name: string;
-    dimensions: object;
     price: number;
     quantity: number;
 }
@@ -32,6 +31,8 @@ interface SelectOrderProps {
 }
 
 const SelectOrder: React.FC<SelectOrderProps> = ({ id, orderData, onRemove, onOrderUpdate }) => {
+    console.log(orderData);
+
     const [quantities, setQuantities] = useState<number>(1);
 
     const handleQuantityChange = (increment: boolean) => {
@@ -50,7 +51,7 @@ const SelectOrder: React.FC<SelectOrderProps> = ({ id, orderData, onRemove, onOr
       createOrderItem(
         input: { 
           ${order ? `order:"${order}",` : ""}
-          displayItem: "${id}",
+          itemVariant: "${id}",
           quantity: ${quantities}
         }
       ) {
@@ -91,19 +92,21 @@ const SelectOrder: React.FC<SelectOrderProps> = ({ id, orderData, onRemove, onOr
                             <p>{order.orderNumber}</p>
                             <span>
                                 {order.items[0]?.name && (
-                                    <p>{order.items[0].name}
-                                        <span className='item_quantity'>{order.items[0].quantity}×</span>
-                                    </p>
+                                    <div>
+                                        <p>{order.items[0].name}</p>
+                                        <p className='item_quantity'>{order.items[0].quantity}×</p>
+                                    </div>
                                 )}
 
                                 {order.items[1]?.name && (
-                                    <p>{order.items[1].name}
-                                        <span className='item_quantity'>{order.items[1].quantity}×</span>
-                                    </p>
+                                    <div>
+                                        <p>{order.items[1].name}</p>
+                                        <p className='item_quantity'>{order.items[1].quantity}×</p>
+                                    </div>
                                 )}
                             </span>
-                            <p className='text-yellow-600'>در انتظار تایید</p>
-                            <Link href={`/cart/${order.orderNumber}`} onClick={(e) => e.stopPropagation()}>مشاهده</Link>
+                            <p className='text-yellow-600'>در انتظار ثبت</p>
+                            <Link href={`/cart/${order.id}`} onClick={(e) => e.stopPropagation()}>مشاهده</Link>
                         </div>
                     ))}
                 </div>

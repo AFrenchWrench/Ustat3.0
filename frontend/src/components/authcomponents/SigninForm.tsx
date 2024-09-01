@@ -47,6 +47,7 @@ const SigninForm = () => {
                 token
                 success
                 redirectUrl
+                errors
               }
             }
           `,
@@ -68,9 +69,8 @@ const SigninForm = () => {
         return;
       }
 
-      if (data.errors) {
-        console.error("Server returned errors:", data.errors);
-        setError("username", { message: data.errors[0].message || "نام کاربری یا رمز عبور اشتباه است", type: "server" });
+      if (data.data.login.errors) {
+        setError("username", { message: data.data.login.errors || "نام کاربری یا رمز عبور اشتباه است", type: "server" });
         return;
       }
 
@@ -132,7 +132,7 @@ const SigninForm = () => {
           <span className='line'></span>
         </div>
 
-        <div className='signup_form_container'>
+        <div className='signup_form_container mb-5'>
           <input
             {...register("password", {
               required: "رمز عبور الزامی است",
@@ -153,7 +153,7 @@ const SigninForm = () => {
         </div>
 
         <button className="w-1/8 py-2 mt-4 bg-red-600 text-[#212121] rounded hover:bg-red-700 focus:outline-none disabled:bg-red-300" type="submit" disabled={isSubmitting}>ورود</button>
-        <Link className='text-gray-300 text-sm absolute left-5 bottom-5' href={"/auth/otp-login-request"}>ورود با رمز یکبار مصرف</Link>
+        <Link className='text-gray-300 text-sm mt-[10px] w-full left-5 bottom-5' href={"/auth/otp-login-request"}>ورود با رمز یکبار مصرف</Link>
       </form>
 
 

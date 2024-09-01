@@ -21,6 +21,9 @@ body {
   color: var(--accent-white);
   font-family: "Vazir-bold";
 }
+body::-webkit-scrollbar{
+  display: none;
+}
 
 
 header {
@@ -69,8 +72,8 @@ footer {
 
 @font-face {
   font-family: 'Vazir-bold';
-  src: url('../../public/fonts/vazir-font/Vazir-Bold.eot') format('eot'),
-       url('../../public/fonts/vazir-font/Vazir-Bold.ttf') format('ttf'),
+  src: url('../../public/fonts/vazir-font/Vazir-Bold.ttf') format('ttf'),
+        url('../../public/fonts/vazir-font/Vazir-Bold.eot') format('eot'),
        url('../../public/fonts/vazir-font/Vazir-Bold.woff') format('woff'),
        url('../../public/fonts/vazir-font/Vazir-Bold.woff2') format('woff2');
 }
@@ -107,21 +110,25 @@ input:-webkit-autofill:active{
 
 .signup_form{
   width:100%;
-  min-width: 290px;
+  min-width: 340px;
   max-width: 510px;
   border-radius: 15px;
   margin: 20px;
   padding: 30px 40px;
   background-color: #2a2a2a;
 }
+.signup_form p {
+  font-size: clamp(11px, 1.3vw, 16px) !important;
+}
 
 .signup_form_container {
   position: relative;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   margin-top: 30px;
   width: 100%;
 }
+
 
 .signup_form_label {
   position: absolute;
@@ -137,6 +144,7 @@ input:-webkit-autofill:active{
   color: white;
   border-bottom: 1px solid var(--grey);
   padding: 1%;
+  width: 100%;
 }
 
 .signup_form_input:focus ~ label,
@@ -214,16 +222,56 @@ input[type=number] {
 }
 
 
-
-
-/* datePicker styles */
-/* customDatePicker.css */
-
-/* Background color of the date picker */
-.custom-input{
-  background-color: #1f1f1f;
-  border-radius: 5px;
+.customSelectSpan{
+  background-color: rgb(68, 68, 68);
+  border-radius: 15px;
+  padding: 5px 15px;
+  padding-left: 25px;
+  position: relative;
+}
+.customSelectSpan::after{
+  content: ">";
+  color: white;
+  position: absolute;
+  left: 10px;
+  font-size: larger;
+  aspect-ratio: 1;
+  transform: rotate(-90deg);
 }
 
 /* datePicker styles */
+
+.custom-input{
+  background-color: #1f1f1f;
+  border-radius: 5px;
+  color: white;
+  width: 90%;
+  text-align: center;
+}
+.rmdp-container{
+  width: 59%;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.paginationDivCustom button{
+  color: white;
+}
+/* datePicker styles */
+
+
+@media only screen and (max-width:600px) {
+  .location{
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    width: 60%;
+    row-gap: 5px;
+  }
+  .location_div{
+    display: flex;
+    justify-content: space-between;
+    width: 200px;
+  }
+}
 

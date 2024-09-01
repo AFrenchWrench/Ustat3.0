@@ -1,15 +1,15 @@
-.navbar{
+.navbar {
     position: fixed;
     left: 10px;
     top: 50%;
     transform: translateY(-50%);
     background-color: black;
-    padding:15px 10px;
+    padding: 15px 10px;
     border-radius: 30px;
     z-index: 999;
 }
 
-.navbar ul{
+.navbar ul {
     gap: 50px;
     display: flex;
     flex-direction: column;
@@ -17,7 +17,7 @@
     justify-content: space-evenly;
 }
 
-.selectedBg{
+.selectedBg {
     position: absolute;
     left: 0;
     background-color: rgb(252, 46, 46);
@@ -25,11 +25,12 @@
     border-bottom-right-radius: 20%;
     height: 45px;
     width: 60px;
-    mix-blend-mode: screen;    
+    mix-blend-mode: screen;
     pointer-events: none;
     transition: .3s;
 }
-.holder{
+
+.holder {
     position: absolute;
     height: 100%;
     width: 60px;
@@ -38,4 +39,41 @@
     border-bottom-left-radius: 25px;
     overflow: hidden;
     pointer-events: none;
+}
+
+.icons {
+    font-size: 30px;
+}
+
+@media only screen and (max-width: 1000px) {
+    .icons {
+        font-size: 25px;
+    }
+    .navbar{
+        left: 5px;
+    }
+    .selectedBg{
+        width: 52px;
+        height: 40px;
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    .navbar {
+        top: unset;
+        bottom: 0;
+        left: 50%;
+        transform: translate(-50%, 44%) rotate(-90deg);
+        transform-origin: center;
+        border-bottom-left-radius: 0;
+        border-top-left-radius:0 ;
+    }
+
+    .icons {
+        transform: rotate(90deg);
+    }
+    .holder{
+        border-top-left-radius: 0px;
+        border-bottom-left-radius: 0px;
+    }
 }

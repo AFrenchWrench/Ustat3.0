@@ -1,7 +1,6 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from image_optimizer.fields import OptimizedImageField
 from django.core.validators import (
     EmailValidator,
 )
@@ -33,13 +32,12 @@ class User(AbstractUser):
     username = models.CharField(max_length=32, unique=True)
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
-    phone_number = models.CharField(max_length=13, unique=True)
-    landline_number = models.CharField(max_length=13, unique=True)
+    phone_number = models.CharField(max_length=20, unique=True)
+    landline_number = models.CharField(max_length=20, unique=True)
     email = models.EmailField(
         unique=True,
         validators=[EmailValidator(message="ایمیل وارد شده معتبر نمی‌باشد")],
     )
-    city = models.ForeignKey("main.cities", on_delete=models.SET_NULL, null=True)
     position = models.CharField(max_length=32, null=True, blank=True)
     birthdate = models.DateField()
     is_fully_authenticated = models.BooleanField(default=False)
@@ -49,15 +47,38 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+    def is_business(self):
+        try:
+            business = Business.objects.get(user=self)
+            return business.is_confirmed
+        except Business.DoesNotExist:
+            return False
+
 
 class Business(models.Model):
-    user = models.OneToOneField("User", on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        "User", on_delete=models.CASCADE, related_name="business"
+    )
     name = models.CharField(max_length=32, unique=True)
     owner_first_name = models.CharField(max_length=32)
     owner_last_name = models.CharField(max_length=32)
-    owner_phone_number = models.CharField(max_length=13, unique=True)
-    address = models.TextField()
+    owner_phone_number = models.CharField(max_length=20)
     is_confirmed = models.BooleanField(default=False)
+    rank = models.CharField(
+        choices=[("a", "A"), ("b", "B"), ("c", "C")], max_length=1, default="c"
+    )
 
     def __str__(self):
         return self.name
+
+
+class Address(models.Model):
+    user = models.ForeignKey("User", on_delete=models.CASCADE, related_name="addresses")
+    title = models.CharField(max_length=32)
+    province = models.ForeignKey("main.provinces", on_delete=models.PROTECT)
+    city = models.ForeignKey("main.cities", on_delete=models.PROTECT)
+    address = models.TextField()
+    postal_code = models.CharField(max_length=10)
+
+    def __str__(self):
+        return self.address

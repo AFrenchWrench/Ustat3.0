@@ -1,31 +1,31 @@
-"use client"
+"use client";
 
 import { ImageList, ImageListItem } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import Article from "../components/Article";
-
+import { useParams } from "next/navigation";
 import Cookies from "js-cookie";
+import useMediaQuery from '@mui/material/useMediaQuery';
+import LoadingArticle from "../components/loadingArticle";
 
-
+interface Ivariants {
+    id: string;
+    name: string;
+    price: string;
+    thumbnail: string;
+}
 
 interface DisplayItem {
     id: string;
-    type: string;
     name: string;
-    dimensions: string;
-    price: string;
-    description: string;
-    thumbnail: string;
-    slider1: string;
-    slider2: string;
-    slider3: string;
+    type: string;
+    variants: Ivariants[];
 }
 
 interface OrderItems {
     id: string;
     type: string;
     name: string;
-    dimensions: object;
     price: number;
     quantity: number;
 }
@@ -39,108 +39,178 @@ interface DisplayOrder {
     items: OrderItems[];
 }
 
-
 const Page = () => {
-    const [userData, setUserData] = useState<DisplayItem[]>([]);
+    const { type } = useParams();
+    const [displayData, setDisplayData] = useState<DisplayItem[]>([]);
     const [orderData, setOrderData] = useState<DisplayOrder[]>([]);
+    const [page, setPage] = useState(1); // Track the current page
+    const [totalPages, setTotalPages] = useState<number | null>(null); // Track total pages
+    const [loading, setLoading] = useState(false); // Track loading state
     const [fetchTrigger, setFetchTrigger] = useState(false); // Trigger for re-fetching data
 
-    const fetchUserData = async () => {
+
+    const isSmallScreen = useMediaQuery('(max-width:740px)');
+    const isMediumScreen = useMediaQuery('(max-width:1000px)');
+
+    const observer = useRef<IntersectionObserver | null>(null); // Ref for intersection observer
+
+    const fetchUserData = async (page: number) => {
         try {
-            const token = Cookies.get('Authorization');
-            const response = await fetch('/api/sales/graphql/', {
-                method: 'POST',
+            setLoading(true);
+
+            const token = Cookies.get("Authorization");
+            const response = await fetch("/api/sales/graphql/", {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token ? token : '',
+                    "Content-Type": "application/json",
+                    Authorization: token ? token : "",
                 },
                 body: JSON.stringify({
                     query: `
-              query DisplayItems {
-                displayItems {
-                  id
-                  type
-                  name
-                  dimensions
-                  price
-                  description
-                  thumbnail
-                  slider1
-                  slider2
-                  slider3
-                }
-                ${token ? `
-                userOrders {
-                  id
-                  dueDate
-                  creationDate
-                  orderNumber
-                  status
-                  items {
-                    id
-                    type
-                    name
-                    dimensions
-                    price
-                    quantity
-                  }
-                }` : ''}
-              }
-            `,
+                        query DisplayItems($page: Int!, $filter: DisplayItemFilterInput!) {
+                          displayItems(page: $page, perPage: 6, filter: $filter) {
+                            totalPages
+                            totalItems
+                            items {
+                              id
+                              type
+                              name
+                              variants {
+                                id
+                                name
+                                price
+                                thumbnail
+                              }
+                            }
+                          }
+                          ${token
+                            ? `
+                            orders(filter: { status: "ps" }) {
+                                    totalPages
+                                    totalItems
+                                    items {
+                                        id
+                                        status
+                                        orderNumber
+                                        dueDate
+                                        items {
+                                            id
+                                            type
+                                            name
+                                            quantity
+                                        }
+                                    }
+                                }
+                              `
+                            : ""
+                        }
+                        }
+                    `,
+                    variables: {
+                        page,
+                        filter: { type: type.toString().toLowerCase() },
+                    },
                 }),
             });
+
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error("Network response was not ok");
             }
 
-            if (data.errors || !data.data.displayItems || (token && !data.data.userOrders)) {
-                throw new Error(data.errors ? data.errors[0].message : 'No items found');
+            if (data.errors || !data.data.displayItems || (token && !data.data.orders)) {
+                throw new Error(data.errors ? data.errors[0].message : "No items found");
             }
 
-            setUserData(data.data.displayItems);
-            if (token) setOrderData(data.data.userOrders);
+            // Only append new data if the page has changed or the data is different
+            if (page !== 1 || data.data.displayItems.items.length !== displayData.length) {
+                setDisplayData((prevData) => {
+                    const newData = data.data.displayItems.items;
+                    // Check if the new data is different from the previous data
+                    const isDifferent = JSON.stringify(prevData) !== JSON.stringify([...prevData, ...newData]);
+                    return isDifferent ? [...prevData, ...newData] : prevData;
+                });
+            }
+
+            setTotalPages(data.data.displayItems.totalPages);
+            if (token) setOrderData(data.data.orders.items);
 
         } catch (error) {
             console.error(error);
+        } finally {
+            setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchUserData();
-    }, []); // Fetch initial data on mount
+        fetchUserData(page); // Fetch data when the component mounts
+    }, [page, type]); // Re-fetch data if the page or type changes
 
     useEffect(() => {
         if (fetchTrigger) {
-            fetchUserData();
+            fetchUserData(page);
             setFetchTrigger(false);
         }
     }, [fetchTrigger]); // Fetch updated data when fetchTrigger is true
 
+    const lastItemRef = useCallback(
+        (node: HTMLLIElement | null) => {
+            if (loading || page >= (totalPages || 1)) return; // Avoid unnecessary re-observing
+
+            if (observer.current) observer.current.disconnect();
+
+            observer.current = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting) {
+                    setPage((prevPage) => prevPage + 1); // Increment the page number to fetch the next set of data
+                }
+            }, {
+                rootMargin: '10px', // Trigger fetch a bit before reaching the end
+            });
+
+            if (node) observer.current.observe(node);
+        }, [loading, page, totalPages]
+    );
+
     const updateOrderData = (newOrderData: DisplayOrder[]) => {
         setOrderData(newOrderData);
-        setFetchTrigger(true); // Trigger data re-fetch
+        setFetchTrigger(true);
     };
 
+    const calculateCols = () => {
+        if (isSmallScreen) return 2;
+        if (isMediumScreen) return 3;
+        return 4;
+    };
 
     return (
         <section className="flex flex-col gap-5 items-center mt-10">
-            <ImageList gap={8} sx={{ width: "80%" }} cols={3}>
-                {userData.map((article, index) => (
-                    <ImageListItem key={index}>
-                        <Article
-                            imageSrc={`/media/${article.thumbnail}`}
-                            productName={article.name}
-                            description={article.description}
-                            price={article.price}
-                            productLink={article.id}
-                            type={article.type}
-                            orderData={orderData}
-                            onOrderUpdate={updateOrderData}
-                        />
-                    </ImageListItem>
-                ))}
+            <ImageList gap={8} sx={{ width: "93%" }} cols={calculateCols()}>
+                {displayData &&
+                    displayData.map((article, index) => (
+                        article.variants.length > 0 ? (
+                            <ImageListItem
+                                key={index} // Use unique ID for key
+                                ref={index === displayData.length - 1 ? lastItemRef : null} // Attach ref to last item
+                            >
+                                <Article
+                                    imageSrc={`/media/${article.variants[0].thumbnail}`}
+                                    productName={article.variants[0].name}
+                                    price={article.variants[0].price}
+                                    productLink={article.variants[0].id}
+                                    type={article.type}
+                                    orderData={orderData}
+                                    onOrderUpdate={updateOrderData}
+                                />
+                            </ImageListItem>
+                        ) : null
+                    ))}
+                {loading && <LoadingArticle />}
+                {loading && <LoadingArticle />}
+                {loading && <LoadingArticle />}
+                {loading && <LoadingArticle />}
+                {loading && <LoadingArticle />}
+                {loading && <LoadingArticle />}
             </ImageList>
         </section>
     );

@@ -3,30 +3,41 @@
     flex-direction: column;
     justify-content: space-between;
     gap: 5px;
-    background-color: rgb(0, 0, 0);
-    padding: 20px 15px;
+    background-color: rgb(21, 21, 21);
+    box-shadow: 0px 0px 5px rgb(16, 16, 16);
+    padding: 10px;
     border-radius: 14px;
 }
 .top_section{
     display: flex;
-    flex-direction: row-reverse;
+    flex-direction: column;
+    row-gap: 5px;
     width: 100%;
-    justify-content: space-between;
+    justify-content: center;
 }
 .buttons_section{
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
 }
-.more {
-    width: 35%;
+
+.more{
+    width: 100%;
+    text-align: center;
+    font-size: clamp(10px,2.5vw,14px);
 }
 .add_button{
-    width: 55%;
     border-radius: 8px;
+    width: 100%;
+    margin-top: 10px;
+    padding: 5px 10px;
+    font-size: clamp(10px,2.5vw,14px);
 }
-.top_left_section{
-    max-width: 35%;
+.top_right_section{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
 }
 .description{
     text-align: start;
@@ -36,19 +47,27 @@
     font-size: x-small;
     color: rgb(167, 167, 167);
     overflow: hidden;
+    height: 70%;
+    border-radius: 5px;
 }
 .product_name{
-    background-color: rgb(33, 33, 33);
-    padding: 10px;
-    margin-left:10px;
+    background-color: transparent !important;
+    padding: 5px;
+    margin-left:auto;
+    border-radius: 5px;
+    font-size: clamp(10px,2.5vw,16px);
 }
 
 .price{
-    margin-left: 10px;
+    margin-right: auto;
+    background-color: transparent !important;
+    width: 100%;
     margin-top: 10px;
+    text-align: start;
+    font-size: clamp(10px,2.5vw,16px);
 }
 .picture{
-    width: 65%;
+    width: 100%;
 }
 
 .picture img{
@@ -58,17 +77,21 @@
 }
 
 .type_section{
-    background-color: rgb(45, 45, 45);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05)); /* Linear gradient with transparency */
+    backdrop-filter: blur(10px); 
     width: 90%;
     border-radius: 15px;
     display: flex;
     justify-content: space-evenly;
     padding: 10px 0;
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    flex-direction: column;
+    row-gap: 10px;
 }
 .type_name{
-    width: 15%;
+    width: 100%;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: space-between;
 }
@@ -77,24 +100,29 @@
     border-bottom-left-radius: 10px;
     border-top-left-radius: 10px;
     height: 40px;
-    width: 100%;
+    width:45%;
+    max-width: 250px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: small;
+    text-align: center;
+    box-shadow: 2px 2px 10px rgb(25, 25, 25);
 }
 .type_name a{
     color: white;
-    margin-bottom: 20px;
+    margin-left: 20px;
     display: flex;
     align-items: center;
+    font-size: clamp(10px,2vw,15px);
 }
 
 
 /* Add this CSS to your stylesheet or a CSS-in-JS solution */
 .swiper {
-    width: 80%;
+    width: 95%;
     height: 100%;
+    padding-bottom: 15px;
   }
 
 
@@ -198,26 +226,29 @@ padding: 5px;
 }
 .orders_section div span {
     display: flex;
-    gap: 20px;
+    gap: 5px;
+    flex-wrap: wrap;
     align-items: center;
 }
+.orders_section div span div{
+    display: flex;
+    flex-direction: row-reverse;
+    border-radius: 8px;
+    gap: 20px;
+    align-items: center;
+    background-color: rgb(38, 38, 38);
+    padding: 0 5px;
+}
+
 .orders_section div a {
     position: absolute;
     top: 10px;
     left: 10px;
 }
 .item_quantity{
-    position: absolute !important;
-    top: 0;
-    left: 0;
-    width: 24px;
-    font-size: 12px;
-    aspect-ratio: 1;
-    transform: translate(-18px, 20%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px !important;
+    border-left: 1px solid white;
+    border-radius: 0 !important;
+    padding: 5px 10px !important;
 }
 .orders_section::-webkit-scrollbar{
     display: none;
@@ -239,5 +270,170 @@ padding: 5px;
     gap: 10px;
     justify-content: center;
 }
-  /* select order item  */
+pagination-bullets, .swiper-pagination-bullets.swiper-pagination-horizontal {
+    bottom: 0;
+
+}
+.swiper-pagination-bullet {
+    background-color: rgb(255, 255, 255) !important; /* Change bullet color to red */
+  }
   
+  .swiper-pagination-bullet-active {
+    background-color: rgb(255, 48, 48) !important; /* Change active bullet color to dark red */
+  }
+
+  /* select order item  */
+
+
+/* loading article section  */
+
+/* Keyframes for the pulsing animation */
+@keyframes pulseBackground {
+    0% {
+        background-color: rgb(33, 33, 33);
+    }
+    50% {
+        background-color: rgb(29, 29, 29);
+    }
+    100% {
+        background-color: rgb(33, 33, 33);
+    }
+}
+
+/* Base style for the article container */
+
+/* Style for the top section (image and text) */
+.top_section_loading {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+}
+
+/* Style for the image placeholder */
+.picture_loading div {
+    width: 100%;
+    height: 200px;
+    background-color: rgb(29, 29, 29);
+    border-radius: 10px;
+    animation: pulseBackground 1.3s infinite alternate;
+}
+
+/* Style for the right section (name and price) */
+.top_right_section_loading {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin-left: 10px;
+    width: 100%;
+}
+.picture_loading{
+    width: 100%;
+    aspect-ratio: 1;
+    background-color: rgb(29, 29, 29);
+    animation: pulseBackground 1.3s infinite alternate;
+    border-radius: 5px;
+}
+
+/* Style for the product name placeholder */
+.product_name_loading {
+    width: 50%;
+    margin-top: 5px;
+    margin-left: auto;
+    height: 20px;
+    background-color: rgb(29, 29, 29);
+    border-radius: 5px;
+    animation: pulseBackground 1.3s infinite alternate;
+}
+
+/* Style for the price placeholder */
+.price_loading {
+    width: 50%;
+    height: 20px;
+    margin-right: auto;
+    background-color: rgb(29, 29, 29);
+    border-radius: 5px;
+    margin-top: 10px;
+    animation: pulseBackground 1.3s infinite alternate;
+}
+
+/* Style for the buttons section */
+.buttons_section_loading {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+    row-gap: 5px;
+}
+
+/* Style for the button placeholders */
+.buttons_section_loading span {
+    width: 100%;
+    height: 40px;
+    background-color: rgb(29, 29, 29);
+    border-radius: 5px;
+    animation: pulseBackground 1.3s infinite alternate;
+}
+
+/* loading article section  */
+.variation_container{
+    width: 30%;
+    background-color: rgb(33, 33, 33);
+    padding: 20px 15px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    row-gap: 5px;
+    height: 100%;
+    max-height: 800px;
+    overflow-y: scroll;
+    scrollbar-width: thin;
+    scrollbar-color: #ffffff #1c1c1c;
+    font-size: clamp(12px,1.9vw,15px);
+}
+/* ===== Scrollbar CSS ===== */
+  /* Firefox */
+
+
+  /* Chrome, Edge, and Safari */
+  .variation_container::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .variation_container::-webkit-scrollbar-track {
+    background: #1c1c1c;
+  }
+
+  .variation_container::-webkit-scrollbar-thumb {
+    background-color: #ffffff;
+    border-radius: 20px;
+    border: 0px solid #ffffff;
+  }
+.variation_item{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: row-reverse;
+    padding: 10px;
+    border-radius: 15px;
+    background-color: rgb(27, 27, 27);
+    cursor: pointer;
+}
+.variation_item img{
+    width: 30%;
+    aspect-ratio: 1;
+    border-radius: 15px;
+}
+.variation_item div{
+    display: flex;
+    flex-direction: column;
+    row-gap: 5px;
+}
+
+@media only screen and (max-width:1000px) {
+    .variation_container{
+        width: 95%;
+    }
+  }
+
+@media only screen and (max-width:700px) {
+  }

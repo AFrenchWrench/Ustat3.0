@@ -1,23 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 type CountdownTimerProps = {
   setResendvar: React.Dispatch<React.SetStateAction<boolean>>;
   setIsTimerRunning: React.Dispatch<React.SetStateAction<boolean>>;
+  initialTime: number; // Add initialTime prop to allow setting the countdown time
 };
 
-const CountdownTimer: React.FC<CountdownTimerProps> = ({ setResendvar, setIsTimerRunning }) => {
-  const [timer, setTimer] = useState(60);
+const CountdownTimer: React.FC<CountdownTimerProps> = ({ setResendvar, setIsTimerRunning, initialTime }) => {
+  const [timer, setTimer] = useState(initialTime);
 
   useEffect(() => {
-    setIsTimerRunning(true);
     const countdown = setInterval(() => {
       setTimer((prevTimer) => {
         if (prevTimer > 1) {
           return prevTimer - 1;
         } else {
           clearInterval(countdown);
-          setIsTimerRunning(false);
-          setResendvar(true);
+          setTimeout(() => {
+            setIsTimerRunning(false);
+            setResendvar(true);
+          }, 0);
           return 0;
         }
       });

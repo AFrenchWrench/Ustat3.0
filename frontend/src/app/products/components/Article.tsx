@@ -12,12 +12,11 @@ interface OrderItems {
   id: string;
   type: string;
   name: string;
-  dimensions: object;
   price: number;
   quantity: number;
 }
 
-interface DisplayItem {
+interface DisplayOrder {
   id: string;
   dueDate: string;
   creationDate: string;
@@ -29,15 +28,14 @@ interface DisplayItem {
 interface ArticleProps {
   imageSrc: string;
   productName: string;
-  description: string;
   price: string;
   productLink: string;
   type: string;
-  orderData: DisplayItem[];
-  onOrderUpdate: (newOrderData: DisplayItem[]) => void;
+  orderData: DisplayOrder[];
+  onOrderUpdate: (newOrderData: DisplayOrder[]) => void;
 }
 
-const Article: React.FC<ArticleProps> = ({ imageSrc, productName, description, price, productLink, type, orderData, onOrderUpdate }) => {
+const Article: React.FC<ArticleProps> = ({ imageSrc, productName, price, productLink, type, orderData, onOrderUpdate }) => {
   const [showSelectOrder, setShowSelectOrder] = useState(false);
 
   const handleAddToCart = (id: string) => {
@@ -57,12 +55,13 @@ const Article: React.FC<ArticleProps> = ({ imageSrc, productName, description, p
     <article className='article'>
       <div className='top_section'>
         <picture className='picture'>
-          <img src={imageSrc} alt={productName} />
+          <Link href={`/products/${type}/${productLink}`}>
+            <img src={imageSrc} alt={productName} />
+          </Link>
         </picture>
-        <div className='top_left_section'>
+        <div className='top_right_section'>
           <p className='product_name'><strong>{productName}</strong></p>
-          <p className='description'>{description}</p>
-          <p dir='ltr' className='price'>{price}</p>
+          <p dir='ltr' className='price'>{Number(price).toLocaleString('en-US')} تومان</p>
         </div>
       </div>
       <div className='buttons_section'>

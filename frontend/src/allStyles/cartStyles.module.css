@@ -1,0 +1,185 @@
+.container{
+    width: 100%;
+    height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ordersSection{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    position: relative;
+    padding: 10px;
+    border: 2px solid white;
+    border-radius: 15px;
+    background-color: rgb(47, 47, 47);
+    box-shadow: 0px 0px 30px rgb(31, 31, 31);
+    width: 100%;
+    max-width: 600px;
+    height: 90%;
+}
+
+.ordersSection a{
+    color: white;
+    background-color: rgb(31, 31, 31);
+    width: 100%;
+    border-radius: 15px;
+    padding: 5px 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+.orderNumberContainer{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+}
+.orderNumberContainer p{
+    display: flex;
+    align-items: center;
+}
+.orderNumber{
+    background-color: rgb(26, 26, 26);
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+
+.notOrderNumber{
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+
+
+.itemsContainer{
+    display: flex;
+    position: relative;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    min-height: 100px;
+    background-color: rgb(25, 25, 25);
+    border-radius: 15px;
+    padding: 10px;
+    gap: 10px;
+    width: 100%;
+}
+.itemsContainer div{
+    display: flex;
+    width: 48%;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    border-radius: 6px;
+    align-items: center;
+    padding: 0 5px;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);
+    background: linear-gradient(91.76deg, rgba(217, 217, 217, 0.11) 0%, rgba(255, 255, 255, 0.0726) 100%)
+}
+.itemsContainer div p{
+    font-size: clamp(8px, 2vw, 15px);
+    margin: 0 auto;
+}
+.itemsContainer div span{
+    /* background-color: rgb(35, 35, 35); */
+    padding: 10px 5px 10px 10px;
+    /* border-radius: 10px; */
+    font-size: clamp(8px, 2vw, 15px);
+    border-left: 2px solid white;
+}
+
+.deleteButton{
+    padding: 5px !important;
+    width: 20%;
+    border-radius: 10px;
+    background-color: #B80000;
+}
+.deleteButton:hover{
+    background-color: rgb(255, 36, 36);
+}
+.itemsSection{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.bottomSection{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 10px;
+    font-size: clamp(8px, 2vw, 14px);
+}
+
+.dateContainer{
+    display: flex;
+    align-items: center;
+    text-align: center;
+    padding: 0px 5px;
+    background: linear-gradient(91.76deg, rgba(217, 217, 217, 0.11) 0%, rgba(255, 255, 255, 0.0726) 100%);
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.25);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    border-radius: 5px;
+}
+
+
+.emptyContainer{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+.cartIcon{
+    font-size: 60px;
+}
+
+.shadow{
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    height: 10%;
+    z-index: 2;
+    border-radius: 10px;
+    background: linear-gradient(to top, hsla(0, 0%, 16%), transparent);
+}
+.orderItemsSection{
+    width: 100%;
+    overflow: scroll;
+    display: flex;
+    flex-direction: column;
+    row-gap: 5px;
+    border-radius: 10px;
+}
+.showMoreButton {
+    margin: 0 auto;
+    text-align: center;
+    padding: 0;
+    color: rgb(255, 255, 255);
+    cursor: pointer;
+    background: none;
+    border: none;
+    text-decoration: underline;
+    font-size: clamp(8px, 2vw, 15px);
+  }
+  
+.orderItemsSection > a:last-of-type {
+    margin-bottom: 10%;
+}
+.orderItemsSection::-webkit-scrollbar{
+    display: none;
+}
+
+@media only screen and (max-width:700px) {
+    .orderNumberContainer{
+        font-size: small;
+    }
+
+}

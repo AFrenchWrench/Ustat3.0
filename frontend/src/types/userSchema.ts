@@ -25,12 +25,11 @@ const UserSchema = z.object({
       .regex(/^[a-zA-Z][a-zA-Z0-9_]{3,20}$/, "نام کاربری معتبر نمیباشد"),
   
     password: z.string()
-      .min(1,"گذرواژه نمی‌تواند خالی باشد")
-      .min(8, "گذرواژه باید حداقل 8 کاراکتر باشد.")
-      .regex(/[A-Z]/, "گذرواژه باید حداقل شامل یک حرف بزرگ انگلیسی باشد.")
-      .regex(/[0-9]/, "گذرواژه باید حداقل شامل یک عدد باشد.")
-      .regex(/[!@#$%^&*(),.?":{}|<>_]/, "گذرواژه باید حداقل شامل یک کاراکتر ویژه باشد."),
-  
+    .min(8, "رمز عبور باید حداقل 8 کاراکتر باشد") // Minimum length of 8 characters
+    .regex(/[a-z]/, "رمز عبور باید حداقل شامل یک حرف کوچک باشد") // At least one lowercase letter
+    .regex(/[A-Z]/, "رمز عبور باید حداقل شامل یک حرف بزرگ باشد") // At least one uppercase letter
+    .regex(/[0-9]/, "رمز عبور باید حداقل شامل یک عدد باشد") // At least one digit
+    .regex(/[@$_]/, "رمز عبور باید حداقل شامل یک علامت (@, $, _) باشد"),
     confirmPassword: z.string()
       .min(1,"تکرار گذرواژه نمی‌تواند خالی باشد"),
   
@@ -42,17 +41,16 @@ const UserSchema = z.object({
     email: z.string({required_error:"ایمیل نمی‌تواند خالی باشد"})
       .email("ایمیل وارد شده معتبر نمی‌باشد"),
   
-    phoneNumber: z.string()
-      .regex(/^\d{9,15}$/, "شماره تلفن وارد شده معتبر نمی‌باشد فرمت درست : ...98+")
-      .min(1,"شماره تلفن نمی‌تواند خالی باشد")
-      .min(12,"شماره تلفن باید 12 رقم باشد"),
+      phoneNumber: z.string()
+      .regex(/^\+\d{9,15}$/, "شماره تلفن وارد شده معتبر نمی‌باشد فرمت درست : +98...")
+      .min(1, "شماره تلفن نمی‌تواند خالی باشد")
+      .min(12, "شماره تلفن باید حداقل 12 رقم باشد"),
   
     landlineNumber: z.string()
-      .regex(/^\d{9,15}$/, "شماره ثابت وارد شده معتبر نمی‌باشد فرمت درست : ...98+")
-      .min(1,"شماره ثابت نمی‌تواند خالی باشد")
-      .min(12,"شماره تلفن ثابت باید 12 رقم باشد"),
+      .regex(/^\+\d{9,15}$/, "شماره ثابت وارد شده معتبر نمی‌باشد فرمت درست : +98...")
+      .min(1, "شماره ثابت نمی‌تواند خالی باشد")
+      .min(12, "شماره تلفن ثابت باید حداقل 12 رقم باشد"),
   
-    city: z.string({required_error: "شهر نمی‌تواند خالی باشد"}),
     birthDate: z.string({required_error:"تاریخ تولد الزامی است"}),
   
     isBusinessSigninInput: z.boolean(),
@@ -61,7 +59,6 @@ const UserSchema = z.object({
     ownerFirstName: z.string().optional(),
     ownerLastName: z.string().optional(),
     ownerPhoneNumber: z.string().optional(),
-    address: z.string().optional(),
   
   }).superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {
@@ -128,23 +125,6 @@ const UserSchema = z.object({
           path: ["ownerPhoneNumber"]
         });
       } // بررسی موجود بودن شماره تلفن در سیستم باید در اینجا اضافه شود
-  
-      if (!data.address) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "آدرس الزامی است",
-          path: ["address"]
-        });
-      } else {
-        const pattern = /^[\u0600-\u06FF0-9\s,]+$/;
-        if (!pattern.test(data.address)) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "در آدرس تنها از حروف فارسی، اعداد انگلیسی، و ویرگول و یا فاصله استفاده کنید",
-            path: ["address"]
-          });
-        }
-      }
     }
   });
 

@@ -46,7 +46,7 @@ const Page = () => {
       mutation ResendEmail {
         resendEmail(emailType:"otp") {
           success
-          error
+          errors
         }
       }
     `;
@@ -71,18 +71,22 @@ const Page = () => {
   };
 
   const onSubmit = async (formData: TcodeSchema) => {
-    const username = Cookies.get("username");
+    const email = Cookies.get("email");
     const { verificationCode } = formData;
+
     const query = `
       mutation OtpLogin {
         otpLogin(code: "${verificationCode}") {
           success
-          error
+          errors
           redirectUrl
           token
         }
       }
     `;
+
+    console.log(query);
+
 
     try {
       const response = await fetch('/api/users/graphql/', {
@@ -90,7 +94,7 @@ const Page = () => {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'username': username ? username : '',
+          'email': email ? email : '',
         },
         body: JSON.stringify({ query }),
       });
@@ -106,63 +110,31 @@ const Page = () => {
       } else {
         setError("verificationCode", {
           type: "server",
-          message: data.data.otpLogin.error || "اشتباهی از سمت سرور پیش آمده، لطفا بعدا دوباره امتحان کنید",
+          message: data.data.otpLogin.errors || "اشتباهی از سمت سرور پیش آمده، لطفا بعدا دوباره امتحان کنید",
         });
       }
     } catch (error) {
       setError("verificationCode", {
         type: "server",
-        message: `${error}` || "اشتباهی از سمت سرور پیش آمده، لطفا بعدا دوباره امتحان کنید",
+        message: `${errors}` || "اشتباهی از سمت سرور پیش آمده، لطفا بعدا دوباره امتحان کنید",
       });
     }
   };
 
-  const props = {
-    className: 'reactCodeInput',
-    inputStyle: {
-      margin: '4px',
-      MozAppearance: 'textfield',
-      width: '45px',
-      borderRadius: '8px',
-      textAlign: 'center',
-      fontSize: '24px',
-      height: '45px',
-      padding: '7px',
-      backgroundColor: 'var(--secondary-black)',
-      color: 'lightskyblue',
-      border: '1px solid var(--dark-grey)',
-    },
-    inputStyleInvalid: {
-      margin: '4px',
-      MozAppearance: 'textfield',
-      width: '15px',
-      borderRadius: '3px',
-      fontSize: '24px',
-      height: '26px',
-      padding: '7px',
-      backgroundColor: 'var(--secondary-black)',
-      color: 'red',
-      border: '1px solid red',
-    },
-    type: 'text',
-    fields: 6,
-    name: 'code',
-    inputMode: 'text',
-  };
 
   return (
-    <section className='flex w-full flex-col items-center justify-center'>
-      <form className='signup_form flex flex-col items-center p-10 relative' onSubmit={handleSubmit(onSubmit)}>
+    <section className='flex w-full flex-col items-center justify-center min-h-[100vh]'>
+      <form className='signup_form flex flex-col items-center p-10 relative' onSubmit={handleSubmit(onSubmit)} autoComplete="off">
         <Controller
           control={control}
           name='verificationCode'
-          render={({ field }) => <CustomReactCodeInput {...field} {...props} />}
+          render={({ field }) => <CustomReactCodeInput length={6} {...field} />}
         />
         <div className='w-full flex justify-between items-center mt-5'>
           <button disabled={isSubmitting} className='w-1/8 py-2 bg-red-600 text-[#212121] rounded hover:bg-red-700 focus:outline-none disabled:bg-red-300' type='submit'>تایید</button>
 
           <div className='flex flex-col items-start h-[30px]'>
-            {isTimerRunning && <CountdownTimer setResendvar={setResendvar} setIsTimerRunning={setIsTimerRunning} />}
+            {isTimerRunning && <CountdownTimer initialTime={30} setResendvar={setResendvar} setIsTimerRunning={setIsTimerRunning} />}
             <button type='button' onClick={handleResend} disabled={!resendvar} className='bg-transparent disabled:text-gray-500 p-0'>ارسال مجدد کد</button>
           </div>
         </div>

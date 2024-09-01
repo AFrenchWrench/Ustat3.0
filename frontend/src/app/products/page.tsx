@@ -1,32 +1,34 @@
-"use client"
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css/bundle';
-import './components/componentStyles.css';
-import Article from './components/Article';
-import Link from 'next/link';
+import React, { useEffect, useState } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css/bundle";
+import "./components/componentStyles.css";
+import Article from "./components/Article";
+import Link from "next/link";
 import { MdKeyboardDoubleArrowLeft } from "react-icons/md";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
+import LoadingArticle from "./components/loadingArticle";
+import { Pagination } from "swiper/modules";
+
+
+interface IdisplayItem {
+  id: string;
+  type: string;
+}
 
 interface DisplayItem {
   id: string;
-  type: string;
   name: string;
-  dimensions: string;
   price: string;
-  description: string;
   thumbnail: string;
-  slider1: string;
-  slider2: string;
-  slider3: string;
+  displayItem: IdisplayItem;
 }
 
 interface OrderItems {
   id: string;
   type: string;
   name: string;
-  dimensions: object;
   price: number;
   quantity: number;
 }
@@ -45,73 +47,85 @@ const typeNames: Record<string, string> = {
   B: "سرویس خواب",
   M: "میز و صندلی",
   J: "جلومبلی و عسلی",
-  C: "آینه کنسول"
+  C: "آینه کنسول و میز تلوزیون",
 };
 
 const Products = () => {
   const [userData, setUserData] = useState<DisplayItem[]>([]);
   const [orderData, setOrderData] = useState<DisplayOrder[]>([]);
   const [fetchTrigger, setFetchTrigger] = useState(false); // Trigger for re-fetching data
+  const [loading, setLoading] = useState(false); // Track loading state
 
   const fetchUserData = async () => {
     try {
-      const token = Cookies.get('Authorization');
-      const response = await fetch('/api/sales/graphql/', {
-        method: 'POST',
+      setLoading(true);
+      const token = Cookies.get("Authorization");
+      const response = await fetch("/api/sales/graphql/", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? token : '',
+          "Content-Type": "application/json",
+          Authorization: token ? token : "",
         },
         body: JSON.stringify({
           query: `
-            query DisplayItems {
-              displayItems {
-                id
-                type
-                name
-                dimensions
-                price
-                description
-                thumbnail
-                slider1
-                slider2
-                slider3
-              }
-              ${token ? `
-              userOrders {
-                id
-                dueDate
-                creationDate
-                orderNumber
-                status
-                items {
+          query Showcase {
+              showcase {
                   id
-                  type
                   name
-                  dimensions
                   price
-                  quantity
-                }
-              }` : ''}
+                  thumbnail
+                  displayItem {
+                      id
+                      type
+                      name
+                  }
+              }
+  ${token
+              ? `
+                            orders(filter: { status: "ps" }) {
+                                    totalPages
+                                    totalItems
+                                    items {
+                                        id
+                                        status
+                                        orderNumber
+                                        dueDate
+                                        items {
+                                            id
+                                            type
+                                            name
+                                            quantity
+                                        }
+                                    }
+                                }`
+              : ""
             }
+}
           `,
         }),
       });
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
       }
 
-      if (data.errors || !data.data.displayItems || (token && !data.data.userOrders)) {
-        throw new Error(data.errors ? data.errors[0].message : 'No items found');
+      if (
+        data.errors ||
+        !data.data.showcase ||
+        (token && !data.data.showcase)
+      ) {
+        throw new Error(
+          data.errors ? data.errors[0].message : "No items found"
+        );
       }
 
-      setUserData(data.data.displayItems);
-      if (token) setOrderData(data.data.userOrders);
-
+      setUserData(data.data.showcase);
+      if (token) setOrderData(data.data.orders.items);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -132,21 +146,42 @@ const Products = () => {
   };
 
   const categorizedProducts = Object.keys(typeNames).reduce((acc, type) => {
-    acc[type] = userData.filter(item => item.type === type);
+    acc[type] = userData.filter((item) => item.displayItem.type === type);
     return acc;
   }, {} as Record<string, DisplayItem[]>);
 
   return (
-    <section className='flex flex-col gap-5 items-center mt-10'>
+    <section className="flex flex-col gap-5 items-center mt-10">
       {Object.entries(categorizedProducts).map(([type, items]) => (
-        <div key={type} className='type_section'>
-          <div className='type_name'>
+        <div key={type} className="type_section">
+          <div className="type_name">
             <p>{typeNames[type]}</p>
-            <Link href={`/products/${type}`}>مشاهده همه <MdKeyboardDoubleArrowLeft /></Link>
+            <Link href={`/products/${type}`}>
+              مشاهده همه <MdKeyboardDoubleArrowLeft />
+            </Link>
           </div>
           <Swiper
-            slidesPerView={3}
+            slidesPerView={2}
             spaceBetween={10}
+            modules={[Pagination]}
+            pagination={{
+              clickable: true, // Enable clickable pagination bullets
+              dynamicBullets: true, // Optional: dynamic bullets for a better UX
+            }}
+            breakpoints={{
+              640: {
+                slidesPerView: 2,
+                spaceBetween: 6,
+              },
+              768: {
+                slidesPerView: 3,
+                spaceBetween: 10,
+              },
+              1124: {
+                slidesPerView: 4,
+                spaceBetween: 10,
+              },
+            }}
             className="mySwiper"
           >
             {items.map((item) => (
@@ -154,15 +189,19 @@ const Products = () => {
                 <Article
                   imageSrc={`/media/${item.thumbnail}`}
                   productName={item.name}
-                  description={item.description}
                   price={item.price}
                   productLink={item.id}
-                  type={item.type}
+                  type={item.displayItem.type}
                   orderData={orderData}
                   onOrderUpdate={updateOrderData}
                 />
               </SwiperSlide>
             ))}
+            {loading && <SwiperSlide><LoadingArticle /></SwiperSlide>}
+            {loading && <SwiperSlide><LoadingArticle /></SwiperSlide>}
+            {loading && <SwiperSlide><LoadingArticle /></SwiperSlide>}
+            {loading && <SwiperSlide><LoadingArticle /></SwiperSlide>}
+            {loading && <SwiperSlide><LoadingArticle /></SwiperSlide>}
           </Swiper>
         </div>
       ))}
