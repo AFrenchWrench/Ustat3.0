@@ -43,7 +43,7 @@ const columnsBusinesses: GridColDef[] = [
         minWidth: 150,
         type: 'singleSelect',
         renderCell: (params) => (
-            <span style={{ color: params.value ? 'green' : 'red', fontWeight: 'bold' }} className='customSelectSpan'>
+            <span style={{ color: params.value ? '#00ff00' : 'red', fontWeight: 'bold' }} className='customSelectSpan'>
                 {params.value ? 'تایید شده' : 'تایید نشده'}
             </span>
         ),
