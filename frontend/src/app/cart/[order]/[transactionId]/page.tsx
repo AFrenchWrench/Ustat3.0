@@ -137,8 +137,8 @@ const Page = () => {
 
     return (
         <section className={Style.transactionsSection}>
-            <h1 className={Style.header}>سر رسید ها</h1>
             <ul className={Style.transactionsList}>
+                <h1 className={Style.header}>سر رسید ها</h1>
                 {transactions.map((transaction) => (
                     <li key={transaction.id} className={Style.transactionItem}>
                         <h2 className={Style.title}>{transaction.title}</h2>
@@ -153,21 +153,25 @@ const Page = () => {
                             </div>
                             {transaction.proof ? (
                                 <div className={Style.proofContainer}>
-                                    <img
-                                        src={`/media/${transaction.proof}`} // URL where the proof image is served
-                                        alt="Proof"
-                                        className={Style.proofImage}
-                                    />
+                                    <div className={Style.imgContainer}>
+                                        <img
+                                            src={`/media/${transaction.proof}`} // URL where the proof image is served
+                                            alt="Proof"
+                                            className={Style.proofImage}
+                                        />
+                                    </div>
                                 </div>
                             ) : (
                                 <div className={Style.uploadContainer}>
-                                    {previewUrl[transaction.id] && (
-                                        <img
-                                            src={previewUrl[transaction.id]!}
-                                            alt="Preview"
-                                            className={Style.previewImage}
-                                        />
-                                    )}
+                                    <div className={Style.imgContainer}>
+                                        {previewUrl[transaction.id] && (
+                                            <img
+                                                src={previewUrl[transaction.id]!}
+                                                alt="Preview"
+                                                className={Style.previewImage}
+                                            />
+                                        )}
+                                    </div>
                                     <div className={Style.chooseImageButtonContainer}>
                                         <label className={Style.fileLable} htmlFor={`proofInput${transaction.id}`}>انتخاب عکس</label>
                                         <input

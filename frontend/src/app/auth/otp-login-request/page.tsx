@@ -34,6 +34,7 @@ const SigninForm = () => {
              otpLoginRequest(email: "${userInfo.email}") {
               success
               redirectUrl
+              errors
     }
 }
         `;
@@ -55,8 +56,12 @@ const SigninForm = () => {
         return;
       }
 
-      if (data.errors) {
-        setError("email", { message: "ایمیل اشتباه است", type: "server" });
+      if (data.data.otpLoginRequest.errors) {
+        setError("email", { message: data.data.otpLoginRequest.errors, type: "server" });
+        if (data.data.otpLoginRequest.redirectUrl === "/auth/email-auth/") {
+          Cookies.set("email", userInfo.email)
+          push(data.data.otpLoginRequest.redirectUrl)
+        }
         return
       }
 
@@ -75,6 +80,7 @@ const SigninForm = () => {
   return (
     <section className='flex w-full flex-col items-center justify-center min-h-[100vh]'>
       <form noValidate onSubmit={handleSubmit(onSubmit)} className='signup_form flex flex-col items-center !p-5 '>
+        <h2 className='text-white text-lg'>ورود با رمز یکبار مصرف</h2>
 
         <div className='signup_form_container !mt-0'>
           <input

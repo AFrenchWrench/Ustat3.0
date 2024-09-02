@@ -62,7 +62,6 @@ export default function OrdersDataGrid() {
     const [isAll, setIsAll] = useState<boolean>(false); // Track "All" option
     const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
     const [alert, setAlert] = useState<{ message: string; type: 'success' | 'failed' } | null>(null);
-    const [editingRow, setEditingRow] = useState<OrderWithChanges | null>(null);
 
 
     const columns: GridColDef[] = [
@@ -130,7 +129,7 @@ export default function OrdersDataGrid() {
             field: 'actions',
             headerName: 'عملیات',
             flex: 1,
-            minWidth: 150,
+            minWidth: 50,
             renderCell: (params) => {
                 const { row } = params;
                 const hasChanges = (row as OrderWithChanges).hasChanges;
@@ -157,6 +156,20 @@ export default function OrdersDataGrid() {
                     </button>
                 );
             },
+        },
+        {
+            field: 'transaction',
+            headerName: 'صورت حساب ها',
+            flex: 1,
+            minWidth: 80,
+            renderCell: (params) => (
+                <Link
+                    href={`/admin/orders/${params.row.id}/${params.row.id}`}
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                    صورت حساب
+                </Link>
+            ),
         },
 
     ];
@@ -271,7 +284,6 @@ export default function OrdersDataGrid() {
                 // Show success alert
                 setAlert({ message: 'عملیات موفقیت آمیز بود', type: 'success' });
                 setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus } : o));
-                setEditingRow(null); // Reset editing row
             } else {
                 const errors = JSON.parse(data.data.updateOrder.errors);
                 const errorKeys = Object.keys(errors);
@@ -359,7 +371,7 @@ export default function OrdersDataGrid() {
                 justifyContent: 'center',
                 height: '85vh',
                 width: '100%',
-                maxWidth: '1000px',
+                maxWidth: '1100px',
                 margin: '50px auto',
                 bgcolor: 'rgb(32,32,32)',
                 color: 'white',

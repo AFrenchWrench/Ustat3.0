@@ -273,31 +273,38 @@ const Page = () => {
                         <p>{convertToJalaali(orderData.dueDate)}</p>
                     </div>
                     <div className={Styles.statusContainer}>
-                        <p>وضعیت :</p>
-                        <p style={{ color: handleStatusColor(orderData.status), textShadow: `0px 0px 4px ${handleStatusColor(orderData.status)}` }} className={Styles.status}>{handleStatus(orderData.status)}</p>
+                        <div className={Styles.statusContainer}>
+                            <label htmlFor="orderStatus">وضعیت سفارش:</label>
+                            <select
+                                className={Styles.selectAdmin}
+                                id="orderStatus" value={selectedStatus}
+                                onChange={handleStatusChange}
+                                style={{ color: handleStatusColor(orderData.status), textShadow: `0px 0px 4px ${handleStatusColor(orderData.status)}` }}
+                            >
+                                {Object.entries(statusMapping).map(([key, value]) => (
+                                    <option key={key} value={key}>{value}</option>
+                                ))}
+                            </select>
+                            {/* Submit button */}
+                        </div>
                     </div>
 
                 </div>
-                <div>
-                    <p>استان : {orderData.address.city.province.name}</p>
-                    <p>شهر : {orderData.address.city.name}</p>
+                <div className='flex w-full justify-start gap-x-5'>
+                    <p className='bg-[rgb(42,42,42)] rounded-md p-1.5'>استان : {orderData.address.city.province.name}</p>
+                    <p className='bg-[rgb(42,42,42)] rounded-md p-1.5'>شهر : {orderData.address.city.name}</p>
                 </div>
-                <p>{orderData.address.address}</p>
+                <div className='flex w-full justify-between'>
+                    <p>آدرس :</p>
+                    <p className='bg-[rgb(42,42,42)] rounded-md p-1.5'>{orderData.address.address}</p>
+                </div>
 
                 {/* Status dropdown */}
-                <div className={Styles.statusContainer}>
-                    <label htmlFor="orderStatus">وضعیت سفارش:</label>
-                    <select className={Styles.selectAdmin} id="orderStatus" value={selectedStatus} onChange={handleStatusChange}>
-                        {Object.entries(statusMapping).map(([key, value]) => (
-                            <option key={key} value={key}>{value}</option>
-                        ))}
-                    </select>
-                    {/* Submit button */}
-                    <button onClick={handleStatusUpdate}>
-                        ثبت وضعیت
-                    </button>
-                </div>
 
+
+                <button onClick={handleStatusUpdate}>
+                    ثبت وضعیت
+                </button>
             </div>
 
             <div>

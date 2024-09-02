@@ -151,7 +151,7 @@ const Products = () => {
   }, {} as Record<string, DisplayItem[]>);
 
   return (
-    <section className="flex flex-col gap-5 items-center mt-10">
+    <section className="flex flex-col gap-5 items-center mt-10 mb-10  ">
       {Object.entries(categorizedProducts).map(([type, items]) => (
         <div key={type} className="type_section">
           <div className="type_name">

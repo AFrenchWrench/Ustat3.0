@@ -376,15 +376,6 @@ const Page = () => {
         setConfirmAlert(null);
     };
 
-    const onSubmit = async (data: TorderSchema) => {
-        // Store form data
-        setFormData(data);
-        console.log("hello");
-
-
-        // Trigger confirmation alert after validation
-        handleConfirmAlert('update', orderData!.id);
-    };
 
     if (loading) {
         return <div>Loading...</div>;
