@@ -139,10 +139,10 @@ const Page = () => {
 
     return (
         <section className={Style.transactionsSection}>
-            <h1 className={Style.header}>Transactions</h1>
             <ul className={Style.transactionsList}>
+                <h1 className={Style.header}>رسید ها</h1>
                 {transactions.map((transaction) => (
-                    <li key={transaction.id} className={Style.transactionItem}>
+                    <li key={transaction.id} className={Style.transactionItemAdmin}>
                         <div className='ml-[auto]'>
                             <h2 className={Style.title}>{transaction.title}</h2>
                             <p>وضعیت : {statusChoices[transaction.status] || 'Unknown Status'}</p>

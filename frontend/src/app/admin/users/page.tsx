@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
-import { DataGrid, GridColDef, GridRowModel } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridFilterModel, GridRowModel } from '@mui/x-data-grid';
 import Cookies from 'js-cookie';
 import { faIR } from '@mui/x-data-grid/locales';
 import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
 import jalaali from 'jalaali-js';
+import CustomPagination from '@/types/customPagination';
 
 const convertToJalaali = (gregorianDate: string | undefined) => {
     if (gregorianDate) {
@@ -14,6 +15,11 @@ const convertToJalaali = (gregorianDate: string | undefined) => {
         const jalaaliDate = jalaali.toJalaali(parseInt(year), parseInt(month), parseInt(day));
         return `${jalaaliDate.jy}/${jalaaliDate.jm}/${jalaaliDate.jd}`;
     }
+};
+
+const formatDate = (date: string): string => {
+    const [year, month, day] = date.split('-');
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 };
 
 const columnsUsers: GridColDef[] = [
@@ -50,6 +56,57 @@ const columnsBusinesses: GridColDef[] = [
 
 ];
 
+const sx = {
+    backgroundColor: 'white',
+    color: 'black',
+    height: '100%',
+    '& .MuiDataGrid-cell': {
+        borderColor: 'black',
+        textAlign: 'start',
+        fontFamily: 'Vazir-bold',
+    },
+    '& .MuiDataGrid-virtualScrollerRenderZone': {
+        marginRight: '10px'
+    },
+    '& .MuiDataGrid-columnHeaders': {
+        backgroundColor: '#D32F2F',
+        color: 'black',
+        fontFamily: 'Vazir-bold',
+    },
+    '& .MuiDataGrid-footerContainer': {
+        backgroundColor: '#D32F2F',
+        color: 'white',
+        fontFamily: 'Vazir-bold',
+    },
+    '& .custom-header-style': {
+        direction: 'ltr',
+        flexDirection: 'row-reverse',
+    },
+    '& .custom-header-style .MuiDataGrid-columnHeaderDraggableContainer': {
+        flexDirection: 'row-reverse',
+    },
+    '& .custom-header-style .MuiDataGrid-columnSeparator': {
+        marginRight: '10px',
+    },
+    '& .MuiTablePagination-root': {
+        color: 'white',
+        fontFamily: 'Vazir-bold',
+        marginLeft: 'auto',
+        marginRight: '15px',
+    },
+    '& .MuiTablePagination-selectLabel': {
+        color: 'white',
+        fontFamily: 'Vazir-bold',
+    },
+    '& .MuiDataGrid-columnSeparator': {
+        position: 'relative',
+    },
+    '& .phone': {
+        direction: 'ltr',
+        textAlign: 'end'
+    },
+}
+
 
 export default function UsersAndBusinessesDataGrid() {
     const [users, setUsers] = useState([]);
@@ -65,8 +122,21 @@ export default function UsersAndBusinessesDataGrid() {
     const [pageBusinesses, setPageBusinesses] = useState<number>(0); // Default page for businesses
     const [rowCountBusinesses, setRowCountBusinesses] = useState<number>(0); // Total number of rows for businesses
 
+
+    const [userFilters, setUserFilters] = useState<GridFilterModel>({ items: [] });
+    const [businessFilters, setBusinessFilters] = useState<GridFilterModel>({ items: [] });
+
+
     useEffect(() => {
         const token = Cookies.get('Authorization');
+
+        const formattedUserFilterModel = {
+            ...createUserFilterObject(userFilters),
+        };
+        const formattedBusinessFilterModel = {
+            ...createBusinessFilterObject(businessFilters),
+        };
+
 
         const fetchUsersAndBusinesses = () => {
             fetch('http://localhost/api/admin_dash/graphql/', {
@@ -77,19 +147,22 @@ export default function UsersAndBusinessesDataGrid() {
                 },
                 body: JSON.stringify({
                     query: `
-                            query Users ($page: Int, $perPage: Int, $pageBusinesses: Int, $perPageBusinesses: Int) {
-                                users(page: $page, perPage: $perPage) {
+                            query Users ($page: Int, $perPage: Int,
+                                         $pageBusinesses: Int, $perPageBusinesses: Int
+                                         $userFilters: UserFilterInput, $businessFilters: BusinessFilterInput
+                                         ) {
+                                users(page: $page, perPage: $perPage, filter: $userFilters) {
                                     totalPages
                                     totalItems
                                     items {
-                                        dateJoined
                                         firstName
                                         lastName
                                         phoneNumber
                                         email
+                                        dateJoined
                                     }
                                 }
-                                businesses(page: $pageBusinesses, perPage: $perPageBusinesses) {
+                                businesses(page: $pageBusinesses, perPage: $perPageBusinesses, filter: $businessFilters) {
                                     totalPages
                                     totalItems
                                     items {
@@ -108,6 +181,8 @@ export default function UsersAndBusinessesDataGrid() {
                         perPage: pageSizeUsers,
                         pageBusinesses: pageBusinesses + 1,
                         perPageBusinesses: pageSizeBusinesses,
+                        userFilters: formattedUserFilterModel, // User filters
+                        businessFilters: formattedBusinessFilterModel, // User filters
                     },
                 }),
             })
@@ -139,7 +214,7 @@ export default function UsersAndBusinessesDataGrid() {
         };
 
         fetchUsersAndBusinesses();
-    }, [pageUsers, pageSizeUsers, pageBusinesses, pageSizeBusinesses]);
+    }, [pageUsers, pageSizeUsers, pageBusinesses, pageSizeBusinesses, userFilters, businessFilters]);
 
 
     const handleBusinessRowUpdate = async (newRow: GridRowModel, oldRow: GridRowModel) => {
@@ -198,6 +273,58 @@ export default function UsersAndBusinessesDataGrid() {
     };
 
 
+    const createUserFilterObject = (filterModel: GridFilterModel) => {
+        const filters: any = {};
+        filterModel.items.forEach((item) => {
+            if (item.value !== undefined && item.value !== null) { // Check if item.value is defined
+                switch (item.field) {
+                    case 'firstName':
+                        filters.firstName_Icontains = item.value;
+                        break;
+                    case 'lastName':
+                        filters.lastName = item.value; // Convert status to lowercase
+                        break;
+                    case 'phoneNumber':
+                        filters.phoneNumber_Icontains = item.value;
+                        break;
+                    case 'email':
+                        filters.email = item.value;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
+        return filters
+    }
+    const createBusinessFilterObject = (filterModel: GridFilterModel) => {
+        const filters: any = {};
+        filterModel.items.forEach((item) => {
+            if (item.value !== undefined && item.value !== null) { // Check if item.value is defined
+                switch (item.field) {
+                    case 'ownerFirstName':
+                        filters.ownerFirstName_Icontains = item.value;
+                        break;
+                    case 'ownerLastName':
+                        filters.ownerLastName_Icontains = item.value; // Convert status to lowercase
+                        break;
+                    case 'ownerPhoneNumber':
+                        filters.ownerPhoneNumber_Icontains = item.value;
+                        break;
+                    case 'name':
+                        filters.name_Icontains = item.value;
+                        break;
+                    case 'isConfirmed':
+                        filters.isConfirmed = item.value;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
+        return filters
+    }
+
     const existingTheme = useTheme();
 
     const theme = React.useMemo(
@@ -230,6 +357,7 @@ export default function UsersAndBusinessesDataGrid() {
                     boxShadow: 3,
                 }}
             >
+
                 <div dir='rtl' style={{ width: '100%', height: '50%' }}>
                     <h2 style={{ color: 'white' }}>کاربران</h2>
                     <DataGrid
@@ -240,6 +368,8 @@ export default function UsersAndBusinessesDataGrid() {
                         pagination
                         paginationMode="server"
                         paginationModel={{ page: pageUsers, pageSize: pageSizeUsers }}
+                        filterModel={userFilters}
+                        onFilterModelChange={(newFilterModel) => setUserFilters(newFilterModel)}
                         onPaginationModelChange={(newModel) => {
                             if (newModel) {
                                 setPageUsers(newModel.page ?? 0);
@@ -248,59 +378,17 @@ export default function UsersAndBusinessesDataGrid() {
                         }}
                         rowCount={rowCountUsers}
                         pageSizeOptions={[5, 10, 20]}
-                        sx={{
-                            backgroundColor: 'white',
-                            color: 'black',
-                            height: '100%',
-                            '& .MuiDataGrid-cell': {
-                                borderColor: 'black',
-                                textAlign: 'start',
-                                fontFamily: 'Vazir-bold',
-                            },
-                            '& .MuiDataGrid-virtualScrollerRenderZone': {
-                                marginRight: '10px'
-                            },
-                            '& .MuiDataGrid-columnHeaders': {
-                                backgroundColor: '#D32F2F',
-                                color: 'black',
-                                fontFamily: 'Vazir-bold',
-                            },
-                            '& .MuiDataGrid-footerContainer': {
-                                backgroundColor: '#D32F2F',
-                                color: 'white',
-                                fontFamily: 'Vazir-bold',
-                            },
-                            '& .custom-header-style': {
-                                direction: 'ltr',
-                                flexDirection: 'row-reverse',
-                            },
-                            '& .custom-header-style .MuiDataGrid-columnHeaderDraggableContainer': {
-                                flexDirection: 'row-reverse',
-                            },
-                            '& .custom-header-style .MuiDataGrid-columnSeparator': {
-                                marginRight: '10px',
-                            },
-                            '& .MuiTablePagination-root': {
-                                color: 'white',
-                                fontFamily: 'Vazir-bold',
-                                marginLeft: 'auto',
-                                marginRight: '15px',
-                            },
-                            '& .MuiTablePagination-selectLabel': {
-                                color: 'white',
-                                fontFamily: 'Vazir-bold',
-                            },
-                            '& .MuiDataGrid-columnSeparator': {
-                                position: 'relative',
-                            },
-                            '& .phone': {
-                                direction: 'ltr',
-                                textAlign: 'end'
-                            },
-                        }}
+                        sx={sx}
                     />
                 </div>
-
+                <CustomPagination
+                    page={pageUsers}
+                    pageSize={pageSizeUsers}
+                    rowCount={rowCountUsers}
+                    onPageChange={(newPage) => setPageUsers(newPage)}
+                    onPageSizeChange={(newPageSize) => setPageSizeUsers(newPageSize)}
+                    dir={"rtl"}
+                />
                 <div dir='rtl' style={{ width: '100%', height: '50%', marginTop: '20px' }}>
                     <h2 style={{ color: 'white' }}>کسب و کار ها</h2>
                     <DataGrid
@@ -317,61 +405,22 @@ export default function UsersAndBusinessesDataGrid() {
                                 setPageSizeBusinesses(newModel.pageSize ?? 5);
                             }
                         }}
+                        filterModel={businessFilters}
+                        onFilterModelChange={(newFilterModel) => setBusinessFilters(newFilterModel)}
                         rowCount={rowCountBusinesses}
                         processRowUpdate={handleBusinessRowUpdate}
                         pageSizeOptions={[5, 10, 20]}
-                        sx={{
-                            backgroundColor: 'white',
-                            color: 'black',
-                            height: '100%',
-                            '& .MuiDataGrid-cell': {
-                                borderColor: 'black',
-                                textAlign: 'start',
-                                fontFamily: 'Vazir-bold',
-                            },
-                            '& .MuiDataGrid-virtualScrollerRenderZone': {
-                                marginRight: '10px'
-                            },
-                            '& .MuiDataGrid-columnHeaders': {
-                                backgroundColor: '#D32F2F',
-                                color: 'black',
-                                fontFamily: 'Vazir-bold',
-                            },
-                            '& .MuiDataGrid-footerContainer': {
-                                backgroundColor: '#D32F2F',
-                                color: 'white',
-                                fontFamily: 'Vazir-bold',
-                            },
-                            '& .custom-header-style': {
-                                direction: 'ltr',
-                                flexDirection: 'row-reverse',
-                            },
-                            '& .custom-header-style .MuiDataGrid-columnHeaderDraggableContainer': {
-                                flexDirection: 'row-reverse',
-                            },
-                            '& .custom-header-style .MuiDataGrid-columnSeparator': {
-                                marginRight: '10px',
-                            },
-                            '& .MuiTablePagination-root': {
-                                color: 'white',
-                                fontFamily: 'Vazir-bold',
-                                marginLeft: 'auto',
-                                marginRight: '15px',
-                            },
-                            '& .MuiTablePagination-selectLabel': {
-                                color: 'white',
-                                fontFamily: 'Vazir-bold',
-                            },
-                            '& .MuiDataGrid-columnSeparator': {
-                                position: 'relative',
-                            },
-                            '& .phone': {
-                                direction: 'ltr',
-                                textAlign: 'end'
-                            },
-                        }}
+                        sx={sx}
                     />
                 </div>
+                <CustomPagination
+                    page={pageBusinesses}
+                    pageSize={pageSizeBusinesses}
+                    rowCount={rowCountBusinesses}
+                    onPageChange={(newPage) => setPageBusinesses(newPage)}
+                    onPageSizeChange={(newPageSize) => setPageSizeBusinesses(newPageSize)}
+                    dir={"rtl"}
+                />
             </Box>
         </ThemeProvider>
     );

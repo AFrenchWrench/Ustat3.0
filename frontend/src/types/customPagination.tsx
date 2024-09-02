@@ -1,13 +1,19 @@
 import React from 'react';
 import { Pagination, PaginationItem } from '@mui/material';
 
+
+
+type Direction = 'ltr' | 'rtl'; // Define the correct type
+
 interface CustomPaginationProps {
     page: number;
     pageSize: number;
     rowCount: number;
     onPageChange: (page: number) => void;
     onPageSizeChange: (pageSize: number) => void;
+    dir?: Direction;
 }
+
 
 const CustomPagination: React.FC<CustomPaginationProps> = ({
     page,
@@ -15,6 +21,7 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({
     rowCount,
     onPageChange,
     onPageSizeChange,
+    dir
 }) => {
     const totalPages = Math.ceil(rowCount / pageSize);
 
@@ -27,7 +34,7 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({
     };
 
     return (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', direction: 'ltr' }} className='paginationDivCustom'>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', direction: dir ? dir : 'ltr' }} className='paginationDivCustom'>
             <PaginationItem
                 type="first"
                 disabled={page === 0}

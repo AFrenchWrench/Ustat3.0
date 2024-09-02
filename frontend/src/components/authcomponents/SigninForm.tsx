@@ -68,12 +68,6 @@ const SigninForm = () => {
         setAlertType("failed");
         return;
       }
-
-      if (data.data.login.errors) {
-        setError("username", { message: data.data.login.errors || "نام کاربری یا رمز عبور اشتباه است", type: "server" });
-        return;
-      }
-
       const { login } = data.data;
       if (login.success) {
         if (login.token) {
@@ -96,8 +90,8 @@ const SigninForm = () => {
           push(login.redirectUrl);
         } else {
           console.error("Login failed without a redirect URL");
-          setError("username", { message: "نام کاربری یا رمز عبور اشتباه است", type: "server" });
-          setAlertMessage("نام کاربری یا رمز عبور اشتباه است");
+          setError("username", { message: data.data.login.errors || "نام کاربری یا رمز عبور اشتباه است", type: "server" });
+          setAlertMessage(data.data.login.errors || "نام کاربری یا رمز عبور اشتباه است");
           setAlertType("failed");
         }
       }
