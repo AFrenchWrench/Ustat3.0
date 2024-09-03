@@ -6,9 +6,12 @@ import Cookies from 'js-cookie';
 import Styles from "@/allStyles/orderStyles.module.css";
 import * as jalaali from 'jalaali-js';
 
+import Alert from '@/components/Alert';
+
 import "react-multi-date-picker/styles/colors/red.css";
 import "react-multi-date-picker/styles/backgrounds/bg-dark.css";
 import { FaCalendarAlt } from "react-icons/fa";
+import Loading from '@/components/Loading';
 
 interface OrderItems {
     id: string;
@@ -85,7 +88,7 @@ const handleStatusColor = (status: string) => {
         case 'D':
             return "red";
         case 'A':
-            return "green";
+            return "#00ff00";
         case 'C':
             return "red";
         default:
@@ -98,6 +101,7 @@ const Page = () => {
     const [loading, setLoading] = useState(true);
     const [selectedStatus, setSelectedStatus] = useState<string>('');
     const [updated, handleUpdated] = useState<boolean>(false)
+    const [alert, setAlert] = useState<{ message: string; type: 'success' | 'failed' } | null>(null);
 
     const { order } = useParams();
     const { push } = useRouter();
@@ -158,7 +162,7 @@ const Page = () => {
                     throw new Error('Network response was not ok');
                 }
 
-                if (data.errors || !data.data.order) {
+                if (data.data.errors || !data.data.order) {
                     throw new Error(data.errors ? data.errors[0].message : 'No item found');
                 }
 
@@ -197,7 +201,7 @@ const Page = () => {
                 body: JSON.stringify({
                     query: `
                         mutation UpdateOrder {
-                            updateOrder(input: { id: ${orderData?.id}, status: "${selectedStatus}" }) {
+                            updateOrder(input: { id: ${orderData?.id}, status: "${selectedStatus.toLowerCase()}" }) {
                                 success
                                 errors
                             }
@@ -208,20 +212,31 @@ const Page = () => {
 
             const data = await response.json();
 
-            if (!response.ok || data.errors) {
-                throw new Error('Failed to update order status');
+            if (!response.ok) {
+                setAlert({ message: "تغییر وضعیت با مشکل مواجه شد", type: "failed" })
+            }
+            if (data.data.updateOrder.errors) {
+                const errorMessage = JSON.parse(data.data.updateOrder.errors)
+                setAlert({ message: errorMessage.status, type: "failed" })
+                handleUpdated(!updated)
+                return
             }
 
-            // Handle success or errors here
-            console.log('Order status updated:', data);
-            handleUpdated(!updated)
+            if (data.data.updateOrder.success) {
+                setAlert({ message: "تغییر وضعیت موفقیت آمیز بود", type: "success" })
+                handleUpdated(!updated)
+            }
         } catch (error) {
             console.error('Error updating order status:', error);
         }
     };
 
+    const closeAlert = () => {
+        setAlert(null);
+    };
+
     if (loading) {
-        return <div>Loading...</div>;
+        return <Loading />;
     }
 
     if (!orderData) {
@@ -267,9 +282,9 @@ const Page = () => {
                 </div>
                 <div className={Styles.dateStatusContainer}>
                     <div className={Styles.dateContainer}>
-                        <label htmlFor="orderDate" className='flex items-center gap-2'>
+                        <p className='flex items-center gap-2'>
                             تاریخ دریافت :<FaCalendarAlt />
-                        </label>
+                        </p>
                         <p>{convertToJalaali(orderData.dueDate)}</p>
                     </div>
                     <div className={Styles.statusContainer}>
@@ -279,10 +294,11 @@ const Page = () => {
                                 className={Styles.selectAdmin}
                                 id="orderStatus" value={selectedStatus}
                                 onChange={handleStatusChange}
-                                style={{ color: handleStatusColor(orderData.status), textShadow: `0px 0px 4px ${handleStatusColor(orderData.status)}` }}
                             >
                                 {Object.entries(statusMapping).map(([key, value]) => (
-                                    <option key={key} value={key}>{value}</option>
+                                    <option
+                                        key={key} value={key}
+                                    >{value}</option>
                                 ))}
                             </select>
                             {/* Submit button */}
@@ -295,23 +311,30 @@ const Page = () => {
                     <p className='bg-[rgb(42,42,42)] rounded-md p-1.5'>شهر : {orderData.address.city.name}</p>
                 </div>
                 <div className='flex w-full justify-between'>
-                    <p>آدرس :</p>
-                    <p className='bg-[rgb(42,42,42)] rounded-md p-1.5'>{orderData.address.address}</p>
+                    <p className='flex items-center'>آدرس :</p>
+                    <p className='bg-[rgb(42,42,42)] rounded-md p-1.5 w-[90%]'>{orderData.address.address}</p>
                 </div>
 
                 {/* Status dropdown */}
 
 
-                <button onClick={handleStatusUpdate}>
+                <button className='mt-3' onClick={handleStatusUpdate}>
                     ثبت وضعیت
                 </button>
             </div>
 
             <div>
-                <button onClick={() => push(`${orderData.id}/${orderData.id}`)}>
+                <button className='mt-3 !bg-white text-gray-950' onClick={() => push(`${orderData.id}/${orderData.id}`)}>
                     صورت حساب ها
                 </button>
             </div>
+            {alert && (
+                <Alert
+                    message={alert.message}
+                    type={alert.type}
+                    onClose={closeAlert}
+                />
+            )}
 
         </section>
     );

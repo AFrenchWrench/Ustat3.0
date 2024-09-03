@@ -5,6 +5,9 @@ import { useParams } from 'next/navigation';
 import Cookies from 'js-cookie';
 import Style from '@/allStyles/transactions.module.css';
 import jalaali from 'jalaali-js'; // Import jalaali-js
+import Loading from '@/components/Loading';
+
+import Alert from '@/components/Alert';
 
 const statusChoices: { [key: string]: string } = {
     "P": "در انتظار پرداخت",
@@ -32,6 +35,8 @@ const Page = () => {
     const [error, setError] = useState<string | null>(null);
     const [selectedStatus, setSelectedStatus] = useState<{ [key: string]: string }>({}); // To store selected status for each transaction
     const [refreshKey, setRefreshKey] = useState<number>(0); // State to trigger refetch
+    const [alert, setAlert] = useState<{ message: string; type: 'success' | 'failed' } | null>(null);
+
 
     useEffect(() => {
         const fetchTransactions = async () => {
@@ -115,14 +120,14 @@ const Page = () => {
             const result = await response.json();
 
             if (result.data.updateTransaction.success) {
-                alert('Transaction status updated successfully!');
+                setAlert({ message: "عملیات موقیت آمیز بود", type: "success" });
                 setRefreshKey(prev => prev + 1); // Refresh the data
-            } else {
-                alert('Failed to update transaction status');
+            } else if (result.data.updateTransaction.errors) {
+                setAlert({ message: result.data.updateTransaction.errors, type: "failed" });
             }
         } catch (err) {
             console.error(err);
-            alert('An error occurred while updating the transaction status');
+            setAlert({ message: "مشکلی پیش آمده", type: "failed" });
         }
     };
 
@@ -134,7 +139,11 @@ const Page = () => {
         }
     };
 
-    if (loading) return <div className={Style.loading}>Loading...</div>;
+    const closeAlert = () => {
+        setAlert(null);
+    };
+
+    if (loading) return <Loading />;
     if (error) return <div className={Style.error}>{error}</div>;
 
     return (
@@ -159,6 +168,7 @@ const Page = () => {
                                         value={selectedStatus[transaction.id] || transaction.status}
                                         onChange={(e) => handleStatusChange(transaction.id, e.target.value)}
                                         className={Style.statusSelect}
+                                        name='status'
                                     >
                                         {Object.keys(statusChoices).map((status) => (
                                             <option key={status} value={status}>
@@ -190,6 +200,13 @@ const Page = () => {
                     </li>
                 ))}
             </ul>
+            {alert && (
+                <Alert
+                    message={alert.message}
+                    type={alert.type}
+                    onClose={closeAlert}
+                />
+            )}
         </section>
     );
 };

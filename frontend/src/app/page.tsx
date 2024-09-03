@@ -7,7 +7,6 @@ export default function Home() {
 
   const { push } = useRouter()
 
-
   return (
     <section className={style.section}>
       <div className={style.homeCart}>
@@ -28,7 +27,14 @@ export default function Home() {
 
 
         <div className={style.bottomDiv}>
-          <div className={style.textDiv}></div>
+          <div className={style.textDiv}>
+            <p>
+              مجموعه اوستات تجارت با ارائه ي مبلمان با سبك آرت دكو و نئوكلاسيك با بهترین کیفیت و طراحی منحصر به فرد، زیبایی و اصالت را براي شما دوستداران اين سبك به ارمغان آورده است .
+            </p>
+            <p>
+              شركت اوستات تجارت با  بازرگاني چوب و متريال مبلمان از كشور تركيه و بخش R@D  نيز در خدمت شما توليد كنندگان محترم مي باشد .
+            </p>
+          </div>
           <div className={style.gridDiv}>
             <div className={style.productsGrid}>
               <picture onClick={() => push("/products/S")} className={style.picture1}><span></span><img src="image/Rectangle 31.png" alt="" /><p>مبل ها</p></picture>
