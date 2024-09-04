@@ -12,7 +12,7 @@ interface Ivariation {
 }
 
 interface Ivariations {
-    variations: Ivariation[];
+    variations?: Ivariation[];
     onSelectVariation: (id: string) => void;
     active: string | string[]
 }

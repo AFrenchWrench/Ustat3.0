@@ -22,6 +22,8 @@ import SelectAddress from '../components/selectAddress';
 import { CiEdit } from "react-icons/ci";
 
 import "@/allStyles/datePickerOrder.css"
+import Loading from '@/components/Loading';
+import NotFound from '@/components/notFound';
 
 interface OrderItems {
     id: string;
@@ -378,11 +380,11 @@ const Page = () => {
 
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <div>{<Loading />}</div>;
     }
 
     if (!orderData) {
-        return <div>No orders found</div>;
+        return <div>{<NotFound />}</div>;
     }
 
     return (

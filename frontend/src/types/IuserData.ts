@@ -6,14 +6,6 @@ interface IuserData {
     landlineNumber: string;
     email: string;
     birthdate: string;
-    // city: {
-    //   id: number;
-    //   name: string;
-    //   province: {
-    //     id: number;
-    //     name: string;
-    //   }
-    // };
     business?: {
       name: string;
       ownerFirstName: string;

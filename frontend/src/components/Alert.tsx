@@ -20,6 +20,7 @@ const Alert: React.FC<AlertProps> = ({ message, type, duration = 3000, onClose }
             borderRadius: '5px',
             marginBottom: '10px',
             animation: 'slideInRight 0.5s ease-out',
+            zIndex: '999'
         },
         failed: {
             backgroundColor: '#f8d7da',
@@ -32,6 +33,8 @@ const Alert: React.FC<AlertProps> = ({ message, type, duration = 3000, onClose }
             borderRadius: '5px',
             marginBottom: '10px',
             animation: 'slideInRight 0.5s ease-out',
+            zIndex: '999'
+
         },
     };
 

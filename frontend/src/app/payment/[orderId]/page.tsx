@@ -7,6 +7,9 @@ import { useParams, useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import FullPayment from "./components/FullPayment";
 import Installment from "./components/Installment";
+import Loading from "@/components/Loading";
+import NotFound from "@/components/notFound";
+import Alert from "@/components/Alert";
 
 
 interface Iitems {
@@ -22,6 +25,7 @@ const Page = () => {
     const [items, setItems] = useState<Iitems[]>([])
     const [totalPrice, setTotalPrice] = useState<number>()
 
+    const [alertMui, setAlert] = useState<{ message: string; type: 'success' | 'failed' } | null>(null);
 
 
 
@@ -66,6 +70,9 @@ const Page = () => {
             catch (error) {
                 console.log(error);
 
+            }
+            finally {
+                setLoading(false)
             }
         }
         fetchOrderItems()
@@ -113,7 +120,7 @@ const Page = () => {
             if (hasTransactions) {
                 push(`/cart/${orderId}/${orderId}`);
             } else {
-                setLoading(false); // Set loading to false if no redirection
+                return
             }
         };
 
@@ -154,8 +161,12 @@ const Page = () => {
             if (result.data.createTransaction.success) {
                 push(`/cart/${orderId}/${orderId}`);
             } else {
-                alert('Transaction failed to create.');
-                console.log(result.data.createTransaction.errors);
+                if (result.data.createTransaction.errors) {
+                    setAlert({ message: JSON.parse(result.data.createTransaction.errors), type: "failed" })
+                }
+                else {
+                    setAlert({ message: "مشکلی پیش آمده", type: 'failed' })
+                }
             }
         } catch (error) {
             console.error('An error occurred:', error);
@@ -196,20 +207,36 @@ const Page = () => {
             if (result.data.createTransaction.success) {
                 push(`/cart/${orderId}/${orderId}`);
             } else {
-                alert('Transaction failed to create.');
-                console.log(result.data.createTransaction.errors);
+                if (result.data.createTransaction.errors) {
+                    setAlert({ message: JSON.parse(result.data.createTransaction.errors), type: "failed" })
+                }
+                else {
+                    setAlert({ message: "مشکلی پیش آمده", type: 'failed' })
+                }
             }
         } catch (error) {
             console.error('An error occurred:', error);
         }
     };
 
-    if (loading) return <div>Loading...</div>;
+    const closeAlert = () => {
+        setAlert(null);
+    };
+
+    if (loading) return <div>{<Loading />}</div>;
+    if (items.length < 1) return <NotFound />
 
     return (
         <section className={Style.paymentSection}>
             <FullPayment totalPrice={totalPrice} items={items} payFunction={handleFullPayment} />
             <Installment totalPrice={totalPrice} items={items} payFunction={handleInstallmentSubmit} />
+            {alertMui && (
+                <Alert
+                    message={alertMui.message}
+                    type={alertMui.type}
+                    onClose={closeAlert}
+                />
+            )}
         </section>
     );
 };
