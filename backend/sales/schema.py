@@ -240,6 +240,9 @@ class CreateTransaction(graphene.Mutation):
                 i += 1
                 total_price -= interval
 
+            order.status = "pp"
+            order.save()
+
             return CreateTransaction(transactions=order_transactions, success=True)
         except Exception as e:
             print(e)
@@ -620,13 +623,8 @@ class Query(graphene.ObjectType):
     item_variant = graphene.Field(ItemVariantType, id=graphene.ID(required=True))
     showcase = graphene.List(ItemVariantType)
 
-    def resolve_display_items(self, info, page=1, per_page=12, filter=None):
-        user = info.context.user
+    def resolve_display_items(self, info, page=1, per_page=12, filter={}):
         display_items = resolve_model_with_filters(DisplayItem, filter)
-        if user.is_authenticated:
-            display_items = display_items.filter(
-                variants__is_for_business=user.is_business()
-            )
         paginator = Paginator(display_items, per_page)
         paginated_qs = paginator.page(page)
         return PaginatedDisplayItem(
@@ -639,9 +637,10 @@ class Query(graphene.ObjectType):
         return get_object_or_404(DisplayItem, pk=id)
 
     @login_required
-    def resolve_orders(self, info, page=1, per_page=10, filter=None):
+    def resolve_orders(self, info, page=1, per_page=10, filter={}):
+        filter["user"] = info.context.user
+        print(filter)
         orders = resolve_model_with_filters(Order, filter)
-        orders = orders.filter(user=info.context.user)
         paginator = Paginator(orders, per_page)
         paginated_qs = paginator.page(page)
         return PaginatedOrder(
@@ -655,9 +654,9 @@ class Query(graphene.ObjectType):
         return get_object_or_404(Order, pk=id, user=info.context.user)
 
     @login_required
-    def resolve_transactions(self, info, page=1, per_page=10, filter=None):
+    def resolve_transactions(self, info, page=1, per_page=10, filter={}):
+        filter["order__user"] = info.context.user
         transactions = resolve_model_with_filters(OrderTransaction, filter)
-        transactions = transactions.filter(order__user=info.context.user)
         paginator = Paginator(transactions, per_page)
         paginated_qs = paginator.page(page)
         return PaginatedTransaction(
@@ -670,11 +669,11 @@ class Query(graphene.ObjectType):
     def resolve_transaction(self, info, id):
         return get_object_or_404(OrderTransaction, pk=id, order__user=info.context.user)
 
-    def resolve_item_variants(self, info, filter=None):
+    def resolve_item_variants(self, info, filter={}):
         user = info.context.user
-        item_variants = resolve_model_with_filters(ItemVariant, filter)
         if user.is_authenticated:
-            item_variants = item_variants.filter(is_for_business=user.is_business())
+            filter["is_for_business"] = user.is_business()
+        item_variants = resolve_model_with_filters(ItemVariant, filter)
         return item_variants
 
     def resolve_item_variant(self, info, id):

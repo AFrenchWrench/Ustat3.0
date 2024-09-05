@@ -339,7 +339,7 @@ const EditVariation: React.FC<AddDisplayItemProps> = ({ onClose, data, type }) =
             });
 
             // Second request: Upload images
-            const uploadResponse = await fetch(`http://localhost/api/sales/display-item-variant/${data?.id}/upload-images/`, {
+            const uploadResponse = await fetch(`/api/sales/display-item-variant/${data?.id}/upload-images/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': Authorization ? Authorization : '',
@@ -425,6 +425,49 @@ const EditVariation: React.FC<AddDisplayItemProps> = ({ onClose, data, type }) =
                 setMessage('محصول با موفقیت بروزرسانی شد');
                 onClose()
                 // Second request: Upload images
+<<<<<<< HEAD
+=======
+                if (uploadData.values.length > 0) {
+                    const uploadResponse = await fetch(`/api/sales/display-item-variant/${itemId}/upload-images/`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': Authorization ? Authorization : '',
+                        },
+                        body: uploadData,
+                    });
+                    console.log(uploadData);
+
+
+                    const uploadResult = await uploadResponse.json();
+
+                    if (uploadResponse.ok) {
+                        setMessage('Images uploaded successfully!');
+                        reset();
+
+                        // Clear previews after successful upload
+                        setPreviews({
+                            thumbnail: null,
+                            slider1: null,
+                            slider2: null,
+                            slider3: null,
+                        });
+
+                        setTimeout(() => {
+                            setMessage("");
+                        }, 2000);
+
+                        onClose()
+
+                    } else {
+                        setMessage('Failed to upload images.');
+                        console.error('Upload Error:', uploadResult);
+                    }
+                }
+                else {
+                    onClose()
+                }
+
+>>>>>>> 04d5dbe96a1ac77a2e3a1cd39e5e248a31474110
 
             } else {
                 setMessage('بروزرسانی محصول با مشکل مواجه شد');
