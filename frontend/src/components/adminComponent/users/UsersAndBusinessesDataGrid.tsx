@@ -136,7 +136,7 @@ const UsersAndBusinessesDataGrid = () => {
 
 
         const fetchUsersAndBusinesses = () => {
-            fetch('http://localhost/api/admin_dash/graphql/', {
+            fetch('/api/admin_dash/graphql/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -233,7 +233,7 @@ const UsersAndBusinessesDataGrid = () => {
         try {
             const token = Cookies.get('Authorization');
 
-            const response = await fetch('http://localhost/api/admin_dash/graphql/', {
+            const response = await fetch('/api/admin_dash/graphql/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

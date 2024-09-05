@@ -30,7 +30,7 @@ const SelectAddress: React.FC<ISelectAddress> = ({ selectedAddressId, onClose, s
             const Authorization = Cookies.get("Authorization");
 
             try {
-                const response = await fetch('http://localhost/api/users/graphql/', {
+                const response = await fetch('/api/users/graphql/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

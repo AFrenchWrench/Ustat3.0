@@ -114,7 +114,7 @@ export default function OrdersDataGrid() {
     useEffect(() => {
         const token = Cookies.get('Authorization');
 
-        fetch('http://localhost/api/sales/graphql/', {
+        fetch('/api/sales/graphql/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

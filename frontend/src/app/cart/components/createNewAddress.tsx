@@ -100,7 +100,7 @@ const CreateNewAddress: React.FC<CreateNewAddressProps> = ({ onClose }) => {
         const Authorization = Cookies.get("Authorization")
 
         try {
-            const response = await fetch('http://localhost/api/users/graphql/', {
+            const response = await fetch('/api/users/graphql/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

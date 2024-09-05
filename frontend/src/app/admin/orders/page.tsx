@@ -237,7 +237,7 @@ export default function OrdersDataGrid() {
         const fetchOrders = async () => {
             setLoading(true); // Set loading to true at the start of fetching
             try {
-                const response = await fetch('http://localhost/api/admin_dash/graphql/', {
+                const response = await fetch('/api/admin_dash/graphql/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -311,7 +311,7 @@ export default function OrdersDataGrid() {
         const status = row.status.toLowerCase();
         try {
             const token = Cookies.get('Authorization');
-            const response = await fetch('http://localhost/api/admin_dash/graphql/', {
+            const response = await fetch('/api/admin_dash/graphql/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

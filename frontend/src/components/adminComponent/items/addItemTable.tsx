@@ -181,7 +181,7 @@ const AddItemTable: React.FC = () => {
             }
         `;
         try {
-            const response = await fetch('http://localhost/api/sales/graphql/', {
+            const response = await fetch('/api/sales/graphql/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
