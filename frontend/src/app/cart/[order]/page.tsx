@@ -22,6 +22,8 @@ import SelectAddress from '../components/selectAddress';
 import { CiEdit } from "react-icons/ci";
 
 import "@/allStyles/datePickerOrder.css"
+import Loading from '@/components/Loading';
+import NotFound from '@/components/notFound';
 
 interface OrderItems {
     id: string;
@@ -376,22 +378,13 @@ const Page = () => {
         setConfirmAlert(null);
     };
 
-    const onSubmit = async (data: TorderSchema) => {
-        // Store form data
-        setFormData(data);
-        console.log("hello");
-
-
-        // Trigger confirmation alert after validation
-        handleConfirmAlert('update', orderData!.id);
-    };
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <div>{<Loading />}</div>;
     }
 
     if (!orderData) {
-        return <div>No orders found</div>;
+        return <div>{<NotFound />}</div>;
     }
 
     return (

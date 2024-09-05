@@ -18,13 +18,11 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
   const [error, setError] = useState<string | null>(null);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [updated, setUpdated] = useState(false);
   const { push } = useRouter();
   const hasFetched = useRef(false); // useRef to keep track of fetch status
 
   useEffect(() => {
-    if (hasFetched.current) return; // Prevent multiple fetches
-
-    hasFetched.current = true; // Set to true to indicate fetch is done
 
     const fetchUserData = async () => {
       const token = Cookies.get('Authorization');
@@ -94,7 +92,9 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
     };
 
     fetchUserData();
-  }, [params, isRedirecting, push]); // Remove dependencies that can cause re-renders
+  }, [params, isRedirecting, push, updated]); // Remove dependencies that can cause re-renders
+
+
 
   const convertToJalaali = (gregorianDate: string) => {
     const [year, month, day] = gregorianDate.split('-');
@@ -146,7 +146,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
       <div className={styles.profileDetails}>
         {
           isEditing ? (
-            <Edit userData={userData} setIsEditing={setIsEditing} />
+            <Edit userData={userData} setIsEditing={setIsEditing} setUpdated={setUpdated} />
           ) : (
             userData && (
               <>

@@ -4,6 +4,7 @@ import './globals.css';
 import Nav from '@/components/Nav';
 import AdminNav from '@/components/AdminNav';
 import ErrorBoundary from '@/components/ErrorBoundary'; // Correct import
+import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
   title: 'Ustat',
@@ -22,6 +23,7 @@ export default function RootLayout({
           <AdminNav />
           <Nav />
           {children}
+          <Footer />
         </ErrorBoundary>
       </body>
     </html>

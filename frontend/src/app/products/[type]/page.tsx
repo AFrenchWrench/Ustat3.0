@@ -184,7 +184,7 @@ const Page = () => {
     };
 
     return (
-        <section className="flex flex-col gap-5 items-center mt-10">
+        <section className="flex flex-col gap-5 items-center my-10">
             <ImageList gap={8} sx={{ width: "93%" }} cols={calculateCols()}>
                 {displayData &&
                     displayData.map((article, index) => (

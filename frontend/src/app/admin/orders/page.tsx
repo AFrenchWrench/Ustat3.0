@@ -11,6 +11,7 @@ import jalaali from 'jalaali-js';
 import Alert from '@/components/Alert';
 
 import CustomPagination from '@/types/customPagination';
+import Loading from '@/components/Loading';
 
 interface Order {
     id: string;
@@ -62,7 +63,7 @@ export default function OrdersDataGrid() {
     const [isAll, setIsAll] = useState<boolean>(false); // Track "All" option
     const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
     const [alert, setAlert] = useState<{ message: string; type: 'success' | 'failed' } | null>(null);
-    const [editingRow, setEditingRow] = useState<OrderWithChanges | null>(null);
+
 
 
     const columns: GridColDef[] = [
@@ -130,7 +131,7 @@ export default function OrdersDataGrid() {
             field: 'actions',
             headerName: 'عملیات',
             flex: 1,
-            minWidth: 150,
+            minWidth: 50,
             renderCell: (params) => {
                 const { row } = params;
                 const hasChanges = (row as OrderWithChanges).hasChanges;
@@ -158,8 +159,73 @@ export default function OrdersDataGrid() {
                 );
             },
         },
+        {
+            field: 'transaction',
+            headerName: 'صورت حساب ها',
+            flex: 1,
+            minWidth: 80,
+            renderCell: (params) => (
+                <Link
+                    href={`/admin/orders/${params.row.id}/${params.row.id}`}
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                    صورت حساب
+                </Link>
+            ),
+        },
 
     ];
+
+    const sx = {
+        backgroundColor: 'white',
+        color: 'black',
+        height: '100%',
+        '& .MuiDataGrid-cell': {
+            borderColor: 'black',
+            textAlign: 'start',
+            fontFamily: 'Vazir-bold',
+        },
+        '& .MuiDataGrid-virtualScrollerRenderZone': {
+            marginRight: '10px'
+        },
+        '& .MuiDataGrid-columnHeaders': {
+            backgroundColor: '#D32F2F',
+            color: 'black',
+            fontFamily: 'Vazir-bold',
+        },
+        '& .MuiDataGrid-footerContainer': {
+            backgroundColor: '#D32F2F',
+            color: 'white',
+            fontFamily: 'Vazir-bold',
+        },
+        '& .custom-header-style': {
+            direction: 'ltr',
+            flexDirection: 'row-reverse',
+        },
+        '& .custom-header-style .MuiDataGrid-columnHeaderDraggableContainer': {
+            flexDirection: 'row-reverse',
+        },
+        '& .custom-header-style .MuiDataGrid-columnSeparator': {
+            marginRight: '10px',
+        },
+        '& .MuiTablePagination-root': {
+            color: 'white',
+            fontFamily: 'Vazir-bold',
+            marginLeft: 'auto',
+            marginRight: '15px',
+        },
+        '& .MuiTablePagination-selectLabel': {
+            color: 'white',
+            fontFamily: 'Vazir-bold',
+        },
+        '& .MuiDataGrid-columnSeparator': {
+            position: 'relative',
+        },
+        '& .phone': {
+            direction: 'ltr',
+            textAlign: 'end'
+        },
+    }
 
     useEffect(() => {
         const token = Cookies.get('Authorization');
@@ -271,7 +337,6 @@ export default function OrdersDataGrid() {
                 // Show success alert
                 setAlert({ message: 'عملیات موفقیت آمیز بود', type: 'success' });
                 setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus } : o));
-                setEditingRow(null); // Reset editing row
             } else {
                 const errors = JSON.parse(data.data.updateOrder.errors);
                 const errorKeys = Object.keys(errors);
@@ -350,6 +415,8 @@ export default function OrdersDataGrid() {
         [existingTheme],
     );
 
+    if (loading) return <div><Loading /></div>;
+
     return (
         <Box
             sx={{
@@ -359,13 +426,14 @@ export default function OrdersDataGrid() {
                 justifyContent: 'center',
                 height: '85vh',
                 width: '100%',
-                maxWidth: '1000px',
+                maxWidth: '1100px',
                 margin: '50px auto',
                 bgcolor: 'rgb(32,32,32)',
                 color: 'white',
                 p: 2,
                 borderRadius: 2,
                 boxShadow: 3,
+                rowGap: '20px',
             }}
         >
             <ThemeProvider theme={theme}>
@@ -396,62 +464,18 @@ export default function OrdersDataGrid() {
                         rowCount={rowCount}
                         disableRowSelectionOnClick
                         processRowUpdate={handleProcessRowUpdate} // Add this handler
-                        sx={{
-                            backgroundColor: 'white',
-                            color: 'black',
-                            height: '100%',
-                            '& .MuiDataGrid-cell': {
-                                borderColor: 'black',
-                                textAlign: 'start',
-                                fontFamily: 'Vazir-bold',
-                            },
-                            '& .MuiDataGrid-virtualScrollerRenderZone': {
-                                marginRight: '10px'
-                            },
-                            '& .MuiDataGrid-columnHeaders': {
-                                backgroundColor: '#D32F2F',
-                                color: 'black',
-                                fontFamily: 'Vazir-bold',
-                            },
-                            '& .MuiDataGrid-footerContainer': {
-                                backgroundColor: '#D32F2F',
-                                color: 'white',
-                                fontFamily: 'Vazir-bold',
-                            },
-                            '& .custom-header-style': {
-                                direction: 'ltr',
-                                flexDirection: 'row-reverse',
-                            },
-                            '& .custom-header-style .MuiDataGrid-columnHeaderDraggableContainer': {
-                                flexDirection: 'row-reverse',
-                            },
-                            '& .custom-header-style .MuiDataGrid-columnSeparator': {
-                                marginRight: '10px',
-                            },
-                            '& .MuiTablePagination-root': {
-                                color: 'white',
-                                fontFamily: 'Vazir-bold',
-                                marginLeft: 'auto',
-                                marginRight: '15px',
-                            },
-                            '& .MuiTablePagination-selectLabel': {
-                                color: 'white',
-                                fontFamily: 'Vazir-bold',
-                            },
-                            '& .MuiDataGrid-columnSeparator': {
-                                position: 'relative',
-                            },
-                        }}
+                        sx={sx}
                     />
                 </div>
+                <CustomPagination
+                    page={page}
+                    pageSize={pageSize}
+                    rowCount={rowCount}
+                    onPageChange={(newPage) => setPage(newPage)}
+                    onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+                    dir='rtl'
+                />
             </ThemeProvider>
-            <CustomPagination
-                page={page}
-                pageSize={pageSize}
-                rowCount={rowCount}
-                onPageChange={(newPage) => setPage(newPage)}
-                onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-            />
             {alert && (
                 <Alert
                     message={alert.message}

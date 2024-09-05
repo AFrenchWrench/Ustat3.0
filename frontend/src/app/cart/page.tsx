@@ -10,6 +10,7 @@ import Link from 'next/link';
 import * as jalaali from 'jalaali-js';
 import ConfirmAlert from './components/ConfirmAlert';
 import { BsCart4 } from 'react-icons/bs';
+import Loading from '@/components/Loading';
 
 interface OrderItems {
   id: string;
@@ -50,6 +51,7 @@ const Cart = () => {
   const [orders, setOrders] = useState<DisplayItem[]>([]);
   const { push } = useRouter();
   const [confirmAlert, setConfirmAlert] = useState<ConfirmAlertType | null>(null);
+  const [loading, setLoading] = useState(true)
   const [update, setUpdate] = useState(false);
 
   const [showAllItems, setShowAllItems] = useState(false);
@@ -57,6 +59,7 @@ const Cart = () => {
 
   useEffect(() => {
     const fetchOrders = async () => {
+      setLoading(true)
       const token = Cookies.get('Authorization');
       if (!token) {
         push("/auth");
@@ -108,6 +111,9 @@ const Cart = () => {
         setOrders(data.data.orders.items);
       } catch (error) {
         console.log(error);
+      }
+      finally {
+        setLoading(false)
       }
     };
 
@@ -176,6 +182,7 @@ const Cart = () => {
 
 
     try {
+      setLoading(true)
       const response = await fetch('/api/sales/graphql/', {
         method: 'POST',
         headers: {
@@ -210,10 +217,11 @@ const Cart = () => {
       console.error('Error executing mutation:', error);
     } finally {
       setConfirmAlert(null);
+      setLoading(false)
     }
   };
 
-
+  if (loading) return <div>{<Loading />}</div>
   return (
     <section className={Styles.container}>
       <div className={Styles.ordersSection}>

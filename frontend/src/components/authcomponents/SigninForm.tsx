@@ -68,12 +68,6 @@ const SigninForm = () => {
         setAlertType("failed");
         return;
       }
-
-      if (data.data.login.errors) {
-        setError("username", { message: data.data.login.errors || "نام کاربری یا رمز عبور اشتباه است", type: "server" });
-        return;
-      }
-
       const { login } = data.data;
       if (login.success) {
         if (login.token) {
@@ -85,7 +79,6 @@ const SigninForm = () => {
             reset();
           }, 1000);
         } else {
-          console.error("Login succeeded but no token was returned");
           setError("username", { message: "No token returned", type: "server" });
           setAlertMessage("ورود موفقیت‌آمیز بود اما هیچ توکنی بازگردانده نشد.");
           setAlertType("failed");
@@ -94,11 +87,9 @@ const SigninForm = () => {
         if (login.redirectUrl) {
           Cookies.set('username', userInfo.username);
           push(login.redirectUrl);
-        } else {
-          console.error("Login failed without a redirect URL");
-          setError("username", { message: "نام کاربری یا رمز عبور اشتباه است", type: "server" });
-          setAlertMessage("نام کاربری یا رمز عبور اشتباه است");
-          setAlertType("failed");
+        }
+        if (login.errors) {
+          setError("username", { message: data.data.login.errors || "نام کاربری یا رمز عبور اشتباه است", type: "server" });
         }
       }
     } catch (error) {

@@ -63,14 +63,6 @@ class CreateItemVariantInput(graphene.InputObjectType):
     is_for_business = graphene.Boolean(required=False)
 
 
-class CreateTransactionInput(graphene.InputObjectType):
-    title = graphene.String(required=True)
-    order = graphene.ID(required=True)
-    amount = graphene.BigInt(required=True)
-    due_date = graphene.Date(required=False)
-    description = graphene.String(required=False)
-
-
 class CreateDisplayItem(graphene.Mutation):
     class Arguments:
         input = CreateDisplayItemInput(required=True)
@@ -278,31 +270,6 @@ class CreateItemVariant(graphene.Mutation):
         except Exception as e:
             print(e)
             return CreateItemVariant(success=False, errors="خطایی رخ داده است")
-
-
-class CreateTransaction(graphene.Mutation):
-    class Arguments:
-        input = CreateTransactionInput(required=True)
-
-    transaction = graphene.Field(OrderTransactionType)
-    errors = graphene.String()
-    success = graphene.Boolean()
-
-    @staff_member_required
-    def mutate(self, info, input):
-        try:
-            try:
-                input["order"] = Order.objects.get(id=input["order"])
-            except Order.DoesNotExist:
-                return CreateTransaction(success=False, errors="سفارش یافت نشد")
-
-            transaction = OrderTransaction.objects.create(
-                **input,
-            )
-            return CreateTransaction(transaction=transaction, success=True)
-        except Exception as e:
-            print(e)
-            return CreateTransaction(success=False, errors="خطایی رخ داده است")
 
 
 # ========================Create End========================
@@ -951,7 +918,6 @@ class DeleteTransaction(graphene.Mutation):
 class Mutation(graphene.ObjectType):
     create_display_item = CreateDisplayItem.Field()
     create_item_variant = CreateItemVariant.Field()
-    create_transaction = CreateTransaction.Field()
     update_display_item = UpdateDisplayItem.Field()
     update_order = UpdateOrder.Field()
     update_item_variant = UpdateItemVariant.Field()
@@ -1069,7 +1035,7 @@ class Query(graphene.ObjectType):
     )
 
     @staff_member_required
-    def resolve_orders(self, info, page=1, per_page=10, filter=None):
+    def resolve_orders(self, info, page=1, per_page=10, filter={}):
         orders = resolve_model_with_filters(Order, filter)
         paginator = Paginator(orders, per_page)
         paginated_qs = paginator.page(page)
@@ -1084,7 +1050,7 @@ class Query(graphene.ObjectType):
         return get_object_or_404(Order, pk=id)
 
     @staff_member_required
-    def resolve_transactions(self, info, page=1, per_page=10, filter=None):
+    def resolve_transactions(self, info, page=1, per_page=10, filter={}):
         transactions = resolve_model_with_filters(OrderTransaction, filter)
         paginator = Paginator(transactions, per_page)
         paginated_qs = paginator.page(page)
@@ -1099,7 +1065,7 @@ class Query(graphene.ObjectType):
         return get_object_or_404(OrderTransaction, pk=id)
 
     @staff_member_required
-    def resolve_users(self, info, page=1, per_page=10, filter=None):
+    def resolve_users(self, info, page=1, per_page=10, filter={}):
         users = resolve_model_with_filters(User, filter)
         paginator = Paginator(users, per_page)
         paginated_qs = paginator.page(page)
@@ -1110,7 +1076,7 @@ class Query(graphene.ObjectType):
         )
 
     @staff_member_required
-    def resolve_businesses(self, info, page=1, per_page=10, filter=None):
+    def resolve_businesses(self, info, page=1, per_page=10, filter={}):
         businesses = resolve_model_with_filters(Business, filter)
         paginator = Paginator(businesses, per_page)
         paginated_qs = paginator.page(page)

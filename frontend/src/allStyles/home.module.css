@@ -14,7 +14,8 @@
 }
 .homeCart{
     max-height: 90%;
-    min-width:70%;
+    min-width:70% ;
+    max-width: 800px;
     aspect-ratio: 1.5/1;
     border: 2px solid white;
     border-radius: 15px;
@@ -35,6 +36,9 @@
     justify-content: space-between;
     align-items: center;
     height: 50%;
+}
+.textDiv p{
+    font-size: clamp(10px,1.5vw,14px);
 }
 
 .icon{
@@ -142,6 +146,12 @@
     transform: translate(10% , 0);
     animation: slideIn .2s ease forwards;
     animation-delay: .3s;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    row-gap: 20px;
+    align-items: center;
 }
 
 .gridDiv{
@@ -290,6 +300,9 @@
     .textDiv{
         width: 100%;
         aspect-ratio: 2/1;
+    }
+    .textDiv p{
+        font-size: clamp(10px, 4.5vw, 16px);
     }
     .gridDiv{
         width: 100%;

@@ -58,6 +58,7 @@ interface ErrorMapping {
 interface EditProps {
   userData: IuserData | null;
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
+  setUpdated: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const inputHandler = (e: React.FocusEvent<HTMLInputElement>) => {
@@ -73,7 +74,7 @@ const convertToJalaali = (gregorianDate: string | undefined) => {
 };
 
 
-const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
+const Edit: React.FC<EditProps> = ({ userData, setIsEditing, setUpdated }) => {
 
   const [dateValue, setDateValue] = useState(convertToJalaali(userData?.birthdate));
   const [showPassword, setShowPassword] = useState(false);
@@ -82,10 +83,13 @@ const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
 
   const handleDateChange = (date: DateObject | null) => {
     const gregorianDate = date ? date.convert(gregorian) : null;
-    const formattedDate = gregorianDate ? gregorianDate.toDate().toISOString().split("T")[0] : '';
+    const formattedDate = gregorianDate
+      ? gregorianDate.toDate().toLocaleDateString('en-CA') // Use local date string in 'YYYY-MM-DD' format
+      : '';
     setValue("birthdate", formattedDate);
     setDateValue(convertToJalaali(formattedDate));
   };
+
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -142,7 +146,7 @@ const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
           userInfo.password ? `oldPassword: "${userInfo.password}"` : '',
           userInfo.newPassword ? `password: "${userInfo.newPassword}"` : '',
           userInfo.confirmNewPassword ? `password2: "${userInfo.confirmNewPassword}"` : '',
-          userInfo.city && userInfo.city !== userData.city.name ? `city: "${userInfo.city}"` : '',
+          userInfo.birthdate ? `birthdate: "${userInfo.birthdate}"` : '',
         ];
 
         return fields.filter(field => field !== '').join(',\n');
@@ -201,15 +205,16 @@ const Edit: React.FC<EditProps> = ({ userData, setIsEditing }) => {
         if (userInfo.email && userInfo.email !== userData.email && userInfo.username) {
           Cookies.set("username", userInfo.username)
           Cookies.remove("Authorization")
+          push("/auth")
         }
         if (userInfo.password && userInfo.newPassword !== userInfo.confirmNewPassword || userInfo.username !== userData.username) {
           Cookies.remove("Authorization")
+          push("/auth")
         }
-        push(result.data.updateUser.redirectUrl);
         setIsEditing(false)
+        setUpdated((prev) => !prev)
       } else {
         const errors = JSON.parse(result.data.updateUser.errors);
-        console.log(errors);
 
         const errorMapping: ErrorMapping = {
           username: "username",
