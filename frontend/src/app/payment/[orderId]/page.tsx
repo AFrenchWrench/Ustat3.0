@@ -33,7 +33,7 @@ const Page = () => {
         const fetchOrderItems = async () => {
             try {
                 const user = Cookies.get("Authorization");
-                const response = await fetch('http://localhost/api/sales/graphql/', {
+                const response = await fetch('/api/sales/graphql/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -85,7 +85,7 @@ const Page = () => {
     const checkTransactions = async (): Promise<boolean> => {
         try {
             const user = Cookies.get("Authorization");
-            const response = await fetch('http://localhost/api/sales/graphql/', {
+            const response = await fetch('/api/sales/graphql/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -131,7 +131,7 @@ const Page = () => {
     const handleFullPayment = async () => {
         try {
             const user = Cookies.get("Authorization");
-            const response = await fetch('http://localhost/api/sales/graphql/', {
+            const response = await fetch('/api/sales/graphql/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -177,7 +177,7 @@ const Page = () => {
     const handleInstallmentSubmit = async (upfront: string, checks: string) => {
         try {
             const user = Cookies.get("Authorization");
-            const response = await fetch('http://localhost/api/sales/graphql/', {
+            const response = await fetch('/api/sales/graphql/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

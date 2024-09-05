@@ -49,7 +49,7 @@ const Page = () => {
         const fetchTransactions = async () => {
             try {
                 const user = Cookies.get("Authorization");
-                const response = await fetch('http://localhost/api/sales/graphql/', {
+                const response = await fetch('/api/sales/graphql/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -101,7 +101,7 @@ const Page = () => {
         const Authorization = Cookies.get("Authorization");
 
         try {
-            const response = await fetch(`http://localhost/api/sales/transaction/${transactionId}/upload-image/`, {
+            const response = await fetch(`/api/sales/transaction/${transactionId}/upload-image/`, {
                 method: 'POST',
                 body: formData,
                 headers: {

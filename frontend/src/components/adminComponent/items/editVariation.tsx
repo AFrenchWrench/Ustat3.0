@@ -339,7 +339,7 @@ const EditVariation: React.FC<AddDisplayItemProps> = ({ onClose, data, type }) =
             });
 
             // Second request: Upload images
-            const uploadResponse = await fetch(`http://localhost/api/sales/display-item-variant/${data?.id}/upload-images/`, {
+            const uploadResponse = await fetch(`/api/sales/display-item-variant/${data?.id}/upload-images/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': Authorization ? Authorization : '',
@@ -441,7 +441,7 @@ const EditVariation: React.FC<AddDisplayItemProps> = ({ onClose, data, type }) =
 
                 // Second request: Upload images
                 if (uploadData.values.length > 0) {
-                    const uploadResponse = await fetch(`http://localhost/api/sales/display-item-variant/${itemId}/upload-images/`, {
+                    const uploadResponse = await fetch(`/api/sales/display-item-variant/${itemId}/upload-images/`, {
                         method: 'POST',
                         headers: {
                             'Authorization': Authorization ? Authorization : '',

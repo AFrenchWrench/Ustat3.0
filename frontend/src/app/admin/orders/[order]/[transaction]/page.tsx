@@ -42,7 +42,7 @@ const Page = () => {
         const fetchTransactions = async () => {
             try {
                 const user = Cookies.get("Authorization");
-                const response = await fetch('http://localhost/api/admin_dash/graphql/', {
+                const response = await fetch('/api/admin_dash/graphql/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -99,7 +99,7 @@ const Page = () => {
         const newStatus = selectedStatus[transactionId];
 
         try {
-            const response = await fetch(`http://localhost/api/admin_dash/graphql/`, {
+            const response = await fetch(`/api/admin_dash/graphql/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
