@@ -354,9 +354,9 @@ const Page = () => {
 
                     {dimensions["side table"] && (
                         <div className='dimensions_container'>
-                            <p>میز :</p>
+                            <p>عسلی :</p>
                             <div>
-                                <p>{dimensions["side table"].quantity ? `تعداد: ${dimensions["side table"].quantity}` : 'تعداد میز: N/A'}</p>
+                                <p>{dimensions["side table"].width ? `تعداد:${dimensions["side table"].quantity}` : 'تعداد: N/A'}</p>
                                 <p>{dimensions["side table"].width ? `عرض:${dimensions["side table"].width}` : 'عرض میز: N/A'}</p>
                                 <p>{dimensions["side table"].height ? `ارتفاع: ${dimensions["side table"].height}` : 'ارتفاع میز: N/A'}</p>
                                 <p>{dimensions["side table"].length ? `طول:${dimensions["side table"].length}` : 'طول میز: N/A'}</p>
@@ -368,7 +368,6 @@ const Page = () => {
                         <div className='dimensions_container'>
                             <p>صندلی تک نفره :</p>
                             <div>
-                                <p>{dimensions["single seat"].quantity ? `تعداد: ${dimensions["single seat"].quantity}` : 'تعداد صندلی تک نفره: N/A'}</p>
                                 <p>{dimensions["single seat"].width ? `عرض:${dimensions["single seat"].width}` : 'عرض تک نفره: N/A'}</p>
                                 <p>{dimensions["single seat"].height ? `ارتفاع: ${dimensions["single seat"].height}` : 'ارتفاع تک نفره: N/A'}</p>
                                 <p>{dimensions["single seat"].length ? `طول:${dimensions["single seat"].length}` : 'طول تک نفره: N/A'}</p>

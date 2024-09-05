@@ -6,6 +6,7 @@
     justify-content: center;
     gap: 2%;
     margin-top: 40px;
+    margin-bottom: 30px;
 }
 
 /* پرداخت قسطی */
@@ -22,7 +23,7 @@
     align-items: center;
 }
 .container p{
-    font-size: clamp(8px,2vw,14px);
+    font-size: clamp(11px,2vw,14px);
 }
 
 .container h3{

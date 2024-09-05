@@ -395,8 +395,8 @@ const EditVariation: React.FC<AddDisplayItemProps> = ({ onClose, data, type }) =
                                 ${formData.fabric && formData.fabric !== data?.fabric ? `fabric: "${formData.fabric}",` : ""}
                                 ${formData.color && formData.color !== data?.color ? `color: "${formData.color}",` : ""}
                                 ${formData.woodColor && formData.woodColor !== data?.woodColor ? `woodColor: "${formData.woodColor}",` : ""}
-                                ${formData.showInFirstPage && formData.showInFirstPage !== data?.showInFirstPage ? `showInFirstPage: "${formData.showInFirstPage}",` : ""}
-                                ${formData.isForBusiness && formData.isForBusiness !== data?.isForBusiness ? `isForBusiness: "${formData.isForBusiness}",` : ""}
+                                ${formData.showInFirstPage && formData.showInFirstPage !== data?.showInFirstPage ? `showInFirstPage: ${formData.showInFirstPage},` : ""}
+                                ${formData.isForBusiness && formData.isForBusiness !== data?.isForBusiness ? `isForBusiness: ${formData.isForBusiness},` : ""}
                             }
                         ) {
                             success
@@ -424,50 +424,7 @@ const EditVariation: React.FC<AddDisplayItemProps> = ({ onClose, data, type }) =
             if (result.data.updateItemVariant.success) {
                 setMessage('محصول با موفقیت بروزرسانی شد');
                 onClose()
-                // Second request: Upload images
-<<<<<<< HEAD
-=======
-                if (uploadData.values.length > 0) {
-                    const uploadResponse = await fetch(`/api/sales/display-item-variant/${itemId}/upload-images/`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': Authorization ? Authorization : '',
-                        },
-                        body: uploadData,
-                    });
-                    console.log(uploadData);
-
-
-                    const uploadResult = await uploadResponse.json();
-
-                    if (uploadResponse.ok) {
-                        setMessage('Images uploaded successfully!');
-                        reset();
-
-                        // Clear previews after successful upload
-                        setPreviews({
-                            thumbnail: null,
-                            slider1: null,
-                            slider2: null,
-                            slider3: null,
-                        });
-
-                        setTimeout(() => {
-                            setMessage("");
-                        }, 2000);
-
-                        onClose()
-
-                    } else {
-                        setMessage('Failed to upload images.');
-                        console.error('Upload Error:', uploadResult);
-                    }
-                }
-                else {
-                    onClose()
-                }
-
->>>>>>> 04d5dbe96a1ac77a2e3a1cd39e5e248a31474110
+                // Second request: Upload image
 
             } else {
                 setMessage('بروزرسانی محصول با مشکل مواجه شد');

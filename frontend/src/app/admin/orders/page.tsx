@@ -235,7 +235,6 @@ export default function OrdersDataGrid() {
         };
 
         const fetchOrders = async () => {
-            setLoading(true); // Set loading to true at the start of fetching
             try {
                 const response = await fetch('/api/admin_dash/graphql/', {
                     method: 'POST',
