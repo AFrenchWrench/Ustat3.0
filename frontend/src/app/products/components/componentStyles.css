@@ -432,7 +432,16 @@ pagination-bullets, .swiper-pagination-bullets.swiper-pagination-horizontal {
 @media only screen and (max-width:1000px) {
     .variation_container{
         width: 95%;
+        flex-direction: row;
+        column-gap: 10px;
     }
+    .variation_item{
+        flex-direction: column;
+    }
+    .variation_item img{
+        width: unset;
+    }
+
   }
 
 @media only screen and (max-width:700px) {

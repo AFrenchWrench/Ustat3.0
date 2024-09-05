@@ -95,7 +95,7 @@
     height: 80%;
     width: 100%;
     display: flex;
-    align-self: center;
+    align-items: center;
     justify-content: center;
     background-color: rgb(55, 55, 55);
     border-radius: 15px;

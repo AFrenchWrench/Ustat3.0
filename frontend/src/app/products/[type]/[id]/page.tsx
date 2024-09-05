@@ -51,6 +51,7 @@ interface DisplayOrder {
     status: string;
     items: OrderItems[];
 }
+
 interface Ivariation {
     id: string;
     name: string;
@@ -60,8 +61,8 @@ interface Ivariation {
     color: string;
 }
 interface IdisplayItemV {
+    id: string;
     type: string;
-    variants: Ivariation[];
 }
 interface DisplayItem {
     id: string;
@@ -87,6 +88,9 @@ const Page = () => {
     const [showSelectOrder, setShowSelectOrder] = useState(false);
     const [fetchTrigger, setFetchTrigger] = useState(false);
     const [variantId, setVariansId] = useState<string | string[]>(id)
+    const [variations, setVariations] = useState<Ivariation[]>()
+
+    const [isBusiness, setIsBusiness] = useState(false)
 
     const fetchProductData = async () => {
         try {
@@ -99,7 +103,7 @@ const Page = () => {
                 },
                 body: JSON.stringify({
                     query: `
-                        query ItemVariant {
+                        query ItemVariants {
                             itemVariant(id: ${variantId}) {
                                 id
                                 name
@@ -115,18 +119,11 @@ const Page = () => {
                                 slider3
                                 displayItem {
                                     type
-                                    variants {
-                                        id
-                                        name
-                                        price
-                                        color
-                                        thumbnail
-                                        fabric
-                                    }
+                                    id
                                 }
                             }
                             ${token ? `
-                orders(filter: { status: "ps" }) {
+                        orders(filter: { status: "ps" }) {
                         totalPages
                         totalItems
                         items {
@@ -152,7 +149,8 @@ const Page = () => {
             if (data.errors || !data.data.itemVariant) throw new Error(data.errors ? data.errors[0].message : 'No item found');
 
             setProduct(data.data.itemVariant);
-            console.log(data.data.itemVariant.displayItem.variants);
+            const isBusiness = await fetchUser();
+            fetchVariations(data.data.itemVariant.displayItem.id, isBusiness)
 
             if (data.data.orders && token) setUserOrders(data.data.orders.items);
         } catch (error) {
@@ -161,6 +159,82 @@ const Page = () => {
             setLoading(false);
         }
     };
+
+    const fetchVariations = async (id: string, isBusiness: boolean) => {
+        try {
+            const token = Cookies.get('Authorization');
+            const response = await fetch('/api/sales/graphql/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? token : '',
+                },
+                body: JSON.stringify({
+                    query: `
+                        query ItemVariants {
+                            itemVariants(filter: { displayItem_Id: ${id}, isForBusiness: ${isBusiness} }) {
+                                id
+                                name
+                                price
+                                fabric
+                                color
+                                woodColor
+                                thumbnail
+                                isForBusiness
+                            }
+                        }
+                    `,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) throw new Error('Network response was not ok');
+            if (data.errors || !data.data.itemVariants) throw new Error(data.errors ? data.errors[0].message : 'No item found');
+
+            setVariations(data.data.itemVariants);
+
+        } catch (error) {
+            console.log(error);
+
+        }
+    }
+    const fetchUser = async () => {
+        try {
+            const token = Cookies.get('Authorization');
+            const response = await fetch('/api/users/graphql/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? token : '',
+                },
+                body: JSON.stringify({
+                    query: `
+                        query CurrentUser {
+                            currentUser {
+                                business {
+                                    isConfirmed
+                                }
+                            }
+                        }
+                    `,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) throw new Error('Network response was not ok');
+            if (data.errors || !data.data.currentUser) throw new Error(data.errors ? data.errors[0].message : 'No item found');
+
+            return data.data.currentUser.business.isConfirmed ? true : false
+
+        } catch (error) {
+            console.log(error);
+            return false
+
+        }
+    }
+
 
     const onSelectVariation = (id: string) => {
         setVariansId(id)
@@ -227,68 +301,81 @@ const Page = () => {
                     <div className='dimensions_container'>
                         <p>ابعاد :</p>
                         <div>
-                            <p>{dimensions.width ? `عرض: ${dimensions.width}` : 'N/A'} x</p>
-                            <p>{dimensions.height ? `ارتفاع: ${dimensions.height}` : 'N/A'} x</p>
+                            <p>{dimensions.width ? `عرض: ${dimensions.width}` : 'N/A'}</p>
+                            <p>{dimensions.height ? `ارتفاع: ${dimensions.height}` : 'N/A'}</p>
                             <p>{dimensions.length ? `طول: ${dimensions.length}` : 'N/A'}</p>
                         </div>
                     </div>
                     {dimensions.chair && (
                         <div className='dimensions_container'>
+                            <p>صندلی :</p>
                             <div>
-                                <p>{dimensions.chair.quantity ? `تعداد صندلی: ${dimensions.chair.quantity}` : 'تعداد صندلی: N/A'}</p>
-                                <p>{dimensions.chair.width ? `عرض صندلی : ${dimensions.chair.width}` : 'عرض صندلی: N/A'}</p>
-                                <p>{dimensions.chair.height ? `ارتفاع صندلی: ${dimensions.chair.height}` : 'ارتفاع صندلی: N/A'}</p>
-                                <p>{dimensions.chair.length ? `طول صندلی: ${dimensions.chair.length}` : 'طول صندلی: N/A'}</p>
+                                <p>{dimensions.chair.quantity ? `تعداد: ${dimensions.chair.quantity}` : 'تعداد صندلی: N/A'}</p>
+                                <p>{dimensions.chair.width ? `عرض:${dimensions.chair.width}` : 'عرض صندلی: N/A'}</p>
+                                <p>{dimensions.chair.height ? `ارتفاع: ${dimensions.chair.height}` : 'ارتفاع صندلی: N/A'}</p>
+                                <p>{dimensions.chair.length ? `طول:${dimensions.chair.length}` : 'طول صندلی: N/A'}</p>
                             </div>
                         </div>
                     )}
+
                     {dimensions.mirror && (
                         <div className='dimensions_container'>
+                            <p>آینه :</p>
                             <div>
-                                <p>{dimensions.mirror.width ? `عرض آینه: ${dimensions.mirror.width}` : 'عرض آینه: N/A'}</p>
-                                <p>{dimensions.mirror.height ? `ارتفاع آینه: ${dimensions.mirror.height}` : 'ارتفاع آینه: N/A'}</p>
-                                <p>{dimensions.mirror.length ? `طول آینه: ${dimensions.mirror.length}` : 'طول آینه: N/A'}</p>
+                                <p>{dimensions.mirror.width ? `عرض:${dimensions.mirror.width}` : 'عرض آینه: N/A'}</p>
+                                <p>{dimensions.mirror.height ? `ارتفاع: ${dimensions.mirror.height}` : 'ارتفاع آینه: N/A'}</p>
+                                <p>{dimensions.mirror.length ? `طول:${dimensions.mirror.length}` : 'طول آینه: N/A'}</p>
                             </div>
                         </div>
                     )}
+
                     {dimensions["night stand"] && (
                         <div className='dimensions_container'>
+                            <p>پاتختی :</p>
                             <div>
-                                <p>{dimensions["night stand"].quantity ? `تعداد پاتختی: ${dimensions["night stand"].quantity}` : 'تعداد پاتختی: N/A'}</p>
-                                <p>{dimensions["night stand"].width ? `عرض پاتختی: ${dimensions["night stand"].width}` : 'عرض پاتختی: N/A'}</p>
-                                <p>{dimensions["night stand"].height ? `ارتفاع پاتختی: ${dimensions["night stand"].height}` : 'ارتفاع پاتختی: N/A'}</p>
-                                <p>{dimensions["night stand"].length ? `طول پاتختی: ${dimensions["night stand"].length}` : 'طول پاتختی: N/A'}</p>
+                                <p>{dimensions["night stand"].quantity ? `تعداد: ${dimensions["night stand"].quantity}` : 'تعداد پاتختی: N/A'}</p>
+                                <p>{dimensions["night stand"].width ? `عرض:${dimensions["night stand"].width}` : 'عرض پاتختی: N/A'}</p>
+                                <p>{dimensions["night stand"].height ? `ارتفاع: ${dimensions["night stand"].height}` : 'ارتفاع پاتختی: N/A'}</p>
+                                <p>{dimensions["night stand"].length ? `طول:${dimensions["night stand"].length}` : 'طول پاتختی: N/A'}</p>
                             </div>
                         </div>
                     )}
+
                     {dimensions["makeup table"] && (
                         <div className='dimensions_container'>
+                            <p>میز آرایش :</p>
                             <div>
-                                <p>{dimensions["makeup table"].width ? `عرض میز آرایش: ${dimensions["makeup table"].width}` : 'عرض میز آرایش: N/A'}</p>
-                                <p>{dimensions["makeup table"].height ? `ارتفاع میز آرایش: ${dimensions["makeup table"].height}` : 'ارتفاع میز آرایش: N/A'}</p>
-                                <p>{dimensions["makeup table"].length ? `طول میز آرایش: ${dimensions["makeup table"].length}` : 'طول میز آرایش: N/A'}</p>
+                                <p>{dimensions["makeup table"].width ? `عرض:${dimensions["makeup table"].width}` : 'عرض میز آرایش: N/A'}</p>
+                                <p>{dimensions["makeup table"].height ? `ارتفاع: ${dimensions["makeup table"].height}` : 'ارتفاع میز آرایش: N/A'}</p>
+                                <p>{dimensions["makeup table"].length ? `طول:${dimensions["makeup table"].length}` : 'طول میز آرایش: N/A'}</p>
                             </div>
                         </div>
                     )}
+
                     {dimensions["side table"] && (
                         <div className='dimensions_container'>
+                            <p>میز :</p>
                             <div>
-                                <p>{dimensions["side table"].quantity ? `تعداد میز: ${dimensions["side table"].quantity}` : 'تعداد میز: N/A'}</p>
-                                <p>{dimensions["side table"].width ? `عرض میز: ${dimensions["side table"].width}` : 'عرض میز: N/A'}</p>
-                                <p>{dimensions["side table"].height ? `ارتفاع میز: ${dimensions["side table"].height}` : 'ارتفاع میز: N/A'}</p>
-                                <p>{dimensions["side table"].length ? `طول میز: ${dimensions["side table"].length}` : 'طول میز: N/A'}</p>
+                                <p>{dimensions["side table"].quantity ? `تعداد: ${dimensions["side table"].quantity}` : 'تعداد میز: N/A'}</p>
+                                <p>{dimensions["side table"].width ? `عرض:${dimensions["side table"].width}` : 'عرض میز: N/A'}</p>
+                                <p>{dimensions["side table"].height ? `ارتفاع: ${dimensions["side table"].height}` : 'ارتفاع میز: N/A'}</p>
+                                <p>{dimensions["side table"].length ? `طول:${dimensions["side table"].length}` : 'طول میز: N/A'}</p>
                             </div>
                         </div>
                     )}
+
                     {dimensions["single seat"] && (
                         <div className='dimensions_container'>
+                            <p>صندلی تک نفره :</p>
                             <div>
-                                <p>{dimensions["single seat"].width ? `عرض تک نفره: ${dimensions["single seat"].width}` : 'عرض تک نفره: N/A'}</p>
-                                <p>{dimensions["single seat"].height ? `ارتفاع تک نفره: ${dimensions["single seat"].height}` : 'ارتفاع تک نفره: N/A'}</p>
-                                <p>{dimensions["single seat"].length ? `طول تک نفره: ${dimensions["single seat"].length}` : 'طول تک نفره: N/A'}</p>
+                                <p>{dimensions["single seat"].quantity ? `تعداد: ${dimensions["single seat"].quantity}` : 'تعداد صندلی تک نفره: N/A'}</p>
+                                <p>{dimensions["single seat"].width ? `عرض:${dimensions["single seat"].width}` : 'عرض تک نفره: N/A'}</p>
+                                <p>{dimensions["single seat"].height ? `ارتفاع: ${dimensions["single seat"].height}` : 'ارتفاع تک نفره: N/A'}</p>
+                                <p>{dimensions["single seat"].length ? `طول:${dimensions["single seat"].length}` : 'طول تک نفره: N/A'}</p>
                             </div>
                         </div>
                     )}
+
 
                     <div className='color_section'>
                         <p>رنگ : <span>{product.color || 'N/A'}</span></p>
@@ -307,7 +394,7 @@ const Page = () => {
                 />
             </div>
             {showSelectOrder && <SelectOrder id={product.id} orderData={userOrders} onRemove={handleRemoveOrder} onOrderUpdate={updateOrderData} />}
-            <Variations active={variantId} onSelectVariation={onSelectVariation} variations={product.displayItem.variants} />
+            <Variations active={variantId} onSelectVariation={onSelectVariation} variations={variations} />
         </section>
     );
 };

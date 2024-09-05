@@ -5,6 +5,9 @@ import { useParams } from 'next/navigation';
 import Cookies from 'js-cookie';
 import Style from '@/allStyles/transactions.module.css';
 import jalaali from 'jalaali-js'; // Import jalaali-js
+import Loading from '@/components/Loading';
+import NotFound from '@/components/notFound';
+import Alert from '@/components/Alert';
 
 const statusChoices: { [key: string]: string } = {
     "PS": "در انتظار ثبت",
@@ -38,6 +41,9 @@ const Page = () => {
     const [selectedFile, setSelectedFile] = useState<{ [key: string]: File | null }>({});
     const [previewUrl, setPreviewUrl] = useState<{ [key: string]: string | null }>({});
     const [refreshKey, setRefreshKey] = useState<number>(0); // State to trigger refetch
+
+    const [alertMui, setAlert] = useState<{ message: string; type: 'success' | 'failed' } | null>(null);
+
 
     useEffect(() => {
         const fetchTransactions = async () => {
@@ -104,16 +110,16 @@ const Page = () => {
             });
 
             if (response.ok) {
-                alert('Image uploaded successfully!');
+                setAlert({ message: "عکس با موفقیت بارگذاری شد", type: "success" })
                 setSelectedFile((prev) => ({ ...prev, [transactionId]: null }));
                 setPreviewUrl((prev) => ({ ...prev, [transactionId]: null }));
                 setRefreshKey(prev => prev + 1); // Increment refreshKey to trigger refetch
             } else {
-                alert('Failed to upload image');
+                setAlert({ message: "عکس بارگذاری نشد", type: "failed" })
             }
         } catch (err) {
             console.error(err);
-            alert('An error occurred while uploading the image');
+            setAlert({ message: "مشکلی پیش آمده", type: "failed" })
         }
     };
 
@@ -132,8 +138,13 @@ const Page = () => {
         }
     };
 
-    if (loading) return <div className={Style.loading}>Loading...</div>;
-    if (error) return <div className={Style.error}>{error}</div>;
+
+    const closeAlert = () => {
+        setAlert(null);
+    };
+
+    if (loading) return <div>{<Loading />}</div>;
+    if (transactions.length < 1) return <NotFound />;
 
     return (
         <section className={Style.transactionsSection}>
@@ -192,7 +203,7 @@ const Page = () => {
                                                 if (file) {
                                                     handleImageUpload(transaction.id, file);
                                                 } else {
-                                                    alert('No file selected');
+                                                    setAlert({ message: "عکسی انتخاب نشده", type: "failed" });
                                                 }
                                             }}
                                             className={Style.uploadButton}
@@ -207,6 +218,13 @@ const Page = () => {
                     </li>
                 ))}
             </ul>
+            {alertMui && (
+                <Alert
+                    message={alertMui.message}
+                    type={alertMui.type}
+                    onClose={closeAlert}
+                />
+            )}
         </section>
     );
 };

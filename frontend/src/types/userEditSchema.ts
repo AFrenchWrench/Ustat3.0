@@ -69,15 +69,12 @@ const UserSchema = z.object({
     .optional(),
 
   phoneNumber: z.string()
-    .refine(value => value === undefined || value === '' || /^\+\d{12}$/.test(value), {
-      message: "شماره تلفن وارد شده معتبر نمی‌باشد فرمت درست : +123456789012"
-    })
+  .regex(/^\+\d{9,15}$/, "شماره تلفن وارد شده معتبر نمی‌باشد فرمت درست : +98...")
     .optional(),
 
   landlineNumber: z.string()
-    .refine(value => value === undefined || value === '' || /^\+\d{12}$/.test(value), {
-      message: "شماره ثابت وارد شده معتبر نمی‌باشد فرمت درست : +123456789012"
-    })
+  .regex(/^\+\d{9,15}$/, "شماره ثابت وارد شده معتبر نمی‌باشد فرمت درست : +98...")
+
     .optional(),
 
   city: z.string().optional(),

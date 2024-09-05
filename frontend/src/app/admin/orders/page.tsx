@@ -11,6 +11,7 @@ import jalaali from 'jalaali-js';
 import Alert from '@/components/Alert';
 
 import CustomPagination from '@/types/customPagination';
+import Loading from '@/components/Loading';
 
 interface Order {
     id: string;
@@ -62,6 +63,7 @@ export default function OrdersDataGrid() {
     const [isAll, setIsAll] = useState<boolean>(false); // Track "All" option
     const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
     const [alert, setAlert] = useState<{ message: string; type: 'success' | 'failed' } | null>(null);
+
 
 
     const columns: GridColDef[] = [
@@ -173,6 +175,57 @@ export default function OrdersDataGrid() {
         },
 
     ];
+
+    const sx = {
+        backgroundColor: 'white',
+        color: 'black',
+        height: '100%',
+        '& .MuiDataGrid-cell': {
+            borderColor: 'black',
+            textAlign: 'start',
+            fontFamily: 'Vazir-bold',
+        },
+        '& .MuiDataGrid-virtualScrollerRenderZone': {
+            marginRight: '10px'
+        },
+        '& .MuiDataGrid-columnHeaders': {
+            backgroundColor: '#D32F2F',
+            color: 'black',
+            fontFamily: 'Vazir-bold',
+        },
+        '& .MuiDataGrid-footerContainer': {
+            backgroundColor: '#D32F2F',
+            color: 'white',
+            fontFamily: 'Vazir-bold',
+        },
+        '& .custom-header-style': {
+            direction: 'ltr',
+            flexDirection: 'row-reverse',
+        },
+        '& .custom-header-style .MuiDataGrid-columnHeaderDraggableContainer': {
+            flexDirection: 'row-reverse',
+        },
+        '& .custom-header-style .MuiDataGrid-columnSeparator': {
+            marginRight: '10px',
+        },
+        '& .MuiTablePagination-root': {
+            color: 'white',
+            fontFamily: 'Vazir-bold',
+            marginLeft: 'auto',
+            marginRight: '15px',
+        },
+        '& .MuiTablePagination-selectLabel': {
+            color: 'white',
+            fontFamily: 'Vazir-bold',
+        },
+        '& .MuiDataGrid-columnSeparator': {
+            position: 'relative',
+        },
+        '& .phone': {
+            direction: 'ltr',
+            textAlign: 'end'
+        },
+    }
 
     useEffect(() => {
         const token = Cookies.get('Authorization');
@@ -362,6 +415,8 @@ export default function OrdersDataGrid() {
         [existingTheme],
     );
 
+    if (loading) return <div><Loading /></div>;
+
     return (
         <Box
             sx={{
@@ -378,6 +433,7 @@ export default function OrdersDataGrid() {
                 p: 2,
                 borderRadius: 2,
                 boxShadow: 3,
+                rowGap: '20px',
             }}
         >
             <ThemeProvider theme={theme}>
@@ -408,62 +464,18 @@ export default function OrdersDataGrid() {
                         rowCount={rowCount}
                         disableRowSelectionOnClick
                         processRowUpdate={handleProcessRowUpdate} // Add this handler
-                        sx={{
-                            backgroundColor: 'white',
-                            color: 'black',
-                            height: '100%',
-                            '& .MuiDataGrid-cell': {
-                                borderColor: 'black',
-                                textAlign: 'start',
-                                fontFamily: 'Vazir-bold',
-                            },
-                            '& .MuiDataGrid-virtualScrollerRenderZone': {
-                                marginRight: '10px'
-                            },
-                            '& .MuiDataGrid-columnHeaders': {
-                                backgroundColor: '#D32F2F',
-                                color: 'black',
-                                fontFamily: 'Vazir-bold',
-                            },
-                            '& .MuiDataGrid-footerContainer': {
-                                backgroundColor: '#D32F2F',
-                                color: 'white',
-                                fontFamily: 'Vazir-bold',
-                            },
-                            '& .custom-header-style': {
-                                direction: 'ltr',
-                                flexDirection: 'row-reverse',
-                            },
-                            '& .custom-header-style .MuiDataGrid-columnHeaderDraggableContainer': {
-                                flexDirection: 'row-reverse',
-                            },
-                            '& .custom-header-style .MuiDataGrid-columnSeparator': {
-                                marginRight: '10px',
-                            },
-                            '& .MuiTablePagination-root': {
-                                color: 'white',
-                                fontFamily: 'Vazir-bold',
-                                marginLeft: 'auto',
-                                marginRight: '15px',
-                            },
-                            '& .MuiTablePagination-selectLabel': {
-                                color: 'white',
-                                fontFamily: 'Vazir-bold',
-                            },
-                            '& .MuiDataGrid-columnSeparator': {
-                                position: 'relative',
-                            },
-                        }}
+                        sx={sx}
                     />
                 </div>
+                <CustomPagination
+                    page={page}
+                    pageSize={pageSize}
+                    rowCount={rowCount}
+                    onPageChange={(newPage) => setPage(newPage)}
+                    onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+                    dir='rtl'
+                />
             </ThemeProvider>
-            <CustomPagination
-                page={page}
-                pageSize={pageSize}
-                rowCount={rowCount}
-                onPageChange={(newPage) => setPage(newPage)}
-                onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-            />
             {alert && (
                 <Alert
                     message={alert.message}
