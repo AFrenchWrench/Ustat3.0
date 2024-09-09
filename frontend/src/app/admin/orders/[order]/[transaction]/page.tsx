@@ -36,6 +36,8 @@ const Page = () => {
     const [selectedStatus, setSelectedStatus] = useState<{ [key: string]: string }>({}); // To store selected status for each transaction
     const [refreshKey, setRefreshKey] = useState<number>(0); // State to trigger refetch
     const [alert, setAlert] = useState<{ message: string; type: 'success' | 'failed' } | null>(null);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null); // To store the clicked image
+
 
 
     useEffect(() => {
@@ -143,6 +145,16 @@ const Page = () => {
         setAlert(null);
     };
 
+    const handleImageClick = (imageUrl: string) => {
+        setSelectedImage(imageUrl); // Set the clicked image to the state
+    };
+
+    const closeModal = () => {
+        setSelectedImage(null); // Reset the image when modal is closed
+    };
+
+
+
     if (loading) return <Loading />;
     if (error) return <div className={Style.error}>{error}</div>;
 
@@ -191,10 +203,12 @@ const Page = () => {
                         {transaction.proof && (
                             <div className={Style.proofContainer}>
                                 <img
-                                    src={`/media/${transaction.proof}`} // URL where the proof image is served
+                                    src={`/media/${transaction.proof}`}
                                     alt="Proof"
                                     className={Style.proofImage}
+                                    onClick={() => handleImageClick(`/media/${transaction.proof}`)} // Handle click to enlarge
                                 />
+
                             </div>
                         )}
                     </li>
@@ -207,6 +221,15 @@ const Page = () => {
                     onClose={closeAlert}
                 />
             )}
+            {selectedImage && (
+                <div className={Style.modal} onClick={closeModal}>
+                    <div className={Style.modalContent} onClick={(e) => e.stopPropagation()}>
+                        <img src={selectedImage} alt="Selected Proof" className={Style.largeImage} />
+                        <button onClick={closeModal} className={Style.closeButton}>بستن</button>
+                    </div>
+                </div>
+            )}
+
         </section>
     );
 };

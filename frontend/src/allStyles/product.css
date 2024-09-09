@@ -82,17 +82,22 @@
     align-items: center;
     justify-content: flex-start;
     column-gap: 5px;
+    border-bottom: 1px solid hsla(0, 0%, 100%, 0.25);
 }
 .dimensions_container div{
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
-    column-gap: 4px;
+    flex: 1;
 }
+.dimensions_container p {
+    width: 16%;
+}
+
 .dimensions_container div p{
-    background-color: rgb(27, 27, 27);
     padding: 2px 5px;
     border-radius: 10px;
+    width: 25%;
 }
 
 
@@ -145,7 +150,7 @@
   }
   @media only screen and (max-width:700px) {
     .container{
-        font-size: x-small;
+        font-size: xx-small;
     }
   }
   

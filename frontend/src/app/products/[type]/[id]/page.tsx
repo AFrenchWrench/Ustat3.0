@@ -301,19 +301,19 @@ const Page = () => {
                     <div className='dimensions_container'>
                         <p>ابعاد :</p>
                         <div>
-                            <p>{dimensions.width ? `عرض: ${dimensions.width}` : 'N/A'}</p>
-                            <p>{dimensions.height ? `ارتفاع: ${dimensions.height}` : 'N/A'}</p>
-                            <p>{dimensions.length ? `طول: ${dimensions.length}` : 'N/A'}</p>
+                            <p>{dimensions.width ? `عرض:${dimensions.width}` : 'N/A'}</p>
+                            <p>{dimensions.height ? `ارتفاع:${dimensions.height}` : 'N/A'}</p>
+                            <p>{dimensions.length ? `طول:${dimensions.length}` : 'N/A'}</p>
                         </div>
                     </div>
                     {dimensions.chair && (
                         <div className='dimensions_container'>
                             <p>صندلی :</p>
                             <div>
-                                <p>{dimensions.chair.quantity ? `تعداد: ${dimensions.chair.quantity}` : 'تعداد صندلی: N/A'}</p>
-                                <p>{dimensions.chair.width ? `عرض:${dimensions.chair.width}` : 'عرض صندلی: N/A'}</p>
-                                <p>{dimensions.chair.height ? `ارتفاع: ${dimensions.chair.height}` : 'ارتفاع صندلی: N/A'}</p>
-                                <p>{dimensions.chair.length ? `طول:${dimensions.chair.length}` : 'طول صندلی: N/A'}</p>
+                                <p>{dimensions.chair.width ? `عرض:${dimensions.chair.width}` : 'عرض: N/A'}</p>
+                                <p>{dimensions.chair.height ? `ارتفاع: ${dimensions.chair.height}` : 'ارتفاع: N/A'}</p>
+                                <p>{dimensions.chair.length ? `طول:${dimensions.chair.length}` : 'طول: N/A'}</p>
+                                <p>{dimensions.chair.quantity ? `تعداد: ${dimensions.chair.quantity}` : 'تعداد: N/A'}</p>
                             </div>
                         </div>
                     )}
@@ -322,9 +322,9 @@ const Page = () => {
                         <div className='dimensions_container'>
                             <p>آینه :</p>
                             <div>
-                                <p>{dimensions.mirror.width ? `عرض:${dimensions.mirror.width}` : 'عرض آینه: N/A'}</p>
-                                <p>{dimensions.mirror.height ? `ارتفاع: ${dimensions.mirror.height}` : 'ارتفاع آینه: N/A'}</p>
-                                <p>{dimensions.mirror.length ? `طول:${dimensions.mirror.length}` : 'طول آینه: N/A'}</p>
+                                <p>{dimensions.mirror.width ? `عرض:${dimensions.mirror.width}` : 'عرض: N/A'}</p>
+                                <p>{dimensions.mirror.height ? `ارتفاع: ${dimensions.mirror.height}` : 'ارتفاع: N/A'}</p>
+                                <p>{dimensions.mirror.length ? `طول:${dimensions.mirror.length}` : 'طول: N/A'}</p>
                             </div>
                         </div>
                     )}
@@ -333,10 +333,10 @@ const Page = () => {
                         <div className='dimensions_container'>
                             <p>پاتختی :</p>
                             <div>
-                                <p>{dimensions["night stand"].quantity ? `تعداد: ${dimensions["night stand"].quantity}` : 'تعداد پاتختی: N/A'}</p>
-                                <p>{dimensions["night stand"].width ? `عرض:${dimensions["night stand"].width}` : 'عرض پاتختی: N/A'}</p>
-                                <p>{dimensions["night stand"].height ? `ارتفاع: ${dimensions["night stand"].height}` : 'ارتفاع پاتختی: N/A'}</p>
-                                <p>{dimensions["night stand"].length ? `طول:${dimensions["night stand"].length}` : 'طول پاتختی: N/A'}</p>
+                                <p>{dimensions["night stand"].width ? `عرض:${dimensions["night stand"].width}` : 'عرض: N/A'}</p>
+                                <p>{dimensions["night stand"].height ? `ارتفاع: ${dimensions["night stand"].height}` : 'ارتفاع: N/A'}</p>
+                                <p>{dimensions["night stand"].length ? `طول:${dimensions["night stand"].length}` : 'طول: N/A'}</p>
+                                <p>{dimensions["night stand"].quantity ? `تعداد: ${dimensions["night stand"].quantity}` : 'تعداد: N/A'}</p>
                             </div>
                         </div>
                     )}
@@ -345,9 +345,9 @@ const Page = () => {
                         <div className='dimensions_container'>
                             <p>میز آرایش :</p>
                             <div>
-                                <p>{dimensions["makeup table"].width ? `عرض:${dimensions["makeup table"].width}` : 'عرض میز آرایش: N/A'}</p>
-                                <p>{dimensions["makeup table"].height ? `ارتفاع: ${dimensions["makeup table"].height}` : 'ارتفاع میز آرایش: N/A'}</p>
-                                <p>{dimensions["makeup table"].length ? `طول:${dimensions["makeup table"].length}` : 'طول میز آرایش: N/A'}</p>
+                                <p>{dimensions["makeup table"].width ? `عرض:${dimensions["makeup table"].width}` : 'عرض: N/A'}</p>
+                                <p>{dimensions["makeup table"].height ? `ارتفاع: ${dimensions["makeup table"].height}` : 'ارتفاع: N/A'}</p>
+                                <p>{dimensions["makeup table"].length ? `طول:${dimensions["makeup table"].length}` : 'طول: N/A'}</p>
                             </div>
                         </div>
                     )}
@@ -356,10 +356,10 @@ const Page = () => {
                         <div className='dimensions_container'>
                             <p>عسلی :</p>
                             <div>
+                                <p>{dimensions["side table"].width ? `عرض:${dimensions["side table"].width}` : 'عرض: N/A'}</p>
+                                <p>{dimensions["side table"].height ? `ارتفاع: ${dimensions["side table"].height}` : 'ارتفاع: N/A'}</p>
+                                <p>{dimensions["side table"].length ? `طول:${dimensions["side table"].length}` : 'طول: N/A'}</p>
                                 <p>{dimensions["side table"].width ? `تعداد:${dimensions["side table"].quantity}` : 'تعداد: N/A'}</p>
-                                <p>{dimensions["side table"].width ? `عرض:${dimensions["side table"].width}` : 'عرض میز: N/A'}</p>
-                                <p>{dimensions["side table"].height ? `ارتفاع: ${dimensions["side table"].height}` : 'ارتفاع میز: N/A'}</p>
-                                <p>{dimensions["side table"].length ? `طول:${dimensions["side table"].length}` : 'طول میز: N/A'}</p>
                             </div>
                         </div>
                     )}
@@ -368,9 +368,9 @@ const Page = () => {
                         <div className='dimensions_container'>
                             <p>صندلی تک نفره :</p>
                             <div>
-                                <p>{dimensions["single seat"].width ? `عرض:${dimensions["single seat"].width}` : 'عرض تک نفره: N/A'}</p>
-                                <p>{dimensions["single seat"].height ? `ارتفاع: ${dimensions["single seat"].height}` : 'ارتفاع تک نفره: N/A'}</p>
-                                <p>{dimensions["single seat"].length ? `طول:${dimensions["single seat"].length}` : 'طول تک نفره: N/A'}</p>
+                                <p>{dimensions["single seat"].width ? `عرض:${dimensions["single seat"].width}` : 'عرض: N/A'}</p>
+                                <p>{dimensions["single seat"].height ? `ارتفاع: ${dimensions["single seat"].height}` : 'ارتفاع: N/A'}</p>
+                                <p>{dimensions["single seat"].length ? `طول:${dimensions["single seat"].length}` : 'طول: N/A'}</p>
                             </div>
                         </div>
                     )}
