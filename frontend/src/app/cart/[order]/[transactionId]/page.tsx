@@ -162,7 +162,7 @@ const Page = () => {
                                 <p>{transaction.isCheck ? 'چک' : 'نقدی'}</p>
                                 <p>{transaction.proof ? "عکس ارسال شده" : "عکس ارسال نشده"}</p>
                             </div>
-                            {transaction.proof ? (
+                            {transaction.proof && transaction.status !== "D" ? (
                                 <div className={Style.proofContainer}>
                                     <div className={Style.imgContainer}>
                                         <img
@@ -175,9 +175,9 @@ const Page = () => {
                             ) : (
                                 <div className={Style.uploadContainer}>
                                     <div className={Style.imgContainer}>
-                                        {previewUrl[transaction.id] && (
+                                        {(previewUrl[transaction.id] || transaction.proof) && (
                                             <img
-                                                src={previewUrl[transaction.id]!}
+                                                src={previewUrl[transaction.id]! || `/media/${transaction.proof}`}
                                                 alt="Preview"
                                                 className={Style.previewImage}
                                             />

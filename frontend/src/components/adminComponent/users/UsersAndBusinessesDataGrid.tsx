@@ -97,6 +97,9 @@ const sx = {
     '& .MuiDataGrid-columnSeparator': {
         position: 'relative',
     },
+    '& .MuiTablePagination-actions': {
+        display: "none",
+    },
     '& .phone': {
         direction: 'ltr',
         textAlign: 'end'

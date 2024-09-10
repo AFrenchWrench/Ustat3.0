@@ -201,7 +201,6 @@ const Products = () => {
             {loading && <SwiperSlide><LoadingArticle /></SwiperSlide>}
             {loading && <SwiperSlide><LoadingArticle /></SwiperSlide>}
             {loading && <SwiperSlide><LoadingArticle /></SwiperSlide>}
-            {loading && <SwiperSlide><LoadingArticle /></SwiperSlide>}
           </Swiper>
         </div>
       ))}
