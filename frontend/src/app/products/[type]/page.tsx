@@ -13,6 +13,7 @@ interface Ivariants {
     name: string;
     price: string;
     thumbnail: string;
+    isForBusiness: boolean;
 }
 
 interface DisplayItem {
@@ -54,11 +55,53 @@ const Page = () => {
 
     const observer = useRef<IntersectionObserver | null>(null); // Ref for intersection observer
 
+    const fetchUser = async () => {
+        try {
+            const token = Cookies.get('Authorization');
+            if (!token) {
+                return false
+            }
+            const response = await fetch('/api/users/graphql/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? token : '',
+                },
+                body: JSON.stringify({
+                    query: `
+                        query CurrentUser {
+                            currentUser {
+                                business {
+                                    isConfirmed
+                                }
+                            }
+                        }
+                    `,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) throw new Error('Network response was not ok');
+            if (data.errors || !data.data.currentUser) throw new Error(data.errors ? data.errors[0].message : 'No item found');
+
+            console.log(data.data.currentUser.business.isConfirmed);
+
+            return data.data.currentUser.business.isConfirmed
+
+        } catch (error) {
+            console.log(error);
+            return false
+
+        }
+    }
+
     const fetchUserData = async (page: number) => {
         try {
             setLoading(true);
-
             const token = Cookies.get("Authorization");
+
+
             const response = await fetch("/api/sales/graphql/", {
                 method: "POST",
                 headers: {
@@ -67,45 +110,46 @@ const Page = () => {
                 },
                 body: JSON.stringify({
                     query: `
-                        query DisplayItems($page: Int!, $filter: DisplayItemFilterInput!) {
-                          displayItems(page: $page, perPage: 6, filter: $filter) {
-                            totalPages
-                            totalItems
-                            items {
-                              id
-                              type
-                              name
-                              variants {
-                                id
-                                name
-                                price
-                                thumbnail
-                              }
-                            }
+                    query DisplayItems($page: Int!, $filter: DisplayItemFilterInput!) {
+                      displayItems(page: $page, perPage: 6, filter: $filter) {
+                        totalPages
+                        totalItems
+                        items {
+                          id
+                          type
+                          name
+                          variants {
+                            id
+                            name
+                            price
+                            thumbnail
+                            isForBusiness
                           }
-                          ${token
+                        }
+                      }
+                      ${token
                             ? `
-                            orders(filter: { status: "ps" }) {
-                                    totalPages
-                                    totalItems
+                        orders(filter: { status: "ps" }) {
+                                totalPages
+                                totalItems
+                                items {
+                                    id
+                                    status
+                                    orderNumber
+                                    dueDate
                                     items {
                                         id
-                                        status
-                                        orderNumber
-                                        dueDate
-                                        items {
-                                            id
-                                            type
-                                            name
-                                            quantity
-                                        }
+                                        type
+                                        name
+                                        quantity
                                     }
                                 }
-                              `
+                            }
+                          `
                             : ""
                         }
-                        }
-                    `,
+                    }
+                `,
                     variables: {
                         page,
                         filter: { type: type.toString().toLowerCase() },
@@ -119,22 +163,52 @@ const Page = () => {
                 throw new Error("Network response was not ok");
             }
 
-            if (data.errors || !data.data.displayItems || (token && !data.data.orders)) {
+            if (data.errors || !data.data.displayItems) {
                 throw new Error(data.errors ? data.errors[0].message : "No items found");
             }
 
-            // Only append new data if the page has changed or the data is different
-            if (page !== 1 || data.data.displayItems.items.length !== displayData.length) {
+            let filteredItems = data.data.displayItems.items;
+
+            // Apply the isForBusiness filter
+            if (await fetchUser()) {
+                // Map through the items and filter the variants inside each item
+                filteredItems = filteredItems
+                    .map((item: DisplayItem) => {
+                        // Filter only the variants where isForBusiness is true
+                        const businessVariants = item.variants.filter(variant => variant.isForBusiness === true);
+
+                        // Return the item with only the business-related variants
+                        return { ...item, variants: businessVariants };
+                    })
+                    .filter((item: DisplayItem) => item.variants.length > 0);
+                // Keep only items that have business variants
+                console.log(filteredItems);
+
+            } else {
+                filteredItems = filteredItems
+                    .map((item: DisplayItem) => {
+                        // Filter only the variants where isForBusiness is true
+                        const businessVariants = item.variants.filter(variant => variant.isForBusiness === false);
+
+                        // Return the item with only the business-related variants
+                        return { ...item, variants: businessVariants };
+                    })
+                    .filter((item: DisplayItem) => item.variants.length > 0);
+                console.log(filteredItems);
+
+            }
+
+
+            if (page !== 1 || filteredItems.length !== displayData.length) {
                 setDisplayData((prevData) => {
-                    const newData = data.data.displayItems.items;
-                    // Check if the new data is different from the previous data
+                    const newData = filteredItems;
                     const isDifferent = JSON.stringify(prevData) !== JSON.stringify([...prevData, ...newData]);
                     return isDifferent ? [...prevData, ...newData] : prevData;
                 });
             }
 
             setTotalPages(data.data.displayItems.totalPages);
-            if (token) setOrderData(data.data.orders.items);
+            setOrderData(data.data.orders?.items);
 
         } catch (error) {
             console.error(error);
@@ -142,6 +216,8 @@ const Page = () => {
             setLoading(false);
         }
     };
+
+
 
     useEffect(() => {
         fetchUserData(page); // Fetch data when the component mounts

@@ -221,6 +221,9 @@ export default function OrdersDataGrid() {
         '& .MuiDataGrid-columnSeparator': {
             position: 'relative',
         },
+        '& .MuiTablePagination-actions': {
+            display: "none",
+        },
         '& .phone': {
             direction: 'ltr',
             textAlign: 'end'
@@ -235,7 +238,6 @@ export default function OrdersDataGrid() {
         };
 
         const fetchOrders = async () => {
-            setLoading(true); // Set loading to true at the start of fetching
             try {
                 const response = await fetch('/api/admin_dash/graphql/', {
                     method: 'POST',
@@ -437,7 +439,7 @@ export default function OrdersDataGrid() {
             }}
         >
             <ThemeProvider theme={theme}>
-                <div dir='rtl' style={{ width: '100%', height: '100%' }}>
+                <div dir='rtl' style={{ width: '100%', height: '90%' }}>
                     <DataGrid
                         rows={orders}
                         columns={columns}

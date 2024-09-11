@@ -388,7 +388,7 @@ pagination-bullets, .swiper-pagination-bullets.swiper-pagination-horizontal {
     overflow-y: scroll;
     scrollbar-width: thin;
     scrollbar-color: #ffffff #1c1c1c;
-    font-size: clamp(12px,1.9vw,15px);
+    font-size: clamp(10px,1.5vw,15px);
 }
 /* ===== Scrollbar CSS ===== */
   /* Firefox */
@@ -417,6 +417,7 @@ pagination-bullets, .swiper-pagination-bullets.swiper-pagination-horizontal {
     border-radius: 15px;
     background-color: rgb(27, 27, 27);
     cursor: pointer;
+    min-width: 180px;
 }
 .variation_item img{
     width: 30%;
@@ -429,17 +430,37 @@ pagination-bullets, .swiper-pagination-bullets.swiper-pagination-horizontal {
     row-gap: 5px;
 }
 
+.variation_name{
+    color: white;
+    font-size: clamp(12px,2vw,16px);
+    margin-top: 6px;
+}
+
 @media only screen and (max-width:1000px) {
     .variation_container{
         width: 95%;
         flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
         column-gap: 10px;
+    overflow-x: scroll;
     }
     .variation_item{
         flex-direction: column;
+        flex-grow: 0; /* Prevent items from growing */
+        flex-shrink: 0; /* Prevent items from shrinking */
+        flex-basis: auto; /* Let items take up their intrinsic size */
+        width: 40%;
     }
     .variation_item img{
-        width: unset;
+        width: 100%;
+        aspect-ratio: 1;
+    }
+    .variation_item div {
+        width: 100%;
+    }
+    .variation_price{
+        margin-right: auto;
     }
 
   }

@@ -48,7 +48,7 @@ export async function middleware(request: NextRequest) {
 
 // Apply middleware to routes requiring authentication
 export const config = {
-    matcher: ['/admin/:path*', '/users/:path*'], // Apply middleware to admin and user routes
+    matcher: ['/admin/:path*', '/users/:path*', '/cart/:path*'], // Apply middleware to admin and user routes
 };
 
 // Function to check if the user is an admin

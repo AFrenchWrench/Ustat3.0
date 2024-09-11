@@ -27,12 +27,12 @@ const Variations: React.FC<Ivariations> = ({ variations, onSelectVariation, acti
                 <div style={variation.id === active ? { backgroundColor: 'rgb(36,36,36)' } : { backgroundColor: 'rgb(27,27,27)' }} onClick={() => onSelectVariation(variation.id)} key={index} className='variation_item'>
                     <img src={`/media/${variation.thumbnail}`} alt={variation.name} />
                     <div>
-                        <h3>{variation.name}</h3>
+                        <h3 className='variation_name'>{variation.name}</h3>
                         <span>
-                            <p>{variation.fabric}</p>
-                            <p>{variation.color}</p>
+                            <p>پارچه : {variation.fabric}</p>
+                            <p>رنگ :{variation.color}</p>
                         </span>
-                        <p>{Number(variation.price).toLocaleString("en-US")}</p>
+                        <p className='variation_price'>{Number(variation.price).toLocaleString("en-US")} تومان</p>
                     </div>
                 </div>
             ))}

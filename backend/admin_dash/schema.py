@@ -662,11 +662,6 @@ class UpdateTransaction(graphene.Mutation):
                     success=False, errors="فاکتور مورد نظر یافت نشد"
                 )
 
-            if transaction.status != "p":
-                return UpdateTransaction(
-                    success=False, errors="فاکتور قابل ویرایش نیست"
-                )
-
             for key, value in input.items():
                 setattr(transaction, key, value)
 

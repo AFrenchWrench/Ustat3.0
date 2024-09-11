@@ -146,7 +146,6 @@ export default function OrdersDataGrid() {
             .then((data) => {
                 const ordersData = data.data.orders.items.map((order: Order) => ({
                     ...order,
-                    status: statusMapping[order.status], // Convert status code to Persian name
                     creationDate: convertToJalaali(order.creationDate), // Convert to Jalali date
                     dueDate: convertToJalaali(order.dueDate), // Convert to Jalali date
                 }));
