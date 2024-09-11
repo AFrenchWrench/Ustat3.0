@@ -13,23 +13,6 @@ export async function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // Handle user-specific routes
-    const usernamePath = request.nextUrl.pathname.startsWith('/users');
-    if (usernamePath) {
-        const username = await getUserName(token);
-        if (!username) {
-            // Redirect to home page if no username and not already on home page
-            if (!request.nextUrl.pathname.startsWith('/')) {
-                return NextResponse.redirect(new URL('/', request.url));
-            }
-        } else {
-            // Redirect to user's profile page if already not on the user's profile page
-            if (!request.nextUrl.pathname.startsWith(`/users/${username}`)) {
-                return NextResponse.redirect(new URL(`/users/${username}`, request.url));
-            }
-        }
-        return NextResponse.next();
-    }
 
     // Handle admin routes
     const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
@@ -48,7 +31,7 @@ export async function middleware(request: NextRequest) {
 
 // Apply middleware to routes requiring authentication
 export const config = {
-    matcher: ['/admin/:path*', '/users/:path*', '/cart/:path*'], // Apply middleware to admin and user routes
+    matcher: ['/admin/:path*'], // Apply middleware to admin and user routes
 };
 
 // Function to check if the user is an admin
@@ -83,34 +66,3 @@ const checkIfUserIsAdmin = async (token: string): Promise<boolean> => {
     }
 }
 
-// Function to get the username of the current user
-const getUserName = async (token: string): Promise<string> => {
-    try {
-        const response = await fetch(`http://nginx/api/users/graphql/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': token,
-            },
-            body: JSON.stringify({
-                query: `
-                    query CurrentUser {
-                        currentUser {
-                            username
-                        }
-                    }
-                `,
-            }),
-        });
-
-        const data = await response.json();
-        if (!response.ok || data.errors || !data.data.currentUser) {
-            throw new Error('User is not logged in or an error occurred.');
-        }
-
-        return data.data.currentUser.username;
-    } catch (error) {
-        console.error('Error getting username:', error);
-        return "";
-    }
-}

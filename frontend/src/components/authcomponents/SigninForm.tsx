@@ -85,7 +85,7 @@ const SigninForm = () => {
         }
       } else {
         if (login.redirectUrl) {
-          Cookies.set('username', userInfo.username);
+          Cookies.set('username', userInfo.username, { expires: 365 * 10 }); // Expires in 10 years
           push(login.redirectUrl);
         }
         if (login.errors) {
