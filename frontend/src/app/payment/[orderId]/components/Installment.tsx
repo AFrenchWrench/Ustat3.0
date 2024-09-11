@@ -87,11 +87,11 @@ const Installment: React.FC<FullPaymentProps> = ({ payFunction, items, totalPric
       {error && <p className={Style.errorMessage}>{error}</p>} {/* Display error message */}
       <div className={Style.installmentPrice}>
         <p>پیش پرداخت :</p>
-        <p>{upfrontPayment !== null ? upfrontPayment.toLocaleString("en-US") : "-"}</p>
+        <p>تومان {upfrontPayment !== null ? upfrontPayment.toLocaleString("en-US") : "-"}</p>
       </div>
       <div className={Style.totalPrice}>
         <p>قیمت کل :</p>
-        <p>{totalPrice !== undefined ? totalPrice.toLocaleString("en-US") : "-"}</p>
+        <p>تومان {totalPrice !== undefined ? totalPrice.toLocaleString("en-US") : "-"}</p>
       </div>
       <button className={Style.payButton} onClick={handlePayment}>پرداخت</button>
     </div>
