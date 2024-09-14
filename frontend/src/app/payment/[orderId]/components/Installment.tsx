@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useState } from 'react'
-
 import Style from "@/allStyles/payment.module.css"
 import Image from 'next/image';
 
@@ -13,11 +12,12 @@ interface Iitems {
 
 interface FullPaymentProps {
   payFunction: (upfront: string, checks: string) => void;
-  items: Iitems[]
+  items: Iitems[];
   totalPrice: number | undefined;
+  rank: "A" | "B" | "C" | null;
 }
 
-const Installment: React.FC<FullPaymentProps> = ({ payFunction, items, totalPrice }) => {
+const Installment: React.FC<FullPaymentProps> = ({ payFunction, items, totalPrice, rank }) => {
   const [upfront, setUpfront] = useState<string>("");
   const [checks, setChecks] = useState<string>("");
   const [error, setError] = useState<string>(""); // State to hold error message
@@ -34,22 +34,89 @@ const Installment: React.FC<FullPaymentProps> = ({ payFunction, items, totalPric
     payFunction(upfront, checks);
   };
 
+  // Define the available options based on the user's rank
+  const getUpfrontOptions = () => {
+    switch (rank) {
+      case "C":
+        return (
+          <>
+            <option value="50">50%</option>
+            <option value="60">60%</option>
+          </>
+        );
+      case "B":
+        return (
+          <>
+            <option value="40">40%</option>
+            <option value="50">50%</option>
+            <option value="60">60%</option>
+          </>
+        );
+      case "A":
+      case null:
+        return (
+          <>
+            <option value="30">30%</option>
+            <option value="40">40%</option>
+            <option value="50">50%</option>
+            <option value="60">60%</option>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const getChecksOptions = () => {
+    switch (rank) {
+      case "C":
+        return (
+          <>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </>
+        );
+      case "B":
+        return (
+          <>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+          </>
+        );
+      case "A":
+      case null:
+        return (
+          <>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className={Style.container}>
       <Image className={Style.svgImage} src="/image/Group 15.png" alt="svg" width={500} height={300} />
       <h3>پرداخت اقساطی</h3>
       <div className={Style.itemsContainer}>
-        {
-          items.map((item, index) => {
-            return (
-              <div className={Style.itemContainer} key={index}>
-                <p className={Style.itemQuantity}>x {item.quantity}</p>
-                <p className={Style.itemName}>{item.name}</p>
-                <p className={Style.itemPrice}>{Number(item.price).toLocaleString("en-US")}</p>
-              </div>
-            )
-          })
-        }
+        {items.map((item, index) => (
+          <div className={Style.itemContainer} key={index}>
+            <p className={Style.itemQuantity}>x {item.quantity}</p>
+            <p className={Style.itemName}>{item.name}</p>
+            <p className={Style.itemPrice}>{Number(item.price).toLocaleString("en-US")}</p>
+          </div>
+        ))}
       </div>
       <div className={Style.installmentContainer}>
         <div className={Style.installmentSelectDiv}>
@@ -60,10 +127,7 @@ const Installment: React.FC<FullPaymentProps> = ({ payFunction, items, totalPric
             onChange={(e) => setUpfront(e.target.value)}
           >
             <option value="" disabled>انتخاب</option>
-            <option value="30">30%</option>
-            <option value="40">40%</option>
-            <option value="50">50%</option>
-            <option value="60">60%</option>
+            {getUpfrontOptions()}
           </select>
         </div>
         <div className={Style.installmentSelectDiv}>
@@ -74,13 +138,7 @@ const Installment: React.FC<FullPaymentProps> = ({ payFunction, items, totalPric
             onChange={(e) => setChecks(e.target.value)}
           >
             <option value="" disabled>انتخاب</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
+            {getChecksOptions()}
           </select>
         </div>
       </div>
@@ -95,7 +153,7 @@ const Installment: React.FC<FullPaymentProps> = ({ payFunction, items, totalPric
       </div>
       <button className={Style.payButton} onClick={handlePayment}>پرداخت</button>
     </div>
-  )
-}
+  );
+};
 
-export default Installment
+export default Installment;

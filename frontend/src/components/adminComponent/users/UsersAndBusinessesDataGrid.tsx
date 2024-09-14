@@ -9,6 +9,7 @@ import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
 import jalaali from 'jalaali-js';
 import CustomPagination from '@/types/customPagination';
 import Loading from '@/components/Loading';
+import Alert from '@/components/Alert';
 
 const convertToJalaali = (gregorianDate: string | undefined) => {
     if (gregorianDate) {
@@ -48,6 +49,18 @@ const columnsBusinesses: GridColDef[] = [
             { value: true, label: 'تایید شده' },
             { value: false, label: 'تایید نشده' },
         ],
+    },
+    {
+        field: 'rank',
+        headerName: 'سطح',
+        flex: 1,
+        minWidth: 150,
+        type: 'singleSelect',
+        renderCell: (params) => (
+            <span>
+                {params.value}
+            </span>
+        ),
     }
 
 ];
@@ -121,6 +134,8 @@ const UsersAndBusinessesDataGrid = () => {
     const [pageBusinesses, setPageBusinesses] = useState<number>(0); // Default page for businesses
     const [rowCountBusinesses, setRowCountBusinesses] = useState<number>(0); // Total number of rows for businesses
 
+    const [alert, setAlert] = useState<{ message: string; type: 'success' | 'failed' } | null>(null);
+
 
     const [userFilters, setUserFilters] = useState<GridFilterModel>({ items: [] });
     const [businessFilters, setBusinessFilters] = useState<GridFilterModel>({ items: [] });
@@ -172,6 +187,7 @@ const UsersAndBusinessesDataGrid = () => {
                                         ownerPhoneNumber
                                         isConfirmed
                                         name
+                                        rank
                                     }
                                 }
                             }
@@ -245,7 +261,7 @@ const UsersAndBusinessesDataGrid = () => {
                 body: JSON.stringify({
                     query: `
                         mutation UpdateBusiness($id: ID!, $isConfirmed: Boolean!) {
-                            updateBusiness(input: { id: $id, isConfirmed: $isConfirmed }) {
+                            updateBusiness(input: { id: $id, isConfirmed: $isConfirmed}) {
                                 success
                                 errors
                             }
@@ -260,11 +276,18 @@ const UsersAndBusinessesDataGrid = () => {
 
             const data = await response.json();
 
+            if (data.errors) {
+                setAlert({ message: "مشکلی پیش آمده", type: "failed" })
+                return
+            }
+
             if (data.data.updateBusiness.success) {
                 // If the update is successful, return the new row to update the UI
+                setAlert({ message: "عملیات موفقیت آمیز بود", type: "success" })
                 return newRow;
             } else {
                 // If there are errors, log them and return the old row to revert the UI changes
+                setAlert({ message: data.data.updateBusiness.errors || "مشکلی پیش آمده", type: "failed" })
                 console.error('Error updating business:', data.data.updateBusiness.errors.join(', '));
                 return oldRow;
             }
@@ -341,28 +364,33 @@ const UsersAndBusinessesDataGrid = () => {
         [existingTheme],
     );
 
+    const closeAlert = () => {
+        setAlert(null);
+    };
+
     if (loading) return <div><Loading /></div>;
 
 
     return (
-        <ThemeProvider theme={theme}>
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    rowGap: '20px',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '100%',
-                    maxWidth: '1100px',
-                    margin: '50px auto',
-                    bgcolor: 'rgb(32,32,32)',
-                    color: 'white',
-                    p: 2,
-                    borderRadius: 2,
-                    boxShadow: 3,
-                }}
-            >
+        <Box
+            sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                rowGap: '20px',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%',
+                maxWidth: '1100px',
+                margin: '50px auto',
+                bgcolor: 'rgb(32,32,32)',
+                color: 'white',
+                p: 2,
+                borderRadius: 2,
+                boxShadow: 3,
+            }}
+        >
+            <ThemeProvider theme={theme}>
+
 
                 <div dir='rtl' style={{ width: '100%', height: '50%' }}>
                     <h2 style={{ color: 'white' }}>کاربران</h2>
@@ -427,8 +455,16 @@ const UsersAndBusinessesDataGrid = () => {
                     onPageSizeChange={(newPageSize) => setPageSizeBusinesses(newPageSize)}
                     dir={"rtl"}
                 />
-            </Box>
-        </ThemeProvider>
+            </ThemeProvider>
+
+            {alert && (
+                <Alert
+                    message={alert.message}
+                    type={alert.type}
+                    onClose={closeAlert}
+                />
+            )}
+        </Box>
     );
 }
 
