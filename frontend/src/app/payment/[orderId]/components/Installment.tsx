@@ -41,7 +41,6 @@ const Installment: React.FC<FullPaymentProps> = ({ payFunction, items, totalPric
         return (
           <>
             <option value="50">50%</option>
-            <option value="60">60%</option>
           </>
         );
       case "B":
@@ -49,7 +48,6 @@ const Installment: React.FC<FullPaymentProps> = ({ payFunction, items, totalPric
           <>
             <option value="40">40%</option>
             <option value="50">50%</option>
-            <option value="60">60%</option>
           </>
         );
       case "A":
@@ -59,7 +57,6 @@ const Installment: React.FC<FullPaymentProps> = ({ payFunction, items, totalPric
             <option value="30">30%</option>
             <option value="40">40%</option>
             <option value="50">50%</option>
-            <option value="60">60%</option>
           </>
         );
       default:
