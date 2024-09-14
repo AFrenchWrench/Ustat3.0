@@ -85,7 +85,7 @@ const SigninForm = () => {
         }
       } else {
         if (login.redirectUrl) {
-          Cookies.set('username', userInfo.username);
+          Cookies.set('username', userInfo.username, { expires: 365 * 10 }); // Expires in 10 years
           push(login.redirectUrl);
         }
         if (login.errors) {
@@ -144,7 +144,7 @@ const SigninForm = () => {
         </div>
 
         <button className="w-1/8 py-2 mt-4 bg-red-600 text-[#212121] rounded hover:bg-red-700 focus:outline-none disabled:bg-red-300" type="submit" disabled={isSubmitting}>ورود</button>
-        <Link className='text-gray-300 text-sm mt-[10px] w-full left-5 bottom-5' href={"/auth/otp-login-request"}>ورود با رمز یکبار مصرف</Link>
+        <Link className='text-gray-300 text-sm mt-[10px] mr-[auto]' href={"/auth/otp-login-request"}>ورود با رمز یکبار مصرف</Link>
       </form>
 
 

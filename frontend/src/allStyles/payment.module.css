@@ -101,7 +101,7 @@ padding: 15px 10px;
     width: 90%;
     display: flex;
     justify-content: space-between;
-    font-size: larger;
+    font-size: large;
     margin-bottom: 10px;
 }
 
@@ -138,10 +138,10 @@ padding: 15px 10px;
     margin-bottom: 10px;
 }
 .installmentPrice p{
-    font-size: large !important;
+    font-size: medium !important;
 }
 .totalPrice p{
-    font-size: larger !important;
+    font-size: medium !important;
 }
 
 

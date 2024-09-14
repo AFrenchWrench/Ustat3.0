@@ -366,7 +366,7 @@ const Page = () => {
 
                     {dimensions["single seat"] && (
                         <div className='dimensions_container'>
-                            <p>صندلی تک نفره :</p>
+                            <p>تک نفره:</p>
                             <div>
                                 <p>{dimensions["single seat"].width ? `عرض:${dimensions["single seat"].width}` : 'عرض: N/A'}</p>
                                 <p>{dimensions["single seat"].height ? `ارتفاع: ${dimensions["single seat"].height}` : 'ارتفاع: N/A'}</p>

@@ -18,12 +18,18 @@ interface Iitems {
     quantity: number;
 }
 
+interface IuserData {
+    isConfirmed: boolean;
+    rank: "A" | "B" | "C"
+}
+
 const Page = () => {
     const [loading, setLoading] = useState(true); // Loading state for redirection
     const { orderId } = useParams();
     const { push } = useRouter();
     const [items, setItems] = useState<Iitems[]>([])
     const [totalPrice, setTotalPrice] = useState<number>()
+    const [userData, setUserData] = useState<IuserData>()
 
     const [alertMui, setAlert] = useState<{ message: string; type: 'success' | 'failed' } | null>(null);
 
@@ -75,6 +81,45 @@ const Page = () => {
                 setLoading(false)
             }
         }
+        const fetchUserData = async () => {
+            try {
+                const user = Cookies.get("Authorization");
+                const response = await fetch('/api/users/graphql/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': user ? user : '',
+                    },
+                    body: JSON.stringify({
+                        query: `
+                                query CurrentUser {
+                                    currentUser {
+                                        business {
+                                            isConfirmed
+                                            rank
+                                        }
+                                    }
+                                }
+                        `,
+                    }),
+                });
+
+                const result = await response.json();
+                if (!result) {
+                    console.log("netWorkError");
+                }
+                if (result.errors) {
+                    console.log(result.errors);
+                }
+                if (result.data.currentUser) {
+                    setUserData(result.data.currentUser.business)
+                }
+            }
+            catch (error) {
+                console.log(error);
+            }
+        }
+        fetchUserData()
         fetchOrderItems()
     }, [])
 
@@ -229,7 +274,7 @@ const Page = () => {
     return (
         <section className={Style.paymentSection}>
             <FullPayment totalPrice={totalPrice} items={items} payFunction={handleFullPayment} />
-            <Installment totalPrice={totalPrice} items={items} payFunction={handleInstallmentSubmit} />
+            <Installment totalPrice={totalPrice} items={items} payFunction={handleInstallmentSubmit} rank={userData?.rank ?? null} />
             {alertMui && (
                 <Alert
                     message={alertMui.message}
