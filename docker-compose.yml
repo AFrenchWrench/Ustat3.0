@@ -72,17 +72,30 @@ services:
     container_name: ustatCeleryWorker
 
   nginx:
-    image: nginx:latest
-    container_name: ustatNginx
+    build: ./nginx
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
-      - static_volume:/usr/share/nginx/html/static
-      - media_volume:/usr/share/nginx/html/media
+      - ./certs:/etc/letsencrypt
+    environment:
+      - NGINX_HOST=ustatticaret.com,ustatticaret.ir
+      - NGINX_EMAIL=AFrenchWrench@gmail.com
     depends_on:
       - frontend
       - backend
+    container_name: ustatNginx
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certs:/etc/letsencrypt
+      - ./var/lib/letsencrypt:/var/lib/letsencrypt
+    entrypoint: "/bin/sh -c 'certbot --nginx -d ustatticaret.com -d ustatticaret.ir && certbot renew --dry-run'"
+    depends_on:
+      - nginx
+    container_name: ustatCertbot
 
 volumes:
   node_modules:
