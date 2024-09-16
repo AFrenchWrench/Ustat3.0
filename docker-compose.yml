@@ -87,16 +87,6 @@ services:
       - backend
     container_name: ustatNginx
 
-  certbot:
-    image: certbot/certbot
-    volumes:
-      - ./certs:/etc/letsencrypt
-      - ./var/lib/letsencrypt:/var/lib/letsencrypt
-    entrypoint: "/bin/sh -c 'certbot --nginx -d ustatticaret.com -d ustatticaret.ir && certbot renew --dry-run'"
-    depends_on:
-      - nginx
-    container_name: ustatCertbot
-
 volumes:
   node_modules:
   static_volume:
