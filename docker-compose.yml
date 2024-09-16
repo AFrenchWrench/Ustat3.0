@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   backend:
@@ -14,7 +14,7 @@ services:
       - media_volume:/app/media
     command: ./scripts/start.sh
     healthcheck:
-      test: [ "CMD", "python", "manage.py", "check_db_connection" ]
+      test: ["CMD", "python", "manage.py", "check_db_connection"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,7 +27,7 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -39,7 +39,7 @@ services:
     expose:
       - "6379"
     healthcheck:
-      test: [ "CMD", "redis-cli", "-h", "localhost", "ping" ]
+      test: ["CMD", "redis-cli", "-h", "localhost", "ping"]
       interval: 1m
       timeout: 5s
 
@@ -53,7 +53,7 @@ services:
       - /app/.next
     environment:
       - NODE_ENV=production
-      - WATCHPACK_POLLING=true  # Enable polling for file changes
+      - WATCHPACK_POLLING=true # Enable polling for file changes
     depends_on:
       - backend
 
@@ -72,7 +72,8 @@ services:
     container_name: ustatCeleryWorker
 
   nginx:
-    build: ./nginx
+    build:
+      context: ./nginx
     ports:
       - "80:80"
       - "443:443"
