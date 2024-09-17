@@ -5,6 +5,7 @@ FROM nginx:latest
 COPY nginx.conf /etc/nginx/nginx.conf
 
 COPY ./acme-challenge/ /var/www/acme-challenge
+COPY ./certs /etc/letsencrypt
 
 # Expose the necessary ports
 EXPOSE 80 443
