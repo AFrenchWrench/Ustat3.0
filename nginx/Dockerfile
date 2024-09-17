@@ -4,6 +4,8 @@ FROM nginx:latest
 # Copy your Nginx configuration file
 COPY nginx.conf /etc/nginx/nginx.conf
 
+COPY ./acme-challenge/ /var/www/acme-challenge
+
 # Expose the necessary ports
 EXPOSE 80 443
 
