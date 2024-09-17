@@ -8,6 +8,8 @@ import Cookies from 'js-cookie';
 import { faIR } from '@mui/x-data-grid/locales';
 import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
 import jalaali from 'jalaali-js'; // Import the Jalali calendar library
+import { useTitle } from '@/components/TitleContext';
+import useDynamicTitle from '@/components/useDynamicTitle';
 
 interface Order {
     id: string;
@@ -104,12 +106,33 @@ const columns: GridColDef[] = [
     },
 ];
 
+type Titles = {
+    [key: string]: string;
+};
+
+const titles: Titles = {
+    en: 'Ustattecaret-Cart-Orders',
+    fa: 'اوستات تجارت-سفارش ها',
+};
+
 export default function OrdersDataGrid() {
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [pageSize, setPageSize] = useState<number>(5); // Default page size
     const [page, setPage] = useState<number>(0); // Default page
     const [rowCount, setRowCount] = useState<number>(0); // Total number of rows
+    const { setTitle } = useTitle();
+
+
+    useDynamicTitle(); // This will set the document title based on context
+
+    useEffect(() => {
+        const language = navigator.language || 'en';
+        const langCode = language.split('-')[0];
+        const pageTitle = titles[langCode] || titles['en'];
+        setTitle(pageTitle);
+        return () => setTitle('Ustat'); // Reset title on unmount if desired
+    }, [setTitle]);
 
     useEffect(() => {
         const token = Cookies.get('Authorization');

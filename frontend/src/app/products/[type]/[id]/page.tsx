@@ -13,6 +13,9 @@ import AddToCartButton from '../../components/addToCartButton';
 import Loading from '@/components/Loading';
 import SelectOrder from '../../components/SelectOrder';
 import Variations from '../../components/variations';
+import { useTitle } from '@/components/TitleContext';
+import useDynamicTitle from '@/components/useDynamicTitle';
+import NotFound from '@/components/notFound';
 
 
 
@@ -80,6 +83,15 @@ interface DisplayItem {
     displayItem: IdisplayItemV
 }
 
+type Titles = {
+    [key: string]: string;
+};
+
+const titles: Titles = {
+    en: 'Ustattecaret-Product',
+    fa: 'اوستات تجارت-محصول',
+};
+
 const Page = () => {
     const [product, setProduct] = useState<DisplayItem | null>(null);
     const [loading, setLoading] = useState(true);
@@ -89,8 +101,18 @@ const Page = () => {
     const [fetchTrigger, setFetchTrigger] = useState(false);
     const [variantId, setVariansId] = useState<string | string[]>(id)
     const [variations, setVariations] = useState<Ivariation[]>()
+    const { setTitle } = useTitle();
 
-    const [isBusiness, setIsBusiness] = useState(false)
+
+    useDynamicTitle(); // This will set the document title based on context
+
+    useEffect(() => {
+        const language = navigator.language || 'en';
+        const langCode = language.split('-')[0];
+        const pageTitle = titles[langCode] || titles['en'];
+        setTitle(pageTitle);
+        return () => setTitle('Ustat'); // Reset title on unmount if desired
+    }, [setTitle]);
 
     const fetchProductData = async () => {
         try {
@@ -271,7 +293,7 @@ const Page = () => {
     };
 
     if (loading) return <><Loading /></>;
-    if (!product) return <p>Product not found</p>;
+    if (!product) return <NotFound />;
 
     // Parse dimensions from JSON string
     let dimensions: Dimensions = {};

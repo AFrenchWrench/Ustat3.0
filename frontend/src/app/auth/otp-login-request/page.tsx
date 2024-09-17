@@ -1,12 +1,14 @@
 "use client"
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Cookies from 'js-cookie';
 
 import { useRouter } from 'next/navigation';
+import { useTitle } from '@/components/TitleContext';
+import useDynamicTitle from '@/components/useDynamicTitle';
 
 
 const userSchema = z.object({
@@ -14,10 +16,31 @@ const userSchema = z.object({
     .email("ایمیل وارد شده معتبر نمی‌باشد"),
 });
 
+type Titles = {
+  [key: string]: string;
+};
+
+const titles: Titles = {
+  en: 'Ustattecaret-email otp request',
+  fa: 'اوستات تجارت-ورود',
+};
+
 const SigninForm = () => {
 
 
   const { push } = useRouter()
+  const { setTitle } = useTitle();
+
+
+  useDynamicTitle(); // This will set the document title based on context
+
+  useEffect(() => {
+    const language = navigator.language || 'en';
+    const langCode = language.split('-')[0];
+    const pageTitle = titles[langCode] || titles['en'];
+    setTitle(pageTitle);
+    return () => setTitle('Ustat'); // Reset title on unmount if desired
+  }, [setTitle]);
 
   type SignInSchema = z.infer<typeof userSchema>;
 

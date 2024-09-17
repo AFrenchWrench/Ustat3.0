@@ -265,11 +265,9 @@
 
 
 @media only screen and (max-width:600px) {
-    .section{
-        width: 98%;
-    }
    
     .homeCart{
+        width: 98%;
         aspect-ratio: unset;
         height: unset;
         max-width: unset;

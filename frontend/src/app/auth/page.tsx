@@ -2,12 +2,36 @@
 
 import SignupForm from '@/components/authcomponents/SignupForm'
 import SigninForm from '@/components/authcomponents/SigninForm'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useTitle } from '@/components/TitleContext';
+import useDynamicTitle from '@/components/useDynamicTitle';
+
+type Titles = {
+  [key: string]: string;
+};
+
+const titles: Titles = {
+  en: 'Ustattecaret-Auth',
+  fa: 'اوستات تجارت-ورود/ثبت نام',
+};
 
 
 const Auth = () => {
 
   const [signin, setSignin] = useState(true)
+  const { setTitle } = useTitle();
+
+
+  useDynamicTitle(); // This will set the document title based on context
+
+  useEffect(() => {
+    const language = navigator.language || 'en';
+    const langCode = language.split('-')[0];
+    const pageTitle = titles[langCode] || titles['en'];
+    setTitle(pageTitle);
+    return () => setTitle('Ustat'); // Reset title on unmount if desired
+  }, [setTitle]);
+
 
 
   const signInSignUpHandler = () => {
