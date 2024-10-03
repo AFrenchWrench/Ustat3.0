@@ -11,6 +11,8 @@ import * as jalaali from 'jalaali-js';
 import ConfirmAlert from './components/ConfirmAlert';
 import { BsCart4 } from 'react-icons/bs';
 import Loading from '@/components/Loading';
+import { useTitle } from '@/components/TitleContext';
+import useDynamicTitle from '@/components/useDynamicTitle';
 
 interface OrderItems {
   id: string;
@@ -39,6 +41,15 @@ interface ConfirmAlertType {
   status?: string;
 }
 
+type Titles = {
+  [key: string]: string;
+};
+
+const titles: Titles = {
+  en: 'Ustattecaret-Cart',
+  fa: 'اوستات تجارت-سبد خرید',
+};
+
 const convertToJalaali = (gregorianDate: string | undefined) => {
   if (gregorianDate) {
     const [year, month, day] = gregorianDate.split('-');
@@ -56,6 +67,18 @@ const Cart = () => {
 
   const [showAllItems, setShowAllItems] = useState(false);
   const maxItemsToShow = 4;
+  const { setTitle } = useTitle();
+
+
+  useDynamicTitle(); // This will set the document title based on context
+
+  useEffect(() => {
+    const language = navigator.language || 'en';
+    const langCode = language.split('-')[0];
+    const pageTitle = titles[langCode] || titles['en'];
+    setTitle(pageTitle);
+    return () => setTitle('Ustat'); // Reset title on unmount if desired
+  }, [setTitle]);
 
   useEffect(() => {
     const fetchOrders = async () => {

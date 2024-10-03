@@ -7,6 +7,8 @@ import { useParams } from "next/navigation";
 import Cookies from "js-cookie";
 import useMediaQuery from '@mui/material/useMediaQuery';
 import LoadingArticle from "../components/loadingArticle";
+import { useTitle } from "@/components/TitleContext";
+import useDynamicTitle from "@/components/useDynamicTitle";
 
 interface Ivariants {
     id: string;
@@ -40,8 +42,35 @@ interface DisplayOrder {
     items: OrderItems[];
 }
 
+type Titles = {
+    [key: string]: {
+        en: string;
+        fa: string;
+    };
+};
+
+const typeNames: Record<string, { en: string; fa: string }> = {
+    S: { en: "Sofas", fa: "مبل ها" },
+    B: { en: "Bed Sets", fa: "سرویس های خواب" },
+    M: { en: "Tables and Chairs", fa: "میز و صندلی" },
+    J: { en: "Coffee Tables and Side Tables", fa: "جلومبلی و عسلی" },
+    C: { en: "Console Mirrors and TV Stands", fa: "آینه کنسول و میز تلوزیون" },
+};
+
+
+const titles: Titles = {
+    'default': {
+        en: 'Ustattecaret-Products',
+        fa: 'اوستات تجارت-محصولات',
+    },
+};
+
+type LangCode = 'en' | 'fa';
+
+
 const Page = () => {
-    const { type } = useParams();
+    const params = useParams();
+    const type = Array.isArray(params.type) ? params.type[0] : params.type || '';
     const [displayData, setDisplayData] = useState<DisplayItem[]>([]);
     const [orderData, setOrderData] = useState<DisplayOrder[]>([]);
     const [page, setPage] = useState(1); // Track the current page
@@ -54,6 +83,27 @@ const Page = () => {
     const isMediumScreen = useMediaQuery('(max-width:1000px)');
 
     const observer = useRef<IntersectionObserver | null>(null); // Ref for intersection observer
+    const { setTitle } = useTitle();
+
+
+    useDynamicTitle(); // This will set the document title based on context
+
+    useEffect(() => {
+        // Determine the language code
+        const language = navigator.language || 'en';
+        const langCode: LangCode = (language.split('-')[0] as LangCode) || 'en';
+
+        // Get product type name
+        const productType = typeNames[type as string] || { en: 'Default', fa: 'پیش‌فرض' };
+
+        // Set title based on product type or default
+        const pageTitle = `${titles['default'][langCode]}-${productType[langCode]}`;
+        setTitle(pageTitle);
+
+        return () => setTitle('Ustattecaret-Products'); // Reset title on unmount if desired
+    }, [type, setTitle]);
+
+
 
     const fetchUser = async () => {
         try {

@@ -8,15 +8,38 @@ import { z } from "zod";
 import { zodResolver } from '@hookform/resolvers/zod';
 import CountdownTimer from '@/components/countDown';
 import CustomReactCodeInput from '@/components/CustomReactCodeInput';
+import { useTitle } from '@/components/TitleContext';
+import useDynamicTitle from '@/components/useDynamicTitle';
 
 const codeSchema = z.object({
   verificationCode: z.string().min(1, "لطفا کد را وارد کنید")
 });
 type TcodeSchema = z.infer<typeof codeSchema>;
 
+type Titles = {
+  [key: string]: string;
+};
+
+const titles: Titles = {
+  en: 'Ustattecaret-email otp login',
+  fa: 'اوستات تجارت-ورود',
+};
+
 const Page = () => {
   const [resendvar, setResendvar] = useState(false);
   const [isTimerRunning, setIsTimerRunning] = useState(true);
+  const { setTitle } = useTitle();
+
+
+  useDynamicTitle(); // This will set the document title based on context
+
+  useEffect(() => {
+    const language = navigator.language || 'en';
+    const langCode = language.split('-')[0];
+    const pageTitle = titles[langCode] || titles['en'];
+    setTitle(pageTitle);
+    return () => setTitle('Ustat'); // Reset title on unmount if desired
+  }, [setTitle]);
 
   const { handleSubmit, control, setError, formState: { errors, isSubmitting } } = useForm<TcodeSchema>({
     resolver: zodResolver(codeSchema)

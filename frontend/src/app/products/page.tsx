@@ -10,6 +10,8 @@ import { MdKeyboardDoubleArrowLeft } from "react-icons/md";
 import Cookies from "js-cookie";
 import LoadingArticle from "./components/loadingArticle";
 import { Pagination } from "swiper/modules";
+import { useTitle } from "@/components/TitleContext";
+import useDynamicTitle from "@/components/useDynamicTitle";
 
 
 interface IdisplayItem {
@@ -50,11 +52,32 @@ const typeNames: Record<string, string> = {
   C: "آینه کنسول و میز تلوزیون",
 };
 
+type Titles = {
+  [key: string]: string;
+};
+
+const titles: Titles = {
+  en: 'Ustattecaret-Products',
+  fa: 'اوستات تجارت-محصولات',
+};
+
 const Products = () => {
   const [userData, setUserData] = useState<DisplayItem[]>([]);
   const [orderData, setOrderData] = useState<DisplayOrder[]>([]);
   const [fetchTrigger, setFetchTrigger] = useState(false); // Trigger for re-fetching data
   const [loading, setLoading] = useState(false); // Track loading state
+  const { setTitle } = useTitle();
+
+
+  useDynamicTitle(); // This will set the document title based on context
+
+  useEffect(() => {
+    const language = navigator.language || 'en';
+    const langCode = language.split('-')[0];
+    const pageTitle = titles[langCode] || titles['en'];
+    setTitle(pageTitle);
+    return () => setTitle('Ustat'); // Reset title on unmount if desired
+  }, [setTitle]);
 
   const fetchUserData = async () => {
     try {
