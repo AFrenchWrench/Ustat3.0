@@ -37,7 +37,7 @@ export const config = {
 // Function to check if the user is an admin
 const checkIfUserIsAdmin = async (token: string): Promise<boolean> => {
     try {
-        const response = await fetch(`http://nginx/api/users/graphql/`, {
+        const response = await fetch(`http://usttatticaret.com/api/users/graphql/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
