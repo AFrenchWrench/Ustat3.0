@@ -8,6 +8,8 @@ import jalaali from 'jalaali-js'; // Import jalaali-js
 import Loading from '@/components/Loading';
 import NotFound from '@/components/notFound';
 import Alert from '@/components/Alert';
+import { useTitle } from '@/components/TitleContext';
+import useDynamicTitle from '@/components/useDynamicTitle';
 
 const statusChoices: { [key: string]: string } = {
     "PS": "در انتظار ثبت",
@@ -33,6 +35,15 @@ interface Transaction {
     proof: string | null;
 }
 
+type Titles = {
+    [key: string]: string;
+};
+
+const titles: Titles = {
+    en: 'Ustattecaret-Cart-transaction',
+    fa: 'اوستات تجارت-سبد خرید-رسید',
+};
+
 const Page = () => {
     const { transactionId } = useParams();
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -43,6 +54,19 @@ const Page = () => {
     const [refreshKey, setRefreshKey] = useState<number>(0); // State to trigger refetch
 
     const [alertMui, setAlert] = useState<{ message: string; type: 'success' | 'failed' } | null>(null);
+    const { setTitle } = useTitle();
+
+
+    useDynamicTitle(); // This will set the document title based on context
+
+    useEffect(() => {
+        const language = navigator.language || 'en';
+        const langCode = language.split('-')[0];
+        const pageTitle = titles[langCode] || titles['en'];
+        setTitle(pageTitle);
+        return () => setTitle('Ustat'); // Reset title on unmount if desired
+    }, [setTitle]);
+
 
 
     useEffect(() => {

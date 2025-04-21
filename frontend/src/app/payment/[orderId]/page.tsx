@@ -10,6 +10,8 @@ import Installment from "./components/Installment";
 import Loading from "@/components/Loading";
 import NotFound from "@/components/notFound";
 import Alert from "@/components/Alert";
+import { useTitle } from "@/components/TitleContext";
+import useDynamicTitle from "@/components/useDynamicTitle";
 
 
 interface Iitems {
@@ -23,6 +25,15 @@ interface IuserData {
     rank: "A" | "B" | "C"
 }
 
+type Titles = {
+    [key: string]: string;
+};
+
+const titles: Titles = {
+    en: 'Ustattecaret-Cart-Payment',
+    fa: 'اوستات تجارت-پرداخت',
+};
+
 const Page = () => {
     const [loading, setLoading] = useState(true); // Loading state for redirection
     const { orderId } = useParams();
@@ -32,6 +43,18 @@ const Page = () => {
     const [userData, setUserData] = useState<IuserData>()
 
     const [alertMui, setAlert] = useState<{ message: string; type: 'success' | 'failed' } | null>(null);
+    const { setTitle } = useTitle();
+
+
+    useDynamicTitle(); // This will set the document title based on context
+
+    useEffect(() => {
+        const language = navigator.language || 'en';
+        const langCode = language.split('-')[0];
+        const pageTitle = titles[langCode] || titles['en'];
+        setTitle(pageTitle);
+        return () => setTitle('Ustat'); // Reset title on unmount if desired
+    }, [setTitle]);
 
 
 

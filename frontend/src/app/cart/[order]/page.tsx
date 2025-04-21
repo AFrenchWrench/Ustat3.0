@@ -24,6 +24,8 @@ import { CiEdit } from "react-icons/ci";
 import "@/allStyles/datePickerOrder.css"
 import Loading from '@/components/Loading';
 import NotFound from '@/components/notFound';
+import { useTitle } from '@/components/TitleContext';
+import useDynamicTitle from '@/components/useDynamicTitle';
 
 interface OrderItems {
     id: string;
@@ -73,6 +75,15 @@ interface ConfirmAlertType {
     addressId?: string
 }
 
+type Titles = {
+    [key: string]: string;
+};
+
+const titles: Titles = {
+    en: 'Ustattecaret-Cart-Order',
+    fa: 'اوستات تجارت-سبد خرید-سفارش',
+};
+
 const Page = () => {
     const [orderData, setOrderData] = useState<DisplayItem | null>(null);
     const [loading, setLoading] = useState(true);
@@ -88,6 +99,18 @@ const Page = () => {
     const [showSelectAddress, setShowSelectAddress] = useState<boolean>(false)
 
     const [errorMessage, setErrorMessage] = useState<string>("")
+    const { setTitle } = useTitle();
+
+
+    useDynamicTitle(); // This will set the document title based on context
+
+    useEffect(() => {
+        const language = navigator.language || 'en';
+        const langCode = language.split('-')[0];
+        const pageTitle = titles[langCode] || titles['en'];
+        setTitle(pageTitle);
+        return () => setTitle('Ustat'); // Reset title on unmount if desired
+    }, [setTitle]);
 
     useEffect(() => {
         if (!order) return;

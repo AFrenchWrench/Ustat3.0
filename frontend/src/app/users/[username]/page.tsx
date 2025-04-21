@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import styles from '../style/profilePageStyles.module.css';
 import * as jalaali from 'jalaali-js';
@@ -11,8 +11,20 @@ import Edit from '@/components/authcomponents/edit';
 
 import IuserData from '@/types/IuserData';
 import Loading from '@/components/Loading';
+import useDynamicTitle from '@/components/useDynamicTitle';
+import { useTitle } from '@/components/TitleContext';
+
+type Titles = {
+  [key: string]: string;
+};
+
+const titles: Titles = {
+  en: 'Ustattecaret-Profile',
+  fa: 'اوستات تجارت-پروفایل',
+};
 
 const UserProfile = ({ params }: { params: { username: string } }) => {
+  const { username } = useParams()
   const [userData, setUserData] = useState<IuserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +32,18 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [updated, setUpdated] = useState(false);
   const { push } = useRouter();
-  const hasFetched = useRef(false); // useRef to keep track of fetch status
+  const { setTitle } = useTitle();
+
+
+  useDynamicTitle(); // This will set the document title based on context
+
+  useEffect(() => {
+    const language = navigator.language || 'en';
+    const langCode = language.split('-')[0];
+    const pageTitle = titles[langCode] || titles['en'];
+    setTitle(`${pageTitle}-${username}`);
+    return () => setTitle('Ustat'); // Reset title on unmount if desired
+  }, [setTitle]);
 
   useEffect(() => {
 
@@ -229,3 +252,7 @@ const UserProfile = ({ params }: { params: { username: string } }) => {
 };
 
 export default UserProfile;
+function setTitle(arg0: string) {
+  throw new Error('Function not implemented.');
+}
+
